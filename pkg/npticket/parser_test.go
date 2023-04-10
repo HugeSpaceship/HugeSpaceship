@@ -3,19 +3,23 @@ package npticket
 import (
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 )
 
 func TestParse(t *testing.T) {
-	ticket, err := os.Open("../../test/example-ticket")
+	ticketData, err := os.ReadFile("../../test/example-ticket")
 	if err != nil {
 		t.Error(err)
 	}
 
-	parsedTicket, err := Parse(ticket)
+	parser := NewParser(ticketData)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(strings.Trim(string(parsedTicket.Username[:]), "\000"))
+	ticket, err := parser.Parse()
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Println(ticket.Username)
 }

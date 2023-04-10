@@ -1,33 +1,24 @@
 package types
 
+import "time"
+
 type Ticket struct {
-	MajorVersion uint8
-	MinorVersion uint8
+	SerialID string
 
-	Padding      [5]byte // Find out what this is, it may be important
-	TicketLength uint8
+	IssuerID uint32
 
-	BodySectionHeader [4]byte
+	IssuedDate time.Time
+	ExpiryDate time.Time
 
-	SerielIDHeader [4]byte
-	SerialID       [20]byte
-	IssuerIDHeader [4]byte
-	IssuerID       uint32
+	UserID   uint64
+	Username string
 
-	IssuedDateHeader [4]byte
-	IssuedDate       uint64
-	ExpiryDateHeader [4]byte
-	ExpiryDate       uint64
+	Country string
+	Domain  string
 
-	UserIDHeader   [4]byte
-	UserID         uint64
-	UsernameHeader [4]byte
-	Username       [20]byte
-
-	Country [4]byte
-	Domain  [4]byte
-
-	TitleID [20]byte // This length is a guess
+	TitleID string
 
 	Status uint32
+
+	Footer TicketFooter
 }
