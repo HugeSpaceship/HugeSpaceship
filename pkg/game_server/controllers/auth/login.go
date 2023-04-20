@@ -4,16 +4,25 @@ import (
 	"HugeSpaceship/pkg/model/auth"
 	"HugeSpaceship/pkg/npticket"
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 func LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ticket, err := c.GetRawData()
+		ticketData, err := c.GetRawData()
 		if err != nil {
-			log.Println(err.Error())
+			log.Err(err).Msg("failed to get request data")
 		}
-		npticket.Parse(ticket)
+		parser := npticket.NewParser(ticketData)
+		ticket, err := parser.Parse()
+
+		log.Info().Str("userName", ticket.Username).Str("country", ticket.Country).Msg("User Connected")
+
+		if !npticket.VerifyTicket(ticket) {
+			c.Status(403)
+			return
+		}
+
 		c.XML(200, auth.LoginResult{
 			AuthTicket: "testToken", // TODO: get real token
 			LBPEnvVer:  "HugeSpaceship",

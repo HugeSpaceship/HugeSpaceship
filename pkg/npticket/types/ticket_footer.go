@@ -1,7 +1,8 @@
 package types
 
 const (
-	PSNSignatoryID uint32 = 0x719F1D4A
+	PSNSignatoryID  uint32 = 0x719F1D4A
+	RPCNSignatoryID uint32 = 0x5250434E
 )
 
 type TicketFooter struct {

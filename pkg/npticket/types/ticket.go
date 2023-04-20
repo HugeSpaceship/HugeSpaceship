@@ -1,6 +1,8 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type Ticket struct {
 	SerialID string
@@ -21,4 +23,6 @@ type Ticket struct {
 	Status uint32
 
 	Footer TicketFooter
+
+	BodyHash []byte
 }

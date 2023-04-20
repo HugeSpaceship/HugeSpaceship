@@ -3,6 +3,8 @@ package npticket
 import (
 	"HugeSpaceship/pkg/npticket/types"
 	"bytes"
+	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -118,7 +120,7 @@ func (parser TicketParser) ReadTimestamp() (time.Time, error) {
 		return time.Time{}, err
 	}
 	if header.Type != types.Timestamp {
-		return time.Time{}, errors.New("mismatched type expected timestamp, got " + types.TypeToString(header.Type) + "(")
+		return time.Time{}, errors.New("mismatched type expected timestamp, got " + types.TypeToString(header.Type))
 	}
 	var output uint64
 	err = binary.Read(parser.reader, binary.BigEndian, &output)
@@ -175,17 +177,33 @@ func (parser TicketParser) Parse() (types.Ticket, error) {
 		if err != nil {
 			return types.Ticket{}, err
 		}
-		_, _ = parser.ReadBytes()
 		_, _ = parser.ReadDataHeader()
-		footerSection, err := parser.ReadSectionHeader()
+
+		_, _ = parser.ReadDataHeader()
+		footerHeader, err := parser.ReadSectionHeader()
 		if err != nil {
 			return types.Ticket{}, err
 		}
-		parser.TicketBody = parser.ticketData[8 : len(parser.ticketData)-int((footerSection.Length)+8)]
+
 		signatory, err := parser.ReadBytes()
 		footer.Signatory = binary.BigEndian.Uint32(signatory)
 		footer.Signature, err = parser.ReadBytes()
 		ticket.Footer = footer
+
+		switch footer.Signatory {
+		case types.PSNSignatoryID:
+			parser.TicketBody = parser.ticketData[:len(parser.ticketData)-0x38]
+			digest := sha1.Sum(parser.TicketBody)
+			ticket.BodyHash = digest[:]
+		case types.RPCNSignatoryID:
+			// the -4 at the end is because the header exists
+			parser.TicketBody = parser.ticketData[8 : len(parser.ticketData)-int(footerHeader.Length)-4]
+			digest := sha256.Sum224(parser.TicketBody)
+			ticket.BodyHash = digest[:]
+		default:
+			return types.Ticket{}, errors.New("invalid signatory")
+		}
+
 	} else if header.MajorVersion == 3 {
 
 	}

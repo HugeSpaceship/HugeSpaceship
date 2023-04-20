@@ -1,13 +1,12 @@
 package npticket
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
 
 func TestParse(t *testing.T) {
-	ticketData, err := os.ReadFile("../../test/example-ticket")
+	ticketData, err := os.ReadFile("../../test/example-psn-ticket")
 	if err != nil {
 		t.Error(err)
 	}
@@ -21,5 +20,7 @@ func TestParse(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Println(ticket.Username)
+	if ticket.Username != "Zaprit282" {
+		t.Error("Username does not match expected value")
+	}
 }
