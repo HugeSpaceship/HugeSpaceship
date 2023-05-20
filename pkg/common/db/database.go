@@ -1,7 +1,7 @@
 package db
 
 import (
-	"HugeSpaceship/pkg/db/migration"
+	"HugeSpaceship/pkg/common/db/migration"
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

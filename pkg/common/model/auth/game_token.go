@@ -10,5 +10,7 @@ type LoginResult struct {
 type GameSession struct {
 	User uint64
 
+	Token string // Should be uuid
+
 	ExpiryDate time.Time
 }

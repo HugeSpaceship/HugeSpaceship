@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-var initonce sync.Once
+var initOnce sync.Once
 var p192r1 *elliptic.CurveParams
 
 func initSECP192R1() {
@@ -20,6 +20,6 @@ func initSECP192R1() {
 }
 
 func secp192r1() elliptic.Curve {
-	initonce.Do(initAll)
+	initOnce.Do(initAll)
 	return p192r1
 }

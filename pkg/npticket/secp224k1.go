@@ -5,6 +5,8 @@ import (
 	"math/big"
 )
 
+// Hello in 5 years when there's a security vulnerability discovered in this :D
+
 // A BitCurve represents a Koblitz Curve with a=0.
 // See http://www.hyperelliptic.org/EFD/g1p/auto-shortw.html
 type BitCurve struct {
@@ -243,10 +245,7 @@ func (BitCurve *BitCurve) Unmarshal(data []byte) (x, y *big.Int) {
 //curve parameters taken from:
 //http://www.secg.org/collateral/sec2_final.pdf
 
-var secp160k1 *BitCurve
-var secp192k1 *BitCurve
 var secp224k1 *BitCurve
-var secp256k1 *BitCurve
 
 func initAll() {
 	initS224()
@@ -266,6 +265,6 @@ func initS224() {
 
 // S224 returns a BitCurve which implements secp224k1 (see SEC 2 section 2.6.1)
 func S224() *BitCurve {
-	initonce.Do(initAll)
+	initOnce.Do(initAll)
 	return secp224k1
 }

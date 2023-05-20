@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"HugeSpaceship/pkg/model/auth"
+	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/npticket"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
