@@ -1,10 +1,12 @@
 package auth
 
 import (
-	"HugeSpaceship/pkg/common/model/auth"
+	"HugeSpaceship/pkg/common/db/auth"
+	"HugeSpaceship/pkg/common/model/lbp_xml"
 	"HugeSpaceship/pkg/npticket"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"net/netip"
 )
 
 func LoginHandler() gin.HandlerFunc {
@@ -23,8 +25,8 @@ func LoginHandler() gin.HandlerFunc {
 			return
 		}
 
-		c.XML(200, auth.LoginResult{
-			AuthTicket: "testToken", // TODO: get real token
+		c.XML(200, lbp_xml.AuthResult{
+			AuthTicket: "MM_AUTH=" + auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP())), // TODO: get real token
 			LBPEnvVer:  "HugeSpaceship",
 		})
 	}

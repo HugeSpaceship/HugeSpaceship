@@ -1,25 +1,53 @@
 package auth
 
 import (
+	"HugeSpaceship/pkg/common/db"
+	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/auth"
+	"HugeSpaceship/pkg/npticket/types"
+	"crypto/sha256"
+	"encoding/base64"
+	"github.com/google/uuid"
+	"net/netip"
 	"time"
 )
 
-var CachedSessions map[string]auth.GameSession
+var CachedSessions = make(map[string]auth.Session)
 
-func NewSession() {
+func NewSession(ticket types.Ticket, ip netip.Addr) string {
+	c := db.GetConnection()
 
-}
+	id := uuid.New().String()
 
-func GetSession(token string) auth.GameSession { // TODO: Refactor this with what gets merged from my laptop
-	// TODO: return session
-	return auth.GameSession{ // shitty stub
-		User:       0,
+	sum := sha256.Sum256([]byte(id))
+	token := base64.URLEncoding.EncodeToString(sum[:])
+
+	CachedSessions[token] = auth.Session{
+		ID:         0,
+		UserID:     0,
+		Username:   ticket.Username,
+		Game:       model.LBP2,
+		IP:         ip,
 		Token:      token,
 		ExpiryDate: time.Now().Add(24 * time.Hour),
 	}
+
+	err := c.NewSession(ticket.Username, model.LBP2, ip, model.PS3, id)
+	if err != nil {
+		panic(err.Error())
+		return token
+	}
+
+	return token
+}
+
+func GetSession(token string) auth.Session {
+	var session auth.Session
+	// TODO: return session
+	return session
 }
 
 func IsSessionValid(token string) bool {
-	return GetSession(token).Token == token
+	_, exists := CachedSessions[token]
+	return exists
 }

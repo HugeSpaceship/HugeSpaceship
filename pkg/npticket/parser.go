@@ -1,3 +1,6 @@
+// Package npticket parses and verifies PSN NPTickets sent to us by sony.
+// It supports RPCN and PSN v2.1 tickets for maximum compatibility
+// PSN ticket v3 support will be added at a later date for PSVita compatibility.
 package npticket
 
 import (

@@ -13,9 +13,15 @@ func LoggingMiddleware() gin.HandlerFunc {
 		// Process request
 		c.Next()
 
+		path := c.Request.URL.Path
+		query := c.Request.URL.RawQuery
+		if query != "" {
+			path = path + "?" + query
+		}
+
 		log.Info().
 			Str("method", c.Request.Method).
-			Str("path", c.FullPath()).
+			Str("path", path).
 			Dur("latency", time.Now().Sub(start)).
 			Int("status", c.Writer.Status()).
 			Strs("errors", c.Errors.Errors()).
