@@ -6,8 +6,6 @@ package npticket
 import (
 	"HugeSpaceship/pkg/npticket/types"
 	"bytes"
-	"crypto/sha1"
-	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -131,8 +129,9 @@ func (parser TicketParser) ReadTimestamp() (time.Time, error) {
 }
 
 func (parser TicketParser) Parse() (types.Ticket, error) {
+
 	var ticket = types.Ticket{}
-	var footer = types.TicketFooter{}
+
 	header, err := parser.ReadTicketHeader()
 
 	if err != nil {
@@ -140,75 +139,13 @@ func (parser TicketParser) Parse() (types.Ticket, error) {
 	}
 	_, _ = parser.ReadSectionHeader()
 	if header.MajorVersion == 2 && header.MinorVersion == 1 {
-		ticket.SerialID, err = parser.ReadString()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.IssuerID, err = parser.ReadUInt32()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.IssuedDate, err = parser.ReadTimestamp()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.ExpiryDate, err = parser.ReadTimestamp()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.UserID, err = parser.ReadUInt64()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.Username, err = parser.ReadString()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.Country, err = parser.ReadString()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.Domain, err = parser.ReadString()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.TitleID, err = parser.ReadString()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		ticket.Status, err = parser.ReadUInt32()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-		_, _ = parser.ReadDataHeader()
+		ticket, err = parser.parseVersion2Ticket()
 
-		_, _ = parser.ReadDataHeader()
-		footerHeader, err := parser.ReadSectionHeader()
+	} else if header.MajorVersion == 3 && header.MinorVersion == 0 {
+		ticket, err = parser.parseVersion3Ticket()
 		if err != nil {
 			return types.Ticket{}, err
 		}
-
-		signatory, err := parser.ReadBytes()
-		footer.Signatory = binary.BigEndian.Uint32(signatory)
-		footer.Signature, err = parser.ReadBytes()
-		ticket.Footer = footer
-
-		switch footer.Signatory {
-		case types.PSNSignatoryID:
-			parser.TicketBody = parser.ticketData[:len(parser.ticketData)-0x38]
-			digest := sha1.Sum(parser.TicketBody)
-			ticket.BodyHash = digest[:]
-		case types.RPCNSignatoryID:
-			// the -4 at the end is because the header exists
-			parser.TicketBody = parser.ticketData[8 : len(parser.ticketData)-int(footerHeader.Length)-4]
-			digest := sha256.Sum224(parser.TicketBody)
-			ticket.BodyHash = digest[:]
-		default:
-			return types.Ticket{}, errors.New("invalid signatory")
-		}
-
-	} else if header.MajorVersion == 3 {
-
 	}
 
 	parser.ticket = ticket

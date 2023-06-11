@@ -37,7 +37,6 @@ func VerifyTicket(ticket types.Ticket) bool {
 
 	switch ticket.Footer.Signatory {
 	case types.PSNSignatoryID:
-
 		return ecdsa.VerifyASN1(PSNKey, ticket.BodyHash, signatureFix(signature))
 	case types.RPCNSignatoryID:
 		return ecdsa.VerifyASN1(RPCNKey, ticket.BodyHash, signature)
