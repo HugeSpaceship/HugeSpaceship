@@ -2,13 +2,14 @@ package controllers
 
 import (
 	"HugeSpaceship/pkg/common/model/auth"
+	"HugeSpaceship/pkg/common/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func EulaHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.String(http.StatusOK, "INSERT LICENSE TEXT HERE")
+		c.String(http.StatusOK, utils.LicenseText)
 	}
 }
 
