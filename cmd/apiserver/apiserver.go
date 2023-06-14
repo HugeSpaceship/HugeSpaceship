@@ -30,7 +30,7 @@ var commitHash string
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	log.Info().Str("commitHash", commitHash)
+	log.Info().Str("commitHash", commitHash).Msg("Starting HugeSpaceship API Server")
 	gin.Logger()
 	_ = db.GetConnection()
 
