@@ -10,7 +10,7 @@ ALTER TABLE sessions ADD CONSTRAINT Unique_Token UNIQUE (token);
 
 CREATE TABLE resources (
     Hash char[40],
-    File oid, -- blob
+    File bytea, -- blob
     OriginalUploader int references users(id)
 );
 

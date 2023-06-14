@@ -9,8 +9,13 @@ import (
 )
 
 func MigrateDB(connection *pgxpool.Pool) error {
-	for sql, err := nextMigration(connection); err == nil; { // While there are more migrations
+	for { // While there are more migrations
+		sql, err := nextMigration(connection)
+		if err != nil {
+			break
+		}
 		if _, err = connection.Exec(context.Background(), sql); err != nil { // Do the migration
+			log.Error().Err(err).Str("migration", sql).Msg("Failed to migrate")
 			return err // If something explodes, bail
 		}
 	}

@@ -8,7 +8,8 @@ CREATE EXTENSION "hstore";
 
 CREATE TABLE config
 (
-    map hstore -- Apparently this is a key-value store
+    section text,
+    values hstore
 );
 
 UPDATE migrations

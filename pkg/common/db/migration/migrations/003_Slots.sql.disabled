@@ -1,0 +1,16 @@
+BEGIN TRANSACTION;
+
+INSERT INTO migrations (migration, succeeded)
+VALUES ('003_Slots', false);
+
+ALTER TABLE users ADD COLUMN uid text UNIQUE NOT NULL default '0';
+
+CREATE TABLE slots (
+
+);
+
+UPDATE migrations
+SET succeeded = true
+WHERE migration = '003_Slots';
+
+COMMIT;
