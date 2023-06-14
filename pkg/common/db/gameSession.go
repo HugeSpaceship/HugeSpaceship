@@ -2,6 +2,7 @@ package db
 
 import (
 	"HugeSpaceship/pkg/common/model"
+	"HugeSpaceship/pkg/common/model/auth"
 	"net/netip"
 )
 
@@ -27,13 +28,16 @@ func (c *Context) GetUserID(username string) (int, error) {
 	return id, err
 }
 
-//func GetUser(username string) (model.User, error) {
-//
-//}
-//
-//// IsBanned checks to see if the user specified by userId is banned.
-//// banned is true if the user is banned, false otherwise.
-//// err is returned if something went wrong talking to the DB, for instance if the user doesn't exist.
-//func IsBanned(userId int) (banned bool, err error) {
-//
-//}
+func (c *Context) GetSession(token string) (auth.Session, error) {
+	row := c.pool.QueryRow(c.ctx, "SELECT sessions.*, users.username FROM sessions INNER JOIN users ON users.id = sessions.userid WHERE token = $1;", token)
+
+	session := auth.Session{}
+	err := row.Scan(&session.ID, &session.UserID, &session.IP, &session.Token, &session.Game, &session.Platform, &session.Username)
+
+	return session, err
+}
+
+func (c *Context) RemoveSession(token string) error {
+	_, err := c.pool.Exec(c.ctx, "DELETE FROM sessions WHERE token = $1;")
+	return err
+}
