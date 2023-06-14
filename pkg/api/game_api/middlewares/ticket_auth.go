@@ -9,14 +9,14 @@ func TicketAuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token, err := ctx.Cookie("MM_AUTH") // TODO: double check that this is the right cookie?
 		if err != nil {
-			//ctx.AbortWithStatus(401)
+			ctx.AbortWithStatus(401)
 			return
 		}
 
-		session := auth.GetSession(token)
+		session, exists := auth.GetSession(token)
 
-		if session.Token != token {
-			//ctx.AbortWithStatus(401)
+		if !exists {
+			ctx.AbortWithStatus(401)
 			return
 		}
 
