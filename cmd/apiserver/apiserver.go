@@ -47,10 +47,16 @@ func main() {
 	// LittleBigPlanet compatible API, required NpTicket auth
 	authGameAPI := gameAPI.Group("", middlewares.TicketAuthMiddleware())
 	authGameAPI.GET("/announce", controllers.AnnounceHandler())
-	authGameAPI.GET("/user/:username", users.UserGetHandler())
-	authGameAPI.POST("/match", match.MatchEndpoint())
-	authGameAPI.POST("/npdata", settings.NpDataEndpoint())
-	authGameAPI.GET("/notification", controllers.NotificationController()) // Stub
+
+	// LittleBigPlanet compatible API with digest calculation
+	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware(false))
+	digestRequiredAPI.GET("/user/:username", users.UserGetHandler())
+	digestRequiredAPI.POST("/match", match.MatchEndpoint())
+	digestRequiredAPI.POST("/npdata", settings.NpDataEndpoint())
+	digestRequiredAPI.GET("/notification", controllers.NotificationController()) // Stub
+	digestRequiredAPI.POST("/goodbye", auth.LogoutHandler())
+	digestRequiredAPI.GET("/news", controllers.NewsHandler())
+
 	// Web API
 	webAPI := api.Group("/v1")
 	webAPI.GET("/users")
