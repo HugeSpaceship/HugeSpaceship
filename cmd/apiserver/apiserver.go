@@ -56,6 +56,8 @@ func main() {
 	digestRequiredAPI.GET("/notification", controllers.NotificationController()) // Stub
 	digestRequiredAPI.POST("/goodbye", auth.LogoutHandler())
 	digestRequiredAPI.GET("/news", controllers.NewsHandler())
+	digestRequiredAPI.GET("/news/:id", controllers.LBP2NewsHandler())
+	digestRequiredAPI.GET("/stream", controllers.StreamHandler())
 
 	// Web API
 	webAPI := api.Group("/v1")

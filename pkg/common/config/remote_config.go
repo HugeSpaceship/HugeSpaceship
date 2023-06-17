@@ -24,7 +24,7 @@ func GetLBPAPIConfig() remote.LBPAPIConfig {
 	for k, v := range store {
 		fmt.Println(k, v)
 	}
-	return remote.LBPAPIConfig{}
+	return remote.LBPAPIConfig{PrimaryDigest: "!?/*hjk7duOZ1f@daX", AlternateDigest: "$ghj3rLl2e5E28@~[!"}
 }
 
 func SaveLBPAPIConfig(config remote.LBPAPIConfig) error {
