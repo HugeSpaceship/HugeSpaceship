@@ -1,0 +1,5 @@
+package slots
+
+func UploadLevel() {
+
+}
