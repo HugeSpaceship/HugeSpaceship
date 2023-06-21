@@ -9,9 +9,9 @@ import (
 var testMigration string
 
 func TestGetMigration(t *testing.T) {
-	migration, err := GetMigration("000_Initial_Migration")
+	migration, err := GetMigration("000_Initial_Migration.sql")
 	if err != nil {
-		t.Error("Error getting migration")
+		t.Error(err)
 	}
 	if migration != testMigration {
 		t.Error("Migration does not match expected result")
