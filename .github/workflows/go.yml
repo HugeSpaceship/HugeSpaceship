@@ -32,6 +32,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Fix repo dubious ownership
+      run: /usr/bin/git config --system --add safe.directory /__w/HugeSpaceship/HugeSpaceship
+
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
