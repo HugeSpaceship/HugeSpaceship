@@ -3,7 +3,8 @@ BEGIN TRANSACTION;
 INSERT INTO migrations (migration, succeeded)
 VALUES ('003_Slots', false);
 
-ALTER TABLE users ADD COLUMN uid text UNIQUE NOT NULL default '0';
+ALTER TABLE users ADD COLUMN psn_uid text UNIQUE NOT NULL default '0';
+ALTER TABLE users ADD COLUMN rpcn_uid text UNIQUE NOT NULL default '0';
 
 CREATE TABLE slots (
 
