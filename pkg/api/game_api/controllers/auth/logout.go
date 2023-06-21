@@ -12,9 +12,9 @@ func LogoutHandler() gin.HandlerFunc {
 		session, _ := ctx.Get("session")
 		err := db.GetConnection().RemoveSession(session.(auth.Session).Token)
 		if err != nil {
-			err := ctx.Error(err)
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to push error to the errors stack")
+			er2 := ctx.Error(err)
+			if er2 != nil {
+				log.Error().Err(er2).Msg("Failed to push error to the errors stack")
 			}
 		}
 	}
