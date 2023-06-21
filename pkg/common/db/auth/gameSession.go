@@ -6,6 +6,7 @@ import (
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/npticket/types"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"net/netip"
 )
 
@@ -36,6 +37,7 @@ func GetSession(token string) (session auth.Session, exists bool) {
 	session, err := c.GetSession(token)
 
 	if err != nil {
+		log.Debug().Err(err).Msg("failed to get session")
 		return session, false
 	}
 	return session, true
