@@ -12,6 +12,7 @@ func MigrateDB(connection *pgxpool.Pool) error {
 	for { // While there are more migrations
 		sql, err := nextMigration(connection)
 		if err != nil {
+			log.Debug().Err(err).Msg("Failed to get migration, we're probably done")
 			break
 		}
 		if _, err = connection.Exec(context.Background(), sql); err != nil { // Do the migration
