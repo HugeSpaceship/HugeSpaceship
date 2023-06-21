@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -30,6 +31,10 @@ var commitHash string
 
 // main is the entrypoint for the API server
 func main() {
+	viper.SetEnvPrefix("hs")
+	viper.AutomaticEnv()
+	viper.SetDefault("db_host", "localhost")
+
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	log.Info().Str("commitHash", commitHash).Msg("Starting HugeSpaceship API Server")
