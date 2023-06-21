@@ -26,7 +26,7 @@ func LoginHandler() gin.HandlerFunc {
 		}
 
 		c.XML(200, lbp_xml.AuthResult{
-			AuthTicket: "MM_AUTH=" + auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP())), // TODO: get real token
+			AuthTicket: "MM_AUTH=" + auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP())),
 			LBPEnvVer:  "HugeSpaceship",
 		})
 	}
