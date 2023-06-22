@@ -19,6 +19,9 @@ func ListMigrations() []string {
 	}
 	migrationNames := make([]string, len(migrations))
 	for i, migration := range migrations {
+		if !strings.HasSuffix(migration.Name(), ".sql") {
+			continue
+		}
 		migrationNames[i] = migration.Name()
 	}
 	return migrationNames
@@ -34,7 +37,7 @@ func GetMigrationByNumber(number int) (string, error) {
 }
 
 func GetMigration(name string) (string, error) {
-	migration, err := migrations.ReadFile("migrations/" + strings.Trim(name, ".sql") + ".sql")
+	migration, err := migrations.ReadFile("migrations/" + name)
 	if err != nil {
 		return "", err
 	}

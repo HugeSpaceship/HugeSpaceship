@@ -9,7 +9,9 @@ import (
 	"HugeSpaceship/pkg/api/game_api/controllers"
 	"HugeSpaceship/pkg/api/game_api/controllers/auth"
 	"HugeSpaceship/pkg/api/game_api/controllers/match"
+	"HugeSpaceship/pkg/api/game_api/controllers/resources"
 	"HugeSpaceship/pkg/api/game_api/controllers/settings"
+	"HugeSpaceship/pkg/api/game_api/controllers/slots"
 	"HugeSpaceship/pkg/api/game_api/controllers/users"
 	"HugeSpaceship/pkg/api/game_api/middlewares"
 	"HugeSpaceship/pkg/common/db"
@@ -18,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -28,6 +31,10 @@ var commitHash string
 
 // main is the entrypoint for the API server
 func main() {
+	viper.SetEnvPrefix("hs")
+	viper.AutomaticEnv()
+	viper.SetDefault("db_host", "localhost")
+
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	log.Info().Str("commitHash", commitHash).Msg("Starting HugeSpaceship API Server")
@@ -49,7 +56,7 @@ func main() {
 	authGameAPI.GET("/announce", controllers.AnnounceHandler())
 
 	// LittleBigPlanet compatible API with digest calculation
-	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware(false))
+	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware())
 	digestRequiredAPI.GET("/user/:username", users.UserGetHandler())
 	digestRequiredAPI.POST("/match", match.MatchEndpoint())
 	digestRequiredAPI.POST("/npdata", settings.NpDataEndpoint())
@@ -58,7 +65,9 @@ func main() {
 	digestRequiredAPI.GET("/news", controllers.NewsHandler())
 	digestRequiredAPI.GET("/news/:id", controllers.LBP2NewsHandler())
 	digestRequiredAPI.GET("/stream", controllers.StreamHandler())
-
+	digestRequiredAPI.POST("/startPublish", slots.StartPublishHandler())
+	digestRequiredAPI.POST("/upload/:hash", resources.UploadResources())
+	digestRequiredAPI.GET("/slots/by", slots.GetSlotsByHandler())
 	// Web API
 	webAPI := api.Group("/v1")
 	webAPI.GET("/users")

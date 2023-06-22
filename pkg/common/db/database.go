@@ -3,7 +3,9 @@ package db
 import (
 	"HugeSpaceship/pkg/common/db/migration"
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/spf13/viper"
 	"sync"
 )
 
@@ -22,7 +24,7 @@ func GetConnection() *Context {
 }
 
 func open() {
-	poolConfig, err := pgxpool.ParseConfig("postgres://hugespaceship:hugespaceship@localhost:5432/hugespaceship")
+	poolConfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://hugespaceship:hugespaceship@%s:5432/hugespaceship", viper.GetString("db_host")))
 	if err != nil {
 		panic(err.Error())
 	}
