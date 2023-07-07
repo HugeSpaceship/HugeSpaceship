@@ -24,9 +24,6 @@ import (
 	"os"
 )
 
-//go:generate sh -c "printf %s $(git rev-parse --short HEAD) > VERSION.txt"
-//go:embed VERSION.txt
-
 var commitHash string
 
 // main is the entrypoint for the API server
