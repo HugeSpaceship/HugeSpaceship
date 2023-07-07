@@ -16,3 +16,9 @@ func StartPublishHandler() gin.HandlerFunc {
 		ctx.XML(200, lbp_xml.Slot{Resource: []string{slot.RootLevel}, Type: "user"})
 	}
 }
+
+func PublishHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
+}

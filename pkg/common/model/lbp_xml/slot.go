@@ -28,6 +28,43 @@ type Slot struct {
 	MinPlayers      *int      `xml:"minPlayers,omitempty"`
 	MaxPlayers      *int      `xml:"maxPlayers,omitempty"`
 	MoveRequired    *bool     `xml:"moveRequired,omitempty"`
+
+	ID                *int      `xml:"id,omitempty"`
+	NpHandle          *NpHandle `xml:"npHandle,omitempty"`
+	Game              *int      `xml:"game,omitempty"`
+	HeartCount        *int      `xml:"heartCount,omitempty"`
+	ThumbsUp          *int      `xml:"thumbsup,omitempty"`
+	ThumbsDown        *int      `xml:"thumbsdown,omitempty"`
+	AverageRating     *float32  `xml:"averageRating,omitempty"`
+	PlayerCount       *int      `xml:"playerCount,omitempty"`
+	MatchingPlayers   *int      `xml:"matchingPlayers,omitempty"`
+	TeamPick          *bool     `xml:"mmpick,omitempty"`
+	CommentsEnabled   *bool     `xml:"commentsEnabled,omitempty"`
+	ReviewsEnabled    *bool     `xml:"reviewsEnabled,omitempty"`
+	UserLBP1PlayCount *int      `xml:"yourlbp1PlayCount,omitempty"`
+	UserLBP2PlayCount *int      `xml:"yourlbp2PlayCount,omitempty"`
+	PublishedIn       *string   `xml:"publishedIn,omitempty"`
+
+	FirstPublished *int64 `xml:"firstPublished,omitempty"`
+	LastUpdated    *int64 `xml:"lastUpdated,omitempty"`
+
+	ReviewCount      *int `xml:"reviewCount,omitempty"`
+	CommentCount     *int `xml:"commentCount,omitempty"`
+	PhotoCount       *int `xml:"photoCount,omitempty"`
+	AuthorPhotoCount *int `xml:"authorPhotoCount,omitempty"`
+	PlayCount        *int `xml:"playCount,omitempty"`
+	UniquePlayCount  *int `xml:"uniquePlayCount,omitempty"`
+	CompletionCount  *int `xml:"completionCount,omitempty"`
+
+	LBP1PlayCount       *int `xml:"lbp1PlayCount,omitempty"`
+	LBP1CompletionCount *int `xml:"lbp1CompletionCount,omitempty"`
+	LBP1UniquePlayCount *int `xml:"lbp1UniquePlayCount,omitempty"`
+	LBP2PlayCount       *int `xml:"lbp2PlayCount,omitempty"`
+	LBP2CompletionCount *int `xml:"lbp2CompletionCount,omitempty"`
+	LBP2UniquePlayCount *int `xml:"lbp2UniquePlayCount,omitempty"`
+	LBP3PlayCount       *int `xml:"lbp3PlayCount,omitempty"`
+	LBP3CompletionCount *int `xml:"lbp3CompletionCount,omitempty"`
+	LBP3UniquePlayCount *int `xml:"lbp3UniquePlayCount,omitempty"`
 }
 
 // Location represents a place on a users earth... I think

@@ -23,6 +23,15 @@ func GetConnection() *Context {
 	return connection
 }
 
+func GetContext() context.Context {
+	ctx := context.Background()
+	conn, err := connection.pool.Acquire(ctx)
+	if err != nil {
+		return nil
+	}
+	return context.WithValue(ctx, "conn", conn)
+}
+
 func open() {
 	poolConfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://hugespaceship:hugespaceship@%s:5432/hugespaceship", viper.GetString("db_host")))
 	if err != nil {

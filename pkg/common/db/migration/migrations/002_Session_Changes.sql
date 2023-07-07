@@ -8,7 +8,7 @@ ALTER TABLE sessions ADD PRIMARY KEY (token);
 ALTER TABLE sessions ADD CONSTRAINT Unique_Token UNIQUE (token);
 
 CREATE TABLE resources (
-    Hash char[40],
+    Hash char[40] PRIMARY KEY,
     File oid, -- blob
     OriginalUploader int references users(id)
 );
