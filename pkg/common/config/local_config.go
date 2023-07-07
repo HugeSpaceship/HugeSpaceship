@@ -1,29 +1,25 @@
 package config
 
 import (
-	"HugeSpaceship/pkg/common/config/model"
-	"gopkg.in/yaml.v3"
-	"os"
-	"sync"
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
-var loadedConfig = model.LocalConfig{}
-var runOnce = sync.Once{}
+// LoadConfig reads the config for the specified service
+func LoadConfig(service string) error {
+	viper.SetConfigName(service)
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("/etc/hugespaceship/")
+	viper.AddConfigPath(".")
 
-func GetConfig() model.LocalConfig {
-	runOnce.Do(loadConfig)
-	return loadedConfig
-}
-
-// Local config is for really basic things like the db config, remote config is where our distributed hot-reloadable settings should go
-func loadConfig() {
-	data, err := os.ReadFile("hugespaceship.yml")
-	if err != nil {
-		panic(err)
+	err := viper.ReadInConfig()
+	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		log.Info().Msg("no config file found, if you are loading config from the environment this is fine")
+	} else {
+		return err
 	}
-
-	err = yaml.Unmarshal(data, &loadedConfig)
-	if err != nil {
-		panic(err)
-	}
+	viper.SetEnvPrefix("hs_" + service)
+	viper.AutomaticEnv()
+	viper.SetDefault("db_host", "localhost")
+	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	"io"
 	"net/http"
 	"strings"
@@ -24,11 +25,9 @@ func (w DeferredWriter) WriteHeaderNow() {
 }
 
 func (w DeferredWriter) Write(data []byte) (int, error) {
-
-	apiConfig := config.GetLBPAPIConfig()
-	digestKey := apiConfig.PrimaryDigest
+	digestKey := viper.GetString("mainline_digest")
 	if w.alternateDigest {
-		digestKey = apiConfig.AlternateDigest
+		digestKey = viper.GetString("vita_digest")
 	}
 	w.Header().Add("X-Digest-A", utils.CalculateDigest(w.path, w.authCookie, digestKey, data, false))
 	return w.ResponseWriter.Write(data)

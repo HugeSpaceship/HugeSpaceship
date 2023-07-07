@@ -4,12 +4,11 @@ BEGIN TRANSACTION;
 INSERT INTO migrations (migration, succeeded)
 VALUES ('001_Configuration', false);
 
-CREATE EXTENSION "hstore";
 
 CREATE TABLE config
 (
     section text,
-    values hstore
+    config json
 );
 
 UPDATE migrations
