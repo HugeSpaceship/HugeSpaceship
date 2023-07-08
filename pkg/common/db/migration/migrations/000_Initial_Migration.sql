@@ -32,12 +32,6 @@ CREATE TABLE bans
     endTime   timestamp
 );
 
-CREATE TABLE slots
-(
-    id       serial primary key,
-    uploader integer references users
-);
-
 CREATE TYPE platform AS ENUM ( -- what platform are they on,
     'PS3',
     'PSP',

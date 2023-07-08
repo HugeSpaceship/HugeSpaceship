@@ -10,8 +10,8 @@ CREATE TABLE slots (
     id serial PRIMARY KEY,
     name text,
     description text,
-    icon        char(40) REFERENCES resources(hash),
-    root_level  char(40) REFERENCES resources(hash),
+    icon        char[40] NOT NULL REFERENCES resources(hash),
+    root_level  char[40] NOT NULL REFERENCES resources(hash),
     locationX int4,
     locationY int4,
     initially_locked bool,
@@ -27,7 +27,7 @@ CREATE TABLE slots (
 
 CREATE TABLE slot_resources (
   slot_id integer REFERENCES slots(ID),
-  resource_hash char(40) REFERENCES resources(hash)
+  resource_hash char[40] REFERENCES resources(hash)
 );
 
 UPDATE migrations
