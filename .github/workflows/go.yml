@@ -40,8 +40,8 @@ jobs:
       with:
         go-version: 1.19
 
-    - name: Generate extra files
-      run: go generate -v ./...
+    - name: Update Dependencies
+      run: go mod download
       
     - name: Build 
       run: go build -v ./...

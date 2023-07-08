@@ -8,7 +8,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.1
 	github.com/rs/zerolog v1.29.1
 	github.com/spf13/viper v1.16.0
-	gopkg.in/yaml.v3 v3.0.1
+	github.com/vgarvardt/pgx-google-uuid/v5 v5.0.0
 )
 
 require (
@@ -50,4 +50,5 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
