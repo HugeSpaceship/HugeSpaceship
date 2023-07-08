@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"HugeSpaceship/pkg/api/game_api/utils"
-	"HugeSpaceship/pkg/common/config"
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -60,12 +59,12 @@ func DigestMiddleware() gin.HandlerFunc {
 			body, _ = io.ReadAll(ctx.Request.Body) // if the client has sent a broken body, the only one that will suffer is them
 		}
 
-		digest := utils.CalculateDigest(ctx.Request.URL.Path, cookie, config.GetLBPAPIConfig().PrimaryDigest, body, excludeBody)
+		digest := utils.CalculateDigest(ctx.Request.URL.Path, cookie, viper.GetString("main_digest"), body, excludeBody)
 
 		alternateDigest := false
 
 		if digest != ctx.GetHeader(digestHeader) {
-			digest = utils.CalculateDigest(ctx.Request.URL.Path, cookie, config.GetLBPAPIConfig().AlternateDigest, body, excludeBody)
+			digest = utils.CalculateDigest(ctx.Request.URL.Path, cookie, viper.GetString("vita_digest"), body, excludeBody)
 			alternateDigest = true
 			if digest != ctx.GetHeader(digestHeader) {
 				log.Debug().Msg("Failed to authenticate digest, aborting request")

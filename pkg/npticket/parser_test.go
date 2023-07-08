@@ -19,7 +19,6 @@ func TestParse(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 	if ticket.Username != "Zaprit282" {
 		t.Error("Username does not match expected value")
 	}
