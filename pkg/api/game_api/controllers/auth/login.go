@@ -24,9 +24,10 @@ func LoginHandler() gin.HandlerFunc {
 			c.Status(403)
 			return
 		}
+		game := c.Query("game")
 
 		c.XML(200, lbp_xml.AuthResult{
-			AuthTicket: "MM_AUTH=" + auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP())),
+			AuthTicket: "MM_AUTH=" + auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP()), game),
 			LBPEnvVer:  "HugeSpaceship",
 		})
 	}
