@@ -34,10 +34,11 @@ func main() {
 	api := ctx.Group("/api")
 
 	// LittleBigPlanet compatible API
-	gameAPI := api.Group("/LBP_XML")
-	game_api.APIBootstrap(gameAPI)
-
-	// Web API, optional
+	if viper.GetBool("enable_gameserver") {
+		gameAPI := api.Group("/LBP_XML")
+		game_api.APIBootstrap(gameAPI)
+	}
+	// Web API
 	if viper.GetBool("enable_api") {
 		web_api.APIBootstrap(api)
 	}
