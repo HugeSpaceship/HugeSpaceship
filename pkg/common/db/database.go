@@ -4,8 +4,10 @@ import (
 	"HugeSpaceship/pkg/common/db/migration"
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/viper"
+	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 	"sync"
 )
 
@@ -36,6 +38,11 @@ func open() {
 	poolConfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://hugespaceship:hugespaceship@%s:5432/hugespaceship", viper.GetString("db_host")))
 	if err != nil {
 		panic(err.Error())
+	}
+
+	poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxUUID.Register(conn.TypeMap())
+		return nil
 	}
 
 	conn, err := pgxpool.NewWithConfig(context.Background(), poolConfig)

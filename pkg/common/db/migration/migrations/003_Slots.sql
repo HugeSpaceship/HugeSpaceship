@@ -7,7 +7,7 @@ ALTER TABLE users ADD COLUMN psn_uid text UNIQUE NOT NULL default '0';
 ALTER TABLE users ADD COLUMN rpcn_uid text UNIQUE NOT NULL default '0';
 
 CREATE TABLE slots (
-    id serial PRIMARY KEY,
+    id uuid PRIMARY KEY,
     name text,
     description text,
     icon        char[40] NOT NULL REFERENCES resources(hash),
@@ -22,11 +22,12 @@ CREATE TABLE slots (
     level_type                   text,
     min_players                  int,
     max_players                  int,
-    move_required                bool
+    move_required                bool,
+    first_published timestamp
 );
 
 CREATE TABLE slot_resources (
-  slot_id integer REFERENCES slots(ID),
+  slot_id uuid REFERENCES slots(ID),
   resource_hash char[40] REFERENCES resources(hash)
 );
 

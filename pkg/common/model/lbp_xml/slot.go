@@ -1,6 +1,9 @@
 package lbp_xml
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"github.com/google/uuid"
+)
 
 type Slots struct {
 	Total     int `xml:"total,attr"`
@@ -8,7 +11,7 @@ type Slots struct {
 	Slots     []Slot
 }
 
-type Slot struct {
+type SlotData struct {
 	XMLName         xml.Name  `xml:"slot"`
 	Type            string    `xml:"type,attr"`
 	Name            string    `xml:"name,omitempty"`
@@ -28,8 +31,13 @@ type Slot struct {
 	MinPlayers      *int      `xml:"minPlayers,omitempty"`
 	MaxPlayers      *int      `xml:"maxPlayers,omitempty"`
 	MoveRequired    *bool     `xml:"moveRequired,omitempty"`
+}
 
-	ID                *int      `xml:"id,omitempty"`
+type Slot struct {
+	XMLName xml.Name `xml:"slot"`
+	SlotData
+
+	ID                uuid.UUID `xml:"id,omitempty"`
 	NpHandle          *NpHandle `xml:"npHandle,omitempty"`
 	Game              *int      `xml:"game,omitempty"`
 	HeartCount        *int      `xml:"heartCount,omitempty"`
