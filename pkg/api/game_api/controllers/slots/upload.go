@@ -13,7 +13,7 @@ func StartPublishHandler() gin.HandlerFunc {
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to parse xml body")
 		}
-		ctx.XML(200, lbp_xml.Slot{Resource: []string{slot.RootLevel}, Type: "user"})
+		ctx.XML(200, lbp_xml.Slot{SlotData: lbp_xml.SlotData{Resource: []string{slot.RootLevel}, Type: "user"}})
 	}
 }
 
