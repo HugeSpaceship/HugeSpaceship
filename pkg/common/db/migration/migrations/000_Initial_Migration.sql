@@ -17,19 +17,9 @@ VALUES ('000_Initial_Migration', false);
 
 CREATE TABLE users
 (
-    id          serial primary key,
+    id          uuid primary key,
     username    varchar(20),
     avatar_hash bytea
-);
-
-CREATE TABLE bans
-(
-    id        serial primary key,
-    userId    int references users not null,
-    permanent bool                 not null,
-    reason    varchar(255),
-    startTime timestamp,
-    endTime   timestamp
 );
 
 CREATE TYPE platform AS ENUM ( -- what platform are they on,
@@ -53,7 +43,7 @@ CREATE TYPE game AS ENUM ( -- What game the session is for, or the website
 CREATE TABLE sessions
 (
     id       serial primary key,
-    userId   integer references users,
+    userId   uuid references users,
     ip       inet     not null,
     token    uuid     not null,
     game     game     not null,

@@ -3,6 +3,7 @@ package db
 import (
 	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/auth"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"net/netip"
 )
@@ -23,10 +24,10 @@ func (c *Context) NewSession(username string, gameType model.GameType, ip netip.
 	return err
 }
 
-func (c *Context) GetUserID(username string) (int, error) {
+func (c *Context) GetUserID(username string) (uuid.NullUUID, error) {
 	row := c.pool.QueryRow(c.ctx, "SELECT id FROM users WHERE username = $1 LIMIT 1;", username) // there can be only one
 
-	var id int
+	var id uuid.NullUUID
 	err := row.Scan(&id)
 
 	return id, err
@@ -41,7 +42,7 @@ func (c *Context) GetSession(token string) (auth.Session, error) {
 	return session, err
 }
 
-func (c *Context) PurgeSessions(userID int, game model.GameType, platform model.Platform) (int, error) {
+func (c *Context) PurgeSessions(userID uuid.NullUUID, game model.GameType, platform model.Platform) (int, error) {
 	rows, err := c.pool.Exec(c.ctx, "DELETE FROM sessions WHERE userid = $1 AND game = $2 AND platform = $3", userID, game, platform)
 	return int(rows.RowsAffected()), err
 }

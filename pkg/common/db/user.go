@@ -1,9 +1,16 @@
 package db
 
-var userCreateSQL = `INSERT INTO users(username) VALUES ($1)`
+import "github.com/google/uuid"
+
+var userCreateSQL = `INSERT INTO users(id, username) VALUES ($1,$2)`
 
 func (c *Context) CreateUser(username string) error {
-	_, err := c.pool.Exec(c.ctx, userCreateSQL, username)
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return err
+	}
+
+	_, err = c.pool.Exec(c.ctx, userCreateSQL, id, username)
 	if err != nil {
 		return err
 	}
