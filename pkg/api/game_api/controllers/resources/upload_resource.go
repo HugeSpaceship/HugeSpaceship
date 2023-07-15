@@ -1,18 +1,23 @@
 package resources
 
 import (
+	"HugeSpaceship/pkg/common/db"
+	"HugeSpaceship/pkg/common/model/auth"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
-	"io"
-	"os"
 )
 
 func UploadResources() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		bytes, _ := io.ReadAll(ctx.Request.Body)
-		err := os.WriteFile(ctx.Param("hash"), bytes, 0644)
+		session, _ := ctx.Get("session")
+
+		// TODO: Check if resouce exists!! THIS IS IMPORTANT
+		err := db.GetConnection().UploadResource(ctx.Request.Body, ctx.Request.ContentLength, ctx.Param("hash"), session.(auth.Session).UserID)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to write file")
+			_ = ctx.Error(err)
+			ctx.AbortWithStatus(200)
+			return
 		}
+
+		ctx.Status(200)
 	}
 }
