@@ -8,15 +8,17 @@ import (
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog/log"
+	"math"
 )
 
 const insertSQL = `INSERT INTO slots (
-                   id, name, description, 
+                   name, description, 
                    icon, root_level, locationX, locationY, 
                    initially_locked, sub_level, lbp1only, 
                    shareable, background, level_type, 
-                   min_players, max_players, move_required, domain, uploader)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`
+                   min_players, max_players, move_required, domain, uploader, first_published, last_updated)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id;`
 
 func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, domain int) (int64, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
@@ -24,41 +26,37 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 	if err != nil {
 		er2 := tx.Rollback(ctx)
 		if er2 != nil {
-			return nil, er2
+			return 0, er2
 		}
-		return nil, err
+		return 0, err
 	}
 
-	id := uuid.New()
-
-	_, err = tx.Exec(ctx, insertSQL, id, slot.Name, slot.Description, slot.Icon, slot.RootLevel,
+	var id int64
+	err = tx.QueryRow(ctx, insertSQL, slot.Name, slot.Description, slot.Icon, slot.RootLevel,
 		slot.Location.X, slot.Location.Y, slot.InitiallyLocked, slot.IsSubLevel, slot.IsLBP1Only, slot.Shareable,
 		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, domain, uploader,
-	)
+		slot.FirstPublished, slot.LastUpdated,
+	).Scan(&id)
 	if err != nil {
 		er2 := tx.Rollback(ctx)
 		if er2 != nil {
-			return nil, er2
+			return 0, er2
 		}
-		return nil, err
+		return 0, err
 	}
 
 	for _, res := range slot.Resource {
 		_, err := tx.Exec(ctx, "INSERT INTO slot_resources VALUES($1, $2)", id, res)
 		if err != nil {
-			er2 := tx.Rollback(ctx)
-			if er2 != nil {
-				return nil, er2
-			}
-			return nil, err
+			log.Debug().Err(err).Str("hash", res).Msg("failed to insert slot resource")
 		}
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &id, err
+	return id, err
 }
 
 func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
@@ -76,8 +74,9 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 		Y: slotData.LocationY,
 	}
 
-	var resources []*lbp_xml.SlotResource
-	err = pgxscan.Select(ctx, conn, &resources, "SELECT * FROM slot_resources WHERE slot_id = $1", id)
+	slotData.LastUpdatedXML = slotData.LastUpdated.UnixMilli()
+	slotData.FirstPublishedXML = slotData.FirstPublished.UnixMilli()
+	username, err := UsernameByID(ctx, slotData.Uploader)
 	if err != nil {
 		return slot.Slot{}, err
 	}
@@ -117,11 +116,7 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 		LBP3UniquePlayCount: 0,
 	}
 
-	resourceHashes := make([]string, len(resources))
-	for i, resource := range resources {
-		resourceHashes[i] = resource.ResourceHash
-	}
-	return &slot.SlotData, nil
+	return slot, nil
 }
 
 func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots, error) {
@@ -133,15 +128,25 @@ func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots, error) {
 	}
 
 	for i, slot := range slots.Slots {
-		var resources []*lbp_xml.SlotResource
-		err = pgxscan.Select(ctx, conn, &resources, "SELECT * FROM slot_resources WHERE slot_id = $1", slot)
+		slots.Slots[i].Type = "user"
+		slots.Slots[i].Location = slot2.Location{
+			X: slot.LocationX,
+			Y: slot.LocationY,
+		}
+
+		slots.Slots[i].LastUpdatedXML = slot.LastUpdated.Unix()
+		slots.Slots[i].FirstPublishedXML = slot.FirstPublished.Unix()
+		slots.Slots[i].PublishedIn = "lbp2"
+		slots.Slots[i].Game = 2
+		username, err := UsernameByID(ctx, slot.Uploader)
 		if err != nil {
 			return slot2.Slots{}, err
 		}
-		slots.Slots[i].Resource = make([]string, len(resources))
-		for i2, resource := range resources {
-			slots.Slots[i].Resource[i2] = resource.ResourceHash
+		slots.Slots[i].NpHandle = lbp_xml.NpHandle{
+			Username: username,
 		}
 	}
+	slots.Total = len(slots.Slots)
+	slots.HintStart = int(math.Ceil(float64(len(slots.Slots))))
 	return slots, nil
 }
