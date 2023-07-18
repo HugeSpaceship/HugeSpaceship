@@ -24,10 +24,19 @@ func LoginHandler() gin.HandlerFunc {
 			c.Status(403)
 			return
 		}
+
+		log.Debug().Msg("Verified NPTicket")
 		game := c.Query("game")
 
+		token, err := auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP()), game)
+		if err != nil {
+			c.Error(err)
+			c.AbortWithStatus(403)
+			return
+		}
+
 		c.XML(200, lbp_xml.AuthResult{
-			AuthTicket: "MM_AUTH=" + auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP()), game),
+			AuthTicket: "MM_AUTH=" + token,
 			LBPEnvVer:  "HugeSpaceship",
 		})
 	}
