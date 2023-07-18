@@ -53,7 +53,7 @@ func (c *Context) UploadResource(reader io.ReadCloser, contentLength int64, hash
 
 func GetResource(ctx context.Context, hash string) (io.ReadSeekCloser, pgx.Tx, int64, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
-	row := conn.QueryRow(ctx, "SELECT oid, size FROM resources WHERE hash = $1", hash)
+	row := conn.QueryRow(ctx, "SELECT file, size FROM resources WHERE hash = $1", hash)
 	var oid uint32
 	var size int64
 	err := row.Scan(&oid, &size)
