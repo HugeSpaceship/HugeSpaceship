@@ -10,30 +10,34 @@ import (
 	"net/netip"
 )
 
-func NewSession(ticket types.Ticket, ip netip.Addr, game string) string {
+func NewSession(ticket types.Ticket, ip netip.Addr, game string) (string, error) {
 	c := db.GetConnection()
 
 	if !c.UserExists(ticket.Username) {
 		err := c.CreateUser(ticket.Username)
 		if err != nil {
-			panic(err.Error())
+			return "", err
 		}
 	}
 
 	token := uuid.New().String()
 	platform := model.PS3
+	gameType := model.LBP2
 	if ticket.Footer.Signatory == types.RPCNSignatoryID {
 		platform = model.RPCS3
 	}
 	log.Debug().Str("game", game).Msg("Game name")
-
-	err := c.NewSession(ticket.Username, model.LBP2, ip, platform, token)
-	if err != nil {
-		panic(err.Error())
-		return token
+	if game == "lbp-vita" {
+		platform = model.PSVita
+		gameType = model.LBPV
 	}
 
-	return token
+	err := c.NewSession(ticket.Username, gameType, ip, platform, token)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
 
 func GetSession(token string) (session auth.Session, exists bool) {
