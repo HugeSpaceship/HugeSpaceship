@@ -2,6 +2,7 @@ package recent_activity
 
 import (
 	"HugeSpaceship/pkg/common/model/lbp_xml"
+	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"encoding/xml"
 )
 
@@ -11,7 +12,7 @@ type Stream struct {
 	EndTimestamp   int64          `xml:"end_timestamp"`
 	Groups         Groups         `xml:"groups"`
 	Users          []lbp_xml.User `xml:"users,omitempty"`
-	Slots          []lbp_xml.Slot `xml:"slots,omitempty"`
+	Slots          []slot.Slot    `xml:"slots,omitempty"`
 	News           News           `xml:"news,omitempty"`
 }
 
