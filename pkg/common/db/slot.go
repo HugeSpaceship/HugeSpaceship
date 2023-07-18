@@ -3,7 +3,6 @@ package db
 import (
 	"HugeSpaceship/pkg/common/model/lbp_xml"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
-	slot2 "HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
@@ -84,7 +83,7 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 		Username: username,
 	}
 	slotData.Game = 1
-	slot := slot.Slot{
+	s := slot.Slot{
 		Upload:              slotData,
 		HeartCount:          0,
 		ThumbsUp:            400,
@@ -116,7 +115,7 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 		LBP3UniquePlayCount: 0,
 	}
 
-	return slot, nil
+	return s, nil
 }
 
 func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots, error) {
@@ -127,20 +126,20 @@ func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots, error) {
 		return slot.Slots{}, err
 	}
 
-	for i, slot := range slots.Slots {
+	for i, s := range slots.Slots {
 		slots.Slots[i].Type = "user"
-		slots.Slots[i].Location = slot2.Location{
-			X: slot.LocationX,
-			Y: slot.LocationY,
+		slots.Slots[i].Location = slot.Location{
+			X: s.LocationX,
+			Y: s.LocationY,
 		}
 
-		slots.Slots[i].LastUpdatedXML = slot.LastUpdated.Unix()
-		slots.Slots[i].FirstPublishedXML = slot.FirstPublished.Unix()
+		slots.Slots[i].LastUpdatedXML = s.LastUpdated.Unix()
+		slots.Slots[i].FirstPublishedXML = s.FirstPublished.Unix()
 		slots.Slots[i].PublishedIn = "lbp2"
 		slots.Slots[i].Game = 2
-		username, err := UsernameByID(ctx, slot.Uploader)
+		username, err := UsernameByID(ctx, s.Uploader)
 		if err != nil {
-			return slot2.Slots{}, err
+			return slot.Slots{}, err
 		}
 		slots.Slots[i].NpHandle = lbp_xml.NpHandle{
 			Username: username,

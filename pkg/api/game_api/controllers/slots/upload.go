@@ -4,7 +4,6 @@ import (
 	"HugeSpaceship/pkg/common/db"
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
-	slot2 "HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"time"
@@ -13,27 +12,27 @@ import (
 func StartPublishHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		dbCtx := db.GetContext()
-		slot := slot.Slot{}
-		err := ctx.BindXML(&slot)
+		s := slot.Slot{}
+		err := ctx.BindXML(&s)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to parse xml body")
 		}
 
 		// This checks to see if the resources already exist in the DB
 		c := 0
-		resourcesToUpload := make([]string, 0, len(slot.Resource))
-		for i, _ := range slot.Resource {
-			exists, err := db.ResourceExists(dbCtx, slot.Resource[i])
+		resourcesToUpload := make([]string, 0, len(s.Resource))
+		for i := range s.Resource {
+			exists, err := db.ResourceExists(dbCtx, s.Resource[i])
 			if err != nil {
 				log.Warn().Err(err).Msg("failed to check if resource exists, assuming it doesn't")
 			}
 			if !exists {
-				resourcesToUpload[c] = slot.Resource[i]
+				resourcesToUpload[c] = s.Resource[i]
 				c++
 			}
 		}
 
-		ctx.XML(200, slot2.Slot{Upload: slot2.Upload{Resource: resourcesToUpload, Type: "user"}})
+		ctx.XML(200, slot.Slot{Upload: slot.Upload{Resource: resourcesToUpload, Type: "user"}})
 	}
 }
 
@@ -57,10 +56,10 @@ func PublishHandler() gin.HandlerFunc {
 		if err != nil {
 			ctx.Error(err)
 		}
-		slot, err := db.GetSlot(dbCtx, id)
+		s, err := db.GetSlot(dbCtx, id)
 		if err != nil {
 			ctx.Error(err)
 		}
-		ctx.XML(200, &slot)
+		ctx.XML(200, &s)
 	}
 }
