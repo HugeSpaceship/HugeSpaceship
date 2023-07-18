@@ -81,6 +81,19 @@ func GetResource(ctx context.Context, hash string) (io.ReadSeekCloser, pgx.Tx, i
 	return lob, tx, size, nil
 }
 
+func ResourceExists(ctx context.Context, hash string) (exists bool, err error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+
+	var count int
+	row := conn.QueryRow(ctx, "SELECT count(1) FROM resources WHERE hash = $1", hash)
+	err = row.Scan(&count)
+
+	if count != 0 {
+		return true, err
+	}
+	return false, err
+}
+
 func GetLevelResources(ctx context.Context, id uuid.UUID) ([]string, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 
