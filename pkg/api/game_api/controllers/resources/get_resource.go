@@ -13,6 +13,8 @@ func GetResourceHandler() gin.HandlerFunc {
 		resource, tx, size, err := db.GetResource(dbCtx, ctx.Param("hash"))
 		if err != nil {
 			ctx.Error(err)
+			ctx.AbortWithStatus(500)
+			return
 		}
 		defer func(tx pgx.Tx, dbCtx context.Context, ctx *gin.Context) {
 			err := tx.Commit(dbCtx)
