@@ -1,4 +1,4 @@
-package lbp_xml
+package npdata
 
 import "encoding/xml"
 

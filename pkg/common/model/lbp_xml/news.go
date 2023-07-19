@@ -1,6 +1,7 @@
 package lbp_xml
 
 import (
+	"HugeSpaceship/pkg/common/model/lbp_xml/npdata"
 	"encoding/xml"
 )
 
@@ -59,7 +60,7 @@ type NewsFrame struct {
 	Item    NewsFrameItem `xml:"item"`
 }
 type NewsFrameItem struct {
-	Width    string   `xml:"width,attr"`
-	NpHandle NpHandle `xml:"npHandle"`
-	Content  string   `xml:"content"`
+	Width    string          `xml:"width,attr"`
+	NpHandle npdata.NpHandle `xml:"npHandle"`
+	Content  string          `xml:"content"`
 }

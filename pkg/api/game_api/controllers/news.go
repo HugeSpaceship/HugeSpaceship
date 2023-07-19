@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"HugeSpaceship/pkg/common/model/lbp_xml"
+	"HugeSpaceship/pkg/common/model/lbp_xml/npdata"
 	"HugeSpaceship/pkg/common/model/lbp_xml/recent_activity"
 	"encoding/xml"
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,7 @@ func NewsHandler() gin.HandlerFunc {
 										Title: "Test Frame",
 										Item: lbp_xml.NewsFrameItem{
 											Width: "50",
-											NpHandle: lbp_xml.NpHandle{
+											NpHandle: npdata.NpHandle{
 												Username: "Zaprit282",
 											},
 											Content: "Test Frame Item",

@@ -1,7 +1,6 @@
 package db
 
 import (
-	"HugeSpaceship/pkg/common/model/lbp_xml"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
 	"math"
@@ -33,9 +32,8 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 
 	var id int64
 	err = tx.QueryRow(ctx, insertSQL, slot.Name, slot.Description, slot.Icon, slot.RootLevel,
-		slot.Location.X, slot.Location.Y, slot.InitiallyLocked, slot.IsSubLevel, slot.IsLBP1Only, slot.Shareable,
+		slot.InitiallyLocked, slot.IsSubLevel, slot.IsLBP1Only, slot.Shareable,
 		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, domain, uploader,
-		slot.FirstPublished, slot.LastUpdated,
 	).Scan(&id)
 	if err != nil {
 		er2 := tx.Rollback(ctx)
@@ -62,90 +60,29 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 
-	slotData := slot.Upload{}
-	err := pgxscan.Get(ctx, conn, &slotData, "SELECT * FROM slots WHERE slots.id = $1 LIMIT 1;", id)
-	if err != nil {
-		return slot.Slot{}, err
-	}
+	var slotData slot.Slot
 
-	slotData.Type = "user"
-	slotData.Location = lbp_xml.Location{
-		X: slotData.LocationX,
-		Y: slotData.LocationY,
-	}
-
-	slotData.LastUpdatedXML = slotData.LastUpdated.UnixMilli()
-	slotData.FirstPublishedXML = slotData.FirstPublished.UnixMilli()
-	username, err := UsernameByID(ctx, slotData.Uploader)
+	err := pgxscan.Get(ctx, conn, &slotData, "SELECT slots.*, u.username as username FROM slots JOIN users u on slots.uploader = u.id WHERE slots.id = $1 LIMIT 1;", id)
 	if err != nil {
-		return slot.Slot{}, err
-	}
-	slotData.NpHandle = lbp_xml.NpHandle{
-		Username: username,
+		return slotData, err
 	}
 	slotData.Game = 1
-	s := slot.Slot{
-		Upload:              slotData,
-		HeartCount:          0,
-		ThumbsUp:            400,
-		ThumbsDown:          0,
-		AverageRating:       0,
-		PlayerCount:         0,
-		MatchingPlayers:     0,
-		TeamPick:            true,
-		CommentsEnabled:     false,
-		ReviewsEnabled:      false,
-		UserLBP1PlayCount:   0,
-		UserLBP2PlayCount:   0,
-		PublishedIn:         "lbp2",
-		ReviewCount:         0,
-		CommentCount:        0,
-		PhotoCount:          0,
-		AuthorPhotoCount:    0,
-		PlayCount:           0,
-		UniquePlayCount:     0,
-		CompletionCount:     0,
-		LBP1PlayCount:       0,
-		LBP1CompletionCount: 0,
-		LBP1UniquePlayCount: 0,
-		LBP2PlayCount:       0,
-		LBP2CompletionCount: 0,
-		LBP2UniquePlayCount: 0,
-		LBP3PlayCount:       0,
-		LBP3CompletionCount: 0,
-		LBP3UniquePlayCount: 0,
-	}
 
-	return s, nil
+	return slotData, nil
 }
 
-func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots, error) {
+//func getSearchSlot() (slot.SearchSlot, error){
+//
+//}
+
+func GetSlots[T slot.Type](ctx context.Context, by uuid.UUID) (slot.Slots[T], error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
-	var slots slot.Slots
+	var slots slot.Slots[T]
 	err := pgxscan.Select(ctx, conn, &slots.Slots, "SELECT * FROM slots WHERE uploader = $1", by)
 	if err != nil {
-		return slot.Slots{}, err
+		return slots, err
 	}
 
-	for i, s := range slots.Slots {
-		slots.Slots[i].Type = "user"
-		slots.Slots[i].Location = lbp_xml.Location{
-			X: s.LocationX,
-			Y: s.LocationY,
-		}
-
-		slots.Slots[i].LastUpdatedXML = s.LastUpdated.Unix()
-		slots.Slots[i].FirstPublishedXML = s.FirstPublished.Unix()
-		slots.Slots[i].PublishedIn = "lbp2"
-		slots.Slots[i].Game = 2
-		username, err := UsernameByID(ctx, s.Uploader)
-		if err != nil {
-			return slot.Slots{}, err
-		}
-		slots.Slots[i].NpHandle = lbp_xml.NpHandle{
-			Username: username,
-		}
-	}
 	slots.Total = len(slots.Slots)
 	slots.HintStart = int(math.Ceil(float64(len(slots.Slots))))
 	return slots, nil
