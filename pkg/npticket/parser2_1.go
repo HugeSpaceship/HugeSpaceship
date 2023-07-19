@@ -63,8 +63,14 @@ func (parser TicketParser) parseVersion2Ticket() (types.Ticket, error) {
 	}
 
 	signatory, err := parser.ReadBytes()
+	if err != nil {
+		return types.Ticket{}, err
+	}
 	footer.Signatory = binary.BigEndian.Uint32(signatory)
 	footer.Signature, err = parser.ReadBytes()
+	if err != nil {
+		return types.Ticket{}, err
+	}
 	ticket.Footer = footer
 
 	switch footer.Signatory {
