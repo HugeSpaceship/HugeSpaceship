@@ -3,9 +3,10 @@ package db
 import (
 	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/auth"
+	"net/netip"
+
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"net/netip"
 )
 
 const CreateSQL = `INSERT INTO sessions (userId, ip, token, game, platform) VALUES ($1,$2,$3,$4,$5)`
@@ -18,6 +19,9 @@ func (c *Context) NewSession(username string, gameType model.GameType, ip netip.
 	}
 
 	n, err := c.PurgeSessions(userID, gameType, platform)
+	if err != nil {
+		return err
+	}
 	log.Debug().Int("clearedSessions", n).Str("user", username).Msg("Purged old sessions for user")
 
 	_, err = c.pool.Exec(c.ctx, CreateSQL, userID, ip, token, gameType, platform)

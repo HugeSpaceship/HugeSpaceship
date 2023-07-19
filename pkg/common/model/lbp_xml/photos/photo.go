@@ -1,4 +1,4 @@
-package lbp_xml
+package photos
 
 import (
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
@@ -25,13 +25,13 @@ type Photos struct {
 }
 
 type Photo struct {
-	XMLName   xml.Name        `xml:"photo"`
-	Timestamp int64           `xml:"timestamp,attr"`
-	ID        uint64          `xml:"id"`
-	Author    string          `xml:"author"`
-	Small     string          `xml:"small"`
-	Medium    string          `xml:"medium"`
-	Large     string          `xml:"large"`
-	Plan      string          `xml:"plan"`
-	Slot      *slot.PhotoSlot `xml:"slot,omitempty"`
+	XMLName   xml.Name  `xml:"photo"`
+	Timestamp int64     `xml:"timestamp,attr"`
+	ID        uint64    `xml:"id"`
+	Author    string    `xml:"author"`
+	Small     string    `xml:"small"`
+	Medium    string    `xml:"medium"`
+	Large     string    `xml:"large"`
+	Plan      string    `xml:"plan"`
+	Slot      PhotoSlot `xml:"slot,omitempty"`
 }

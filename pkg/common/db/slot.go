@@ -4,11 +4,12 @@ import (
 	"HugeSpaceship/pkg/common/model/lbp_xml"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
+	"math"
+
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
-	"math"
 )
 
 const insertSQL = `INSERT INTO slots (
@@ -68,7 +69,7 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 	}
 
 	slotData.Type = "user"
-	slotData.Location = slot.Location{
+	slotData.Location = lbp_xml.Location{
 		X: slotData.LocationX,
 		Y: slotData.LocationY,
 	}
@@ -128,7 +129,7 @@ func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots, error) {
 
 	for i, s := range slots.Slots {
 		slots.Slots[i].Type = "user"
-		slots.Slots[i].Location = slot.Location{
+		slots.Slots[i].Location = lbp_xml.Location{
 			X: s.LocationX,
 			Y: s.LocationY,
 		}

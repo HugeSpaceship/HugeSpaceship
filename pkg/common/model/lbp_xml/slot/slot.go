@@ -53,10 +53,6 @@ type Slot struct {
 }
 
 // Location represents a place on a users earth... I think
-type Location struct {
-	X int `xml:"x"`
-	Y int `xml:"y"`
-}
 
 type SlotResource struct {
 	SlotID       int    `db:"slot_id"`
