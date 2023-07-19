@@ -6,6 +6,8 @@ VALUES ('004_Slot_changes', false);
 DROP TABLE slots CASCADE;
 DROP TABLE slot_resources;
 
+-- Slots was broken last time because LBP doesn't like UUIDs, so instead of that we're using a numeric ID, for slots.
+
 CREATE TABLE slots
 (
     id               serial PRIMARY KEY,
