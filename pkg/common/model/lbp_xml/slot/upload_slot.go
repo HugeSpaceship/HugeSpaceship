@@ -12,7 +12,7 @@ type Upload struct {
 	Description     string           `xml:"description,omitempty"`
 	Icon            string           `xml:"icon,omitempty"`
 	RootLevel       string           `xml:"rootLevel,omitempty"`
-	Resource        []string         `xml:"resource"`
+	Resources       []string         `xml:"resource"`
 	Location        lbp_xml.Location `xml:"location,omitempty"`
 	InitiallyLocked bool             `xml:"initiallyLocked,omitempty"`
 	IsSubLevel      bool             `xml:"isSubLevel,omitempty"`

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
 	"math"
@@ -60,13 +61,12 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 
-	var slotData slot.Slot
+	var dbSlot model.Slot
 
-	err := pgxscan.Get(ctx, conn, &slotData, "SELECT slots.*, u.username as username FROM slots JOIN users u on slots.uploader = u.id WHERE slots.id = $1 LIMIT 1;", id)
+	err := pgxscan.Get(ctx, conn, &dbSlot, "SELECT * FROM slots WHERE slots.id = $1 LIMIT 1;", id)
 	if err != nil {
-		return slotData, err
+		return slot.Slot{}, err
 	}
-	slotData.Game = 1
 
 	return slotData, nil
 }

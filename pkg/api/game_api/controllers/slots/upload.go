@@ -20,19 +20,21 @@ func StartPublishHandler() gin.HandlerFunc {
 
 		// This checks to see if the resources already exist in the DB
 		c := 0
-		resourcesToUpload := make([]string, 0, len(s.Resource))
-		for i := range s.Resource {
-			exists, err := db.ResourceExists(dbCtx, s.Resource[i])
+		resourcesToUpload := make([]string, 0, len(s.Resources))
+		for i := range s.Resources {
+			exists, err := db.ResourceExists(dbCtx, s.Resources[i])
 			if err != nil {
 				log.Warn().Err(err).Msg("failed to check if resource exists, assuming it doesn't")
 			}
 			if !exists {
-				resourcesToUpload[c] = s.Resource[i]
+				resourcesToUpload[c] = s.Resources[i]
 				c++
 			}
 		}
 
-		ctx.XML(200, slot.Slot{Upload: slot.Upload{Resource: resourcesToUpload, Type: "user"}})
+		ctx.XML(200, slot.StartPublishSlotResponse{
+			Resource: resourcesToUpload,
+		})
 	}
 }
 
