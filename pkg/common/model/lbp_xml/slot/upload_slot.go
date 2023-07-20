@@ -3,8 +3,9 @@ package slot
 import (
 	"HugeSpaceship/pkg/common/model/lbp_xml"
 	"encoding/xml"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Upload struct {
@@ -12,7 +13,7 @@ type Upload struct {
 	Type        string           `xml:"type,attr" db:"-"`
 	ID          *int             `xml:"id,omitempty" db:"id"`
 	NpHandle    lbp_xml.NpHandle `xml:"npHandle,omitempty" db:"-"`
-	Location    Location         `xml:"location,omitempty" db:"-"`
+	Location    lbp_xml.Location `xml:"location,omitempty" db:"-"`
 	Uploader    uuid.UUID        `xml:"-" db:"uploader"`
 	Game        int              `xml:"game,omitempty"`
 	Name        string           `xml:"name,omitempty" db:"name"`

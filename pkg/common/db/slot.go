@@ -4,11 +4,12 @@ import (
 	"HugeSpaceship/pkg/common/model/lbp_xml"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
+	"math"
+
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
-	"math"
 )
 
 const insertSQL = `INSERT INTO slots (

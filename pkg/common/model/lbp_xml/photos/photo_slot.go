@@ -1,4 +1,4 @@
-package slot
+package photos
 
 import "encoding/xml"
 
