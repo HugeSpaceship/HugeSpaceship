@@ -1,7 +1,6 @@
 package photos
 
 import (
-	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"encoding/xml"
 )
 
@@ -20,8 +19,8 @@ import (
 	</photo>
 */
 type Photos struct {
-	XMLName xml.Name    `xml.Name:"photos"`
-	Photos  *slot.Slots `xml:"slots,omitempty"`
+	XMLName xml.Name `xml.Name:"photos"`
+	Photos  []Photo  `xml:"slots,omitempty"`
 }
 
 type Photo struct {
