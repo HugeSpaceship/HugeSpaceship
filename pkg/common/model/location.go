@@ -1,4 +1,4 @@
-package lbp_xml
+package model
 
 type Location struct {
 	X int `xml:"x"`
