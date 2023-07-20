@@ -32,5 +32,5 @@ CREATE TABLE plays (
 
 UPDATE migrations
 SET succeeded = true
-WHERE migration = '004_Slot_changes';
+WHERE migration = '005_Ancillary_Slot_Tables';
 COMMIT;
