@@ -4,9 +4,9 @@ import (
 	"HugeSpaceship/pkg/common/db"
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"time"
 )
 
 func StartPublishHandler() gin.HandlerFunc {
@@ -49,10 +49,6 @@ func PublishHandler() gin.HandlerFunc {
 		}
 		domain := ctx.GetInt("domain")
 		session, _ := ctx.Get("session")
-
-		//TODO: Check if the level already exists and only update the last updated if it does
-		slotData.FirstPublished = time.Now()
-		slotData.LastUpdated = time.Now()
 
 		id, err := db.InsertSlot(dbCtx, slotData, session.(auth.Session).UserID, domain)
 		if err != nil {

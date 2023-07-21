@@ -1,7 +1,7 @@
 package lbp_xml
 
 import (
-	"HugeSpaceship/pkg/common/model"
+	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/common/model/lbp_xml/npdata"
 	"encoding/xml"
 )
@@ -32,7 +32,7 @@ type User struct {
 	PhotosByMeCount           string          `xml:"photosByMeCount"`
 	PhotosWithMeCount         string          `xml:"photosWithMeCount"`
 	CommentsEnabled           bool            `xml:"commentsEnabled"`
-	Location                  model.Location  `xml:"location"`
+	Location                  common.Location `xml:"location"`
 	FavouriteSlotCount        string          `xml:"favouriteslotcount"`
 	FavouriteUserCount        string          `xml:"favouriteusercount"`
 	QueuedLevelCount          string          `xml:"lolcatftwcount"`
