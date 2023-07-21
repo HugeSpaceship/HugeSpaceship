@@ -4,7 +4,6 @@ import (
 	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
-	"math"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
@@ -44,7 +43,7 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 		return 0, err
 	}
 
-	for _, res := range slot.Resource {
+	for _, res := range slot.Resources {
 		_, err := tx.Exec(ctx, "INSERT INTO slot_resources VALUES($1, $2)", id, res)
 		if err != nil {
 			log.Debug().Err(err).Str("hash", res).Msg("failed to insert slot resource")
@@ -68,14 +67,14 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 		return slot.Slot{}, err
 	}
 
-	return slotData, nil
+	return slot.Slot{}, nil
 }
 
 //func getSearchSlot() (slot.SearchSlot, error){
 //
 //}
-
-func GetSlots[T slot.Type](ctx context.Context, by uuid.UUID) (slot.Slots[T], error) {
+//TODO: henry please unblow this shit up
+/*func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots[T], error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	var slots slot.Slots[T]
 	err := pgxscan.Select(ctx, conn, &slots.Slots, "SELECT * FROM slots WHERE uploader = $1", by)
@@ -86,4 +85,4 @@ func GetSlots[T slot.Type](ctx context.Context, by uuid.UUID) (slot.Slots[T], er
 	slots.Total = len(slots.Slots)
 	slots.HintStart = int(math.Ceil(float64(len(slots.Slots))))
 	return slots, nil
-}
+}*/

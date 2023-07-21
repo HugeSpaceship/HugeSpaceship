@@ -1,7 +1,7 @@
 package slot
 
 import (
-	"HugeSpaceship/pkg/common/model"
+	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/common/model/lbp_xml/npdata"
 	"encoding/xml"
 	"time"
@@ -28,7 +28,7 @@ type Slot struct {
 	Type                string          `xml:"type,attr"`
 	ID                  uint64          `xml:"id"`
 	NpHandle            npdata.NpHandle `xml:"npHandle"`
-	Location            model.Location  `xml:"location"`
+	Location            common.Location `xml:"location"`
 	Game                uint            `xml:"game"`
 	RootLevel           string          `xml:"rootLevel"`
 	Resources           []string        `xml:"resource"`
@@ -62,7 +62,7 @@ type Slot struct {
 	BadgeURL            string          `xml:"badgeURL"`
 	CommentsEnabled     bool            `xml:"commentsEnabled"`
 	ReviewsEnabled      bool            `xml:"reviewsEnabled"`
-	PublishedIn         model.GameType  `xml:"publishedIn"`
+	PublishedIn         common.GameType `xml:"publishedIn"`
 	PlayCount           uint64          `xml:"playCount"`
 	CompletionCount     uint64          `xml:"completionCount"`
 	Lbp1PlayCount       uint64          `xml:"lbp1PlayCount"`

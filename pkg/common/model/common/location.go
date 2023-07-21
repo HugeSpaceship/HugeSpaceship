@@ -1,4 +1,4 @@
-package model
+package common
 
 type Location struct {
 	X int `xml:"x"`

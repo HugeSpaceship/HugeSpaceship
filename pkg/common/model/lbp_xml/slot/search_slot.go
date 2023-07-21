@@ -1,7 +1,7 @@
 package slot
 
 import (
-	"HugeSpaceship/pkg/common/model"
+	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/common/model/lbp_xml/npdata"
 	"encoding/xml"
 )
@@ -13,7 +13,7 @@ type SearchSlot struct {
 	ID                  string          `xml:"id"`
 	NPHandle            npdata.NpHandle `xml:"npHandle"`
 	SearchScore         float32         `xml:"searchScore"`
-	Location            model.Location  `xml:"location"`
+	Location            common.Location `xml:"location"`
 	Game                int             `xml:"game"`
 	Name                string          `xml:"name"`
 	Description         string          `xml:"description"`
