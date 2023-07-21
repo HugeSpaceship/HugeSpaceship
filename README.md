@@ -1,4 +1,6 @@
 # HugeSpaceship
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FZaprit%2FHugeSpaceship.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FZaprit%2FHugeSpaceship?ref=badge_shield)
+
 
 An experimental LittleBigPlanet server focused on customisabillity and performence
 
@@ -6,3 +8,7 @@ An experimental LittleBigPlanet server focused on customisabillity and performen
 Currently in not-even-pre-alpha. You can login to the server, resource uploading works, though level uploading does not, yet.
 
 Most things at this point are either missing or stubbed but this will change shortly
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FZaprit%2FHugeSpaceship.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FZaprit%2FHugeSpaceship?ref=badge_large)
