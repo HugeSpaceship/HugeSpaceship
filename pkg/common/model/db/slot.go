@@ -1,8 +1,9 @@
-package model
+package db
 
 import (
 	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -46,5 +47,45 @@ func SlotFromUpload(slot slot.Upload) Slot {
 		MinPlayers:      slot.MinPlayers,
 		MaxPlayers:      slot.MaxPlayers,
 		MoveRequired:    slot.MoveRequired,
+	}
+}
+
+func SearchSlotFromDB(in Slot) slot.SearchSlot {
+	return slot.SearchSlot{
+		Type:                "user",
+		ID:                  strconv.Itoa(in.ID),
+		SearchScore:         0,
+		Location:            in.Location,
+		Game:                0,
+		Name:                "",
+		Description:         "",
+		RootLevel:           "",
+		Icon:                "",
+		InitiallyLocked:     false,
+		IsSubLevel:          false,
+		IsLBP1Only:          false,
+		Shareable:           0,
+		MinPlayers:          0,
+		MaxPlayers:          0,
+		HeartCount:          0,
+		Thumbsup:            0,
+		Thumbsdown:          0,
+		AverageRating:       0,
+		PlayerCount:         0,
+		MatchingPlayers:     0,
+		MMPick:              false,
+		IsAdventurePlanet:   false,
+		Ps4Only:             false,
+		PlayCount:           0,
+		CompletionCount:     0,
+		Lbp1PlayCount:       0,
+		Lbp1CompletionCount: 0,
+		Lbp1UniquePlayCount: 0,
+		Lbp2PlayCount:       0,
+		Lbp2CompletionCount: 0,
+		UniquePlayCount:     0,
+		Lbp3PlayCount:       0,
+		Lbp3CompletionCount: 0,
+		Lbp3UniquePlayCount: 0,
 	}
 }

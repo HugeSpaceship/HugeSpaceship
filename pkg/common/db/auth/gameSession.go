@@ -2,7 +2,6 @@ package auth
 
 import (
 	"HugeSpaceship/pkg/common/db"
-	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/npticket/types"
@@ -23,14 +22,14 @@ func NewSession(ticket types.Ticket, ip netip.Addr, game string) (string, error)
 	}
 
 	token := uuid.New().String()
-	platform := model.PS3
+	platform := common.PS3
 	gameType := common.LBP2
 	if ticket.Footer.Signatory == types.RPCNSignatoryID {
-		platform = model.RPCS3
+		platform = common.RPCS3
 	}
 	log.Debug().Str("game", game).Msg("Game name")
 	if game == "lbp-vita" {
-		platform = model.PSVita
+		platform = common.PSVita
 		gameType = common.LBPV
 	}
 

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/common"
 	"net/netip"
 	"time"
@@ -17,5 +16,5 @@ type Session struct {
 	IP         netip.Addr // This is so that we can track changes in ip and force a re-auth, helps prevent token theft.
 	Token      string
 	ExpiryDate time.Time
-	Platform   model.Platform
+	Platform   common.Platform
 }

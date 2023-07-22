@@ -2,6 +2,7 @@ package slots
 
 import (
 	"HugeSpaceship/pkg/common/db"
+	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -9,13 +10,13 @@ import (
 
 func GetSlotsByHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// dbCtx := db.GetContext()
-		// userID, err := db.UserIDByName(dbCtx, ctx.Query("u"))
-		// slots, err := db.GetSlots(dbCtx, userID)
-		// if err != nil {
-		// 	ctx.Error(err)
-		// }
-		// ctx.XML(200, &slots)
+		dbCtx := db.GetContext()
+		userID, err := db.UserIDByName(dbCtx, ctx.Query("u"))
+		slots, err := db.GetSlotsBy[slot.SearchSlot](dbCtx, userID)
+		if err != nil {
+			ctx.Error(err)
+		}
+		ctx.XML(200, &slots)
 		//TODO: henry unfuck this too please
 	}
 }

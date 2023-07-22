@@ -15,7 +15,7 @@ type Slots[S Type] struct {
 	XMLName   xml.Name `xml:"slots"`
 	Total     int      `xml:"total,attr"`
 	HintStart int      `xml:"hint_start,attr"`
-	Slots     []any
+	Slots     []S
 }
 
 type StartPublishSlotResponse struct {

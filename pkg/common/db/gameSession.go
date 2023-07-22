@@ -1,7 +1,6 @@
 package db
 
 import (
-	"HugeSpaceship/pkg/common/model"
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/common/model/common"
 	"net/netip"
@@ -12,7 +11,7 @@ import (
 
 const CreateSQL = `INSERT INTO sessions (userId, ip, token, game, platform) VALUES ($1,$2,$3,$4,$5)`
 
-func (c *Context) NewSession(username string, gameType common.GameType, ip netip.Addr, platform model.Platform, token string) error {
+func (c *Context) NewSession(username string, gameType common.GameType, ip netip.Addr, platform common.Platform, token string) error {
 	userID, err := c.GetUserID(username)
 	if err != nil {
 		return nil
@@ -47,7 +46,7 @@ func (c *Context) GetSession(token string) (auth.Session, error) {
 	return session, err
 }
 
-func (c *Context) PurgeSessions(userID uuid.NullUUID, game common.GameType, platform model.Platform) (int, error) {
+func (c *Context) PurgeSessions(userID uuid.NullUUID, game common.GameType, platform common.Platform) (int, error) {
 	rows, err := c.pool.Exec(c.ctx, "DELETE FROM sessions WHERE userid = $1 AND game = $2 AND platform = $3", userID, game, platform)
 	return int(rows.RowsAffected()), err
 }

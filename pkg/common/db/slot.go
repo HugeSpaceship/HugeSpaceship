@@ -1,10 +1,9 @@
 package db
 
 import (
-	"HugeSpaceship/pkg/common/model"
+	"HugeSpaceship/pkg/common/model/db"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
-
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -60,7 +59,7 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 
-	var dbSlot model.Slot
+	var dbSlot db.Slot
 
 	err := pgxscan.Get(ctx, conn, &dbSlot, "SELECT * FROM slots WHERE slots.id = $1 LIMIT 1;", id)
 	if err != nil {
@@ -70,19 +69,25 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 	return slot.Slot{}, nil
 }
 
-//func getSearchSlot() (slot.SearchSlot, error){
-//
-//}
-//TODO: henry please unblow this shit up
-/*func GetSlots(ctx context.Context, by uuid.UUID) (slot.Slots[T], error) {
+func GetSlotsBy(ctx context.Context, by uuid.UUID, offset uint64, limit uint64) (slot.Slots[slot.SearchSlot], error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
-	var slots slot.Slots[T]
-	err := pgxscan.Select(ctx, conn, &slots.Slots, "SELECT * FROM slots WHERE uploader = $1", by)
+	var dbSlots []db.Slot
+	err := pgxscan.Select(ctx, conn, &dbSlots, "SELECT * FROM slots WHERE uploader = $1 OFFSET $2 LIMIT $3", by, offset, limit)
+
 	if err != nil {
-		return slots, err
+		return slot.Slots[slot.SearchSlot]{}, err
 	}
 
-	slots.Total = len(slots.Slots)
-	slots.HintStart = int(math.Ceil(float64(len(slots.Slots))))
+	slots := slot.Slots[slot.SearchSlot]{}
+
+	slots.Total, err = GetTotalSlots(ctx)
+	slots.HintStart = slots.Total - int(offset)
 	return slots, nil
-}*/
+}
+
+func GetTotalSlots(ctx context.Context) (int, error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	row := conn.QueryRow(ctx, "SELECT COUNT(1) FROM slots;")
+	var total int
+	return total, row.Scan(&total)
+}
