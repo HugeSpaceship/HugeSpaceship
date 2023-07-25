@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"HugeSpaceship"
-	"HugeSpaceship/pkg/common/model/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,7 +14,7 @@ func EulaHandler() gin.HandlerFunc {
 
 func AnnounceHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		session, _ := c.Get("session")
-		c.String(http.StatusOK, "Welcome to hell %s", session.(auth.Session).Username)
+		// TODO: Make this configurable via the config file, or better yet integrate with the DB for a news list
+		c.String(http.StatusOK, "") // If it's an empty string then the client won't see it
 	}
 }
