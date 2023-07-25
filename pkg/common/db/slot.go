@@ -59,9 +59,13 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 
-	var dbSlot db.Slot
+	var dbSlot slot.Slot
 
 	err := pgxscan.Get(ctx, conn, &dbSlot, "SELECT * FROM slots WHERE slots.id = $1 LIMIT 1;", id)
+	if err != nil {
+		return slot.Slot{}, err
+	}
+	err = pgxscan.Select(ctx, conn, &dbSlot.Resources, "SELECT resource_hash FROM slot_resources WHERE slot_id = $1 LIMIT 1;", id)
 	if err != nil {
 		return slot.Slot{}, err
 	}
@@ -69,7 +73,7 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 	return slot.Slot{}, nil
 }
 
-func GetSlotsBy(ctx context.Context, by uuid.UUID, offset uint64, limit uint64) (slot.Slots[slot.SearchSlot], error) {
+func GetSlotsBy(ctx context.Context, by uuid.UUID, offset int64, limit int64) (slot.Slots[slot.SearchSlot], error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	var dbSlots []db.Slot
 	err := pgxscan.Select(ctx, conn, &dbSlots, "SELECT * FROM slots WHERE uploader = $1 OFFSET $2 LIMIT $3", by, offset, limit)

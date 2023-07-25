@@ -76,8 +76,6 @@ type Slot struct {
 	Lbp3UniquePlayCount uint64          `xml:"lbp3UniquePlayCount"`
 }
 
-// Location represents a place on a users earth... I think
-
 type SlotResource struct {
 	SlotID       int    `db:"slot_id"`
 	ResourceHash string `db:"resource_hash"`
