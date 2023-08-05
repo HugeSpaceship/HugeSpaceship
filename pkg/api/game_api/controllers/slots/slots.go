@@ -11,15 +11,17 @@ func GetSlotsByHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		dbCtx := db.GetContext()
 		userID, err := db.UserIDByName(dbCtx, ctx.Query("u"))
-		pageCount, err := strconv.ParseInt(ctx.Param("pageCount"), 10, 64)
+		pageCount, err := strconv.ParseInt(ctx.Query("pageSize"), 10, 64)
 		if err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatus(400)
+			return
 		}
-		pageStart, err := strconv.ParseInt(ctx.Param("pageStart"), 10, 64)
+		pageStart, err := strconv.ParseInt(ctx.Query("pageStart"), 10, 64)
 		if err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatus(400)
+			return
 		}
 
 		slots, err := db.GetSlotsBy(dbCtx, userID, pageStart, pageCount)
@@ -27,7 +29,6 @@ func GetSlotsByHandler() gin.HandlerFunc {
 			ctx.Error(err)
 		}
 		ctx.XML(200, &slots)
-		//TODO: henry unfuck this too please
 	}
 }
 
@@ -43,7 +44,7 @@ func GetSlotHandler() gin.HandlerFunc {
 		if levelID == 0 {
 			ctx.AbortWithStatus(404)
 		}
-		slot, err := db.GetSlot(dbCtx, levelID)
+		slot, err := db.GetSlot(dbCtx, uint64(levelID))
 		if err != nil {
 			_ = ctx.Error(err)
 			ctx.AbortWithStatus(404)

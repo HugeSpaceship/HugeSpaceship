@@ -27,7 +27,7 @@ func StartPublishHandler() gin.HandlerFunc {
 				log.Warn().Err(err).Msg("failed to check if resource exists, assuming it doesn't")
 			}
 			if !exists {
-				resourcesToUpload[c] = s.Resources[i]
+				resourcesToUpload = append(resourcesToUpload, s.Resources[i])
 				c++
 			}
 		}
@@ -53,10 +53,15 @@ func PublishHandler() gin.HandlerFunc {
 		id, err := db.InsertSlot(dbCtx, slotData, session.(auth.Session).UserID, domain)
 		if err != nil {
 			ctx.Error(err)
+			ctx.AbortWithStatus(500)
+			return
 		}
+		log.Debug().Uint64("levelID", id).Str("user", session.(auth.Session).Username).Msg("Published Level")
 		s, err := db.GetSlot(dbCtx, id)
 		if err != nil {
 			ctx.Error(err)
+			ctx.AbortWithStatus(500)
+			return
 		}
 		ctx.XML(200, &s)
 	}

@@ -1,13 +1,14 @@
 package db
 
 import (
-	"HugeSpaceship/pkg/common/model/db"
+	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
 	"context"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
+	"time"
 )
 
 const insertSQL = `INSERT INTO slots (
@@ -18,7 +19,7 @@ const insertSQL = `INSERT INTO slots (
                    min_players, max_players, move_required, domain, uploader, first_published, last_updated)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id;`
 
-func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, domain int) (int64, error) {
+func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, domain int) (uint64, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	tx, err := conn.Begin(ctx)
 	if err != nil {
@@ -29,10 +30,10 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 		return 0, err
 	}
 
-	var id int64
-	err = tx.QueryRow(ctx, insertSQL, slot.Name, slot.Description, slot.Icon, slot.RootLevel,
+	var id uint64
+	err = tx.QueryRow(ctx, insertSQL, slot.Name, slot.Description, slot.Icon, slot.RootLevel, slot.Location.X, slot.Location.Y,
 		slot.InitiallyLocked, slot.IsSubLevel, slot.IsLBP1Only, slot.Shareable,
-		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, domain, uploader,
+		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, domain, uploader, time.Now(), time.Now(), // TODO: Allow level updating. Which is a republish so realistically it should be fine but idk
 	).Scan(&id)
 	if err != nil {
 		er2 := tx.Rollback(ctx)
@@ -56,12 +57,47 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, doma
 	return id, err
 }
 
-func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
+const getSlotXML = `
+SELECT 
+  s.id,
+  s.uploader,
+  s.locationx,
+  s.locationy,
+  s.root_level, --FIXME: Add game to db schema
+  s.icon,
+  s.initially_locked,
+  s.sub_level,
+  s.lbp1only,
+  s.background,
+  s.shareable,
+  s.min_players,
+  s.max_players,
+ 
+  COUNT(DISTINCT h.owner) AS heart_count,
+  COUNT(DISTINCT tu.owner) AS thumbs_up_count,
+  COUNT(DISTINCT td.owner) AS thumbs_down_count,
+  COUNT(DISTINCT p.owner) AS play_count
+FROM 
+  slots AS s
+LEFT JOIN 
+  hearts AS h ON s.id = h.slot_id 
+LEFT JOIN 
+  thumbs_up AS tu ON s.id = tu.slot_id 
+LEFT JOIN 
+  thumbs_down AS td ON s.id = td.slot_id 
+LEFT JOIN 
+  plays AS p ON s.id = p.slot_id
+WHERE 
+  (s.id = $1)
+GROUP BY
+  s.id;`
+
+func GetSlot(ctx context.Context, id uint64) (slot.Slot, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 
 	var dbSlot slot.Slot
 
-	err := pgxscan.Get(ctx, conn, &dbSlot, "SELECT * FROM slots WHERE slots.id = $1 LIMIT 1;", id)
+	err := pgxscan.Get(ctx, conn, &dbSlot, getSlotXML, id)
 	if err != nil {
 		return slot.Slot{}, err
 	}
@@ -70,23 +106,82 @@ func GetSlot(ctx context.Context, id int64) (slot.Slot, error) {
 		return slot.Slot{}, err
 	}
 
-	return slot.Slot{}, nil
+	dbSlot.NpHandle, err = NpHandleByUserID(ctx, dbSlot.UploaderID)
+	if err != nil {
+		return slot.Slot{}, err
+	}
+
+	dbSlot.FirstPublishedXML = dbSlot.FirstPublished.UnixMilli()
+	dbSlot.LastUpdatedXML = dbSlot.LastUpdated.UnixMilli()
+
+	dbSlot.Location = common.Location{
+		X: dbSlot.LocationX,
+		Y: dbSlot.LocationY,
+	}
+
+	return dbSlot, nil
 }
+
+const getSearchSlotXML = `
+SELECT 
+  s.id,
+  s.uploader,
+  s.name,
+  s.description,
+  s.locationx,
+  s.locationy,
+  s.root_level, --FIXME: Add game to db schema
+  s.icon,
+  s.initially_locked,
+  s.sub_level,
+  s.lbp1only,
+  s.shareable,
+  s.min_players,
+  s.max_players,
+ 
+  COUNT(DISTINCT h.owner) AS heart_count,
+  COUNT(DISTINCT tu.owner) AS thumbs_up_count,
+  COUNT(DISTINCT td.owner) AS thumbs_down_count,
+  COUNT(DISTINCT p.owner) AS play_count
+FROM 
+  slots AS s
+LEFT JOIN 
+  hearts AS h ON s.id = h.slot_id 
+LEFT JOIN 
+  thumbs_up AS tu ON s.id = tu.slot_id 
+LEFT JOIN 
+  thumbs_down AS td ON s.id = td.slot_id 
+LEFT JOIN 
+  plays AS p ON s.id = p.slot_id
+WHERE 
+  (s.uploader = $1)
+GROUP BY
+  s.id 
+OFFSET $2 LIMIT $3;
+`
 
 func GetSlotsBy(ctx context.Context, by uuid.UUID, offset int64, limit int64) (slot.Slots[slot.SearchSlot], error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
-	var dbSlots []db.Slot
-	err := pgxscan.Select(ctx, conn, &dbSlots, "SELECT * FROM slots WHERE uploader = $1 OFFSET $2 LIMIT $3", by, offset, limit)
+	slots := slot.Slots[slot.SearchSlot]{}
+
+	err := pgxscan.Select(ctx, conn, &slots.Slots, getSearchSlotXML, by, offset, limit)
 
 	if err != nil {
 		return slot.Slots[slot.SearchSlot]{}, err
 	}
 
-	slots := slot.Slots[slot.SearchSlot]{}
+	for i, s := range slots.Slots {
+		slots.Slots[i].NPHandle, err = NpHandleByUserID(ctx, s.Uploader)
+		slots.Slots[i].Location = common.Location{
+			X: s.LocationX,
+			Y: s.LocationY,
+		}
+		slots.Slots[i].Type = "user"
+	}
 
 	slots.Total, err = GetTotalSlots(ctx)
 	slots.HintStart = slots.Total - int(offset)
-	return slots, nil
+	return slots, err
 }
 
 func GetTotalSlots(ctx context.Context) (int, error) {

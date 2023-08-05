@@ -18,25 +18,25 @@ type User struct {
 	AvatarHash                string          `xml:"-" db:"avatar_hash"`
 	Biography                 string          `xml:"biography" db:"bio"`
 	Game                      string          `xml:"game"`
-	Lbp1UsedSlots             string          `xml:"lbp1UsedSlots"`
-	EntitledSlots             string          `xml:"entitledSlots"`
-	FreeSlots                 string          `xml:"freeSlots"`
-	CrossControlUsedSlots     string          `xml:"crossControlUsedSlots"`
-	CrossControlEntitledSlots string          `xml:"crossControlEntitledSlots"`
-	CrossControlFreeSlots     string          `xml:"crossControlFreeSlots"`
-	Lbp2UsedSlots             string          `xml:"lbp2UsedSlots"`
-	Lbp2EntitledSlots         string          `xml:"lbp2EntitledSlots"`
-	Lbp2FreeSlots             string          `xml:"lbp2FreeSlots"`
-	Lbp3UsedSlots             string          `xml:"lbp3UsedSlots"`
-	Lbp3EntitledSlots         string          `xml:"lbp3EntitledSlots"`
-	Lbp3FreeSlots             string          `xml:"lbp3FreeSlots"`
-	Lists                     string          `xml:"lists"`
-	ListsQuota                string          `xml:"lists_quota"`
-	HeartCount                string          `xml:"heartCount"`
-	ReviewCount               string          `xml:"reviewCount"`
-	CommentCount              string          `xml:"commentCount"`
-	PhotosByMeCount           string          `xml:"photosByMeCount"`
-	PhotosWithMeCount         string          `xml:"photosWithMeCount"`
+	Lbp1UsedSlots             int             `xml:"lbp1UsedSlots"`
+	EntitledSlots             int             `xml:"entitledSlots" db:"entitled_slots"`
+	FreeSlots                 int             `xml:"freeSlots" db:"free_slots"`
+	CrossControlUsedSlots     int             `xml:"crossControlUsedSlots"`
+	CrossControlEntitledSlots int             `xml:"crossControlEntitledSlots"`
+	CrossControlFreeSlots     int             `xml:"crossControlFreeSlots"`
+	Lbp2UsedSlots             int             `xml:"lbp2UsedSlots" db:"used_slots"`
+	Lbp2EntitledSlots         int             `xml:"lbp2EntitledSlots"`
+	Lbp2FreeSlots             int             `xml:"lbp2FreeSlots"`
+	Lbp3UsedSlots             int             `xml:"lbp3UsedSlots"`
+	Lbp3EntitledSlots         int             `xml:"lbp3EntitledSlots"`
+	Lbp3FreeSlots             int             `xml:"lbp3FreeSlots"`
+	Lists                     int             `xml:"lists"`
+	ListsQuota                int             `xml:"lists_quota"`
+	HeartCount                int             `xml:"heartCount"`
+	ReviewCount               int             `xml:"reviewCount"`
+	CommentCount              int             `xml:"commentCount"`
+	PhotosByMeCount           int             `xml:"photosByMeCount"`
+	PhotosWithMeCount         int             `xml:"photosWithMeCount"`
 	CommentsEnabled           bool            `xml:"commentsEnabled" db:"comments_enabled"`
 	Location                  common.Location `xml:"location"`
 	LocationX                 int32           `xml:"-" db:"locationx"`

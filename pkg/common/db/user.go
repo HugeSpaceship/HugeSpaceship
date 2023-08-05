@@ -1,6 +1,8 @@
 package db
 
 import (
+	"HugeSpaceship/pkg/common/model/lbp_xml"
+	"HugeSpaceship/pkg/common/model/lbp_xml/npdata"
 	"context"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
@@ -49,4 +51,28 @@ func UsernameByID(ctx context.Context, id uuid.UUID) (string, error) {
 
 	err := pgxscan.Get(ctx, conn, &username, "SELECT username FROM users WHERE id = $1", id)
 	return username, err
+}
+
+func NpHandleByUserID(ctx context.Context, id uuid.UUID) (npdata.NpHandle, error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	var npHandle npdata.NpHandle
+
+	err := pgxscan.Get(ctx, conn, &npHandle, "SELECT username, avatar_hash FROM users WHERE id = $1", id)
+	return npHandle, err
+}
+
+func GetUserByName(ctx context.Context, name string) (lbp_xml.User, error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	var user lbp_xml.User
+
+	err := pgxscan.Get(ctx, conn, &user, "SELECT users.*, users.entitled_slots - COUNT(s) AS free_slots, COUNT(s) AS used_slots FROM users LEFT JOIN slots AS s ON s.uploader = users.id WHERE username = $1 GROUP BY users.id LIMIT 1;", name)
+	user.Type = "user"
+	user.Game = "1"
+	user.NpHandle.Username = user.Username
+	user.NpHandle.IconHash = user.AvatarHash
+	user.Lbp1UsedSlots = 0
+	user.Lbp2FreeSlots = user.FreeSlots
+	user.Lbp3FreeSlots = user.FreeSlots
+	user.Lbp2EntitledSlots = user.EntitledSlots
+	return user, err
 }

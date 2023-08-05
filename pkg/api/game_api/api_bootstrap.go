@@ -19,7 +19,7 @@ func APIBootstrap(group *gin.RouterGroup) {
 	// LittleBigPlanet compatible API, required NpTicket auth
 	authGameAPI := group.Group("", middlewares.TicketAuthMiddleware())
 	authGameAPI.GET("/announce", controllers.AnnounceHandler())
-	authGameAPI.GET("/r/:res", resources.GetResourceHandler())
+	authGameAPI.GET("/r/:hash", resources.GetResourceHandler())
 
 	// LittleBigPlanet compatible API with digest calculation
 	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware())
@@ -36,5 +36,5 @@ func APIBootstrap(group *gin.RouterGroup) {
 	digestRequiredAPI.GET("/slots/by", slots.GetSlotsByHandler())
 	digestRequiredAPI.GET("/s/user/:id", slots.GetSlotHandler())
 	digestRequiredAPI.POST("/publish", slots.PublishHandler())
-
+	digestRequiredAPI.POST("/updateUser", users.UpdateUserHandler())
 }

@@ -1,6 +1,6 @@
 package common
 
 type Location struct {
-	X int `xml:"x"`
-	Y int `xml:"y"`
+	X int32 `xml:"x"`
+	Y int32 `xml:"y"`
 }

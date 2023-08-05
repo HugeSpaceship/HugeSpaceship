@@ -4,6 +4,7 @@ import (
 	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/common/model/lbp_xml/npdata"
 	"encoding/xml"
+	"github.com/google/uuid"
 )
 
 type SearchSlot struct {
@@ -12,22 +13,25 @@ type SearchSlot struct {
 
 	ID                  string          `xml:"id"`
 	NPHandle            npdata.NpHandle `xml:"npHandle"`
+	Uploader            uuid.UUID       `xml:"-" db:"uploader"`
 	SearchScore         float32         `xml:"searchScore"`
 	Location            common.Location `xml:"location"`
+	LocationX           int32           `xml:"-" db:"locationx"`
+	LocationY           int32           `xml:"-" db:"locationy"`
 	Game                int             `xml:"game"`
 	Name                string          `xml:"name"`
 	Description         string          `xml:"description"`
 	RootLevel           string          `xml:"rootLevel"`
 	Icon                string          `xml:"icon"`
 	InitiallyLocked     bool            `xml:"initiallyLocked"`
-	IsSubLevel          bool            `xml:"isSubLevel"`
-	IsLBP1Only          bool            `xml:"isLBP1Only"`
+	IsSubLevel          bool            `xml:"isSubLevel" db:"sub_level"`
+	IsLBP1Only          bool            `xml:"isLBP1Only" db:"lbp1only"`
 	Shareable           int             `xml:"shareable"`
 	MinPlayers          uint            `xml:"minPlayers"`
 	MaxPlayers          uint            `xml:"maxPlayers"`
 	HeartCount          int64           `xml:"heartCount"`
-	Thumbsup            int64           `xml:"thumbsup"`
-	Thumbsdown          int64           `xml:"thumbsdown"`
+	Thumbsup            int64           `xml:"thumbsup" db:"thumbs_up_count"`
+	Thumbsdown          int64           `xml:"thumbsdown" db:"thumbs_down_count"`
 	AverageRating       float32         `xml:"averageRating"`
 	PlayerCount         uint64          `xml:"playerCount"`
 	MatchingPlayers     uint64          `xml:"matchingPlayers"`

@@ -6,5 +6,5 @@ import "encoding/xml"
 type NpHandle struct {
 	XMLName  xml.Name `xml:"npHandle"`
 	Username string   `xml:",innerxml"`
-	IconHash string   `xml:"icon,attr,omitempty"`
+	IconHash string   `xml:"icon,attr,omitempty" db:"avatar_hash"`
 }
