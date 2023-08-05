@@ -3,6 +3,7 @@ package db
 import (
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/common/model/common"
+	"context"
 	"net/netip"
 
 	"github.com/google/uuid"
@@ -38,11 +39,10 @@ func (c *Context) GetUserID(username string) (uuid.NullUUID, error) {
 }
 
 func (c *Context) GetSession(token string) (auth.Session, error) {
-	row := c.pool.QueryRow(c.ctx, "SELECT sessions.*, users.username FROM sessions INNER JOIN users ON users.id = sessions.userid WHERE token = $1;", token)
-
+	row := c.pool.QueryRow(context.Background(), "SELECT sessions.*, users.username FROM sessions INNER JOIN users ON users.id = sessions.userid WHERE token = $1;", token)
 	session := auth.Session{}
 	err := row.Scan(&session.UserID, &session.IP, &session.Token, &session.Game, &session.Platform, &session.Username)
-
+	c.pool.Reset() // *In soldier voice* this is a good idea
 	return session, err
 }
 
