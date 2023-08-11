@@ -5,7 +5,7 @@
 An experimental LittleBigPlanet server focused on customisabillity and performence
 
 ## Status
-Currently in not-even-pre-alpha. You can login to the server, resource uploading works, though level uploading does not, yet.
+Currently in not-even-pre-alpha. You can login to the server, and upload levels. Photos don't work yet and neither does anything else.
 
 Most things at this point are either missing or stubbed but this will change shortly
 
