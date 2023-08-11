@@ -19,13 +19,14 @@ type SearchSlot struct {
 	LocationX           int32           `xml:"-" db:"locationx"`
 	LocationY           int32           `xml:"-" db:"locationy"`
 	Game                int             `xml:"game"`
-	Name                string          `xml:"name"`
-	Description         string          `xml:"description"`
+	Name                string          `xml:"name,omitempty"`
+	Description         string          `xml:"description,omitempty"`
 	RootLevel           string          `xml:"rootLevel"`
 	Icon                string          `xml:"icon"`
 	InitiallyLocked     bool            `xml:"initiallyLocked"`
 	IsSubLevel          bool            `xml:"isSubLevel" db:"sub_level"`
 	IsLBP1Only          bool            `xml:"isLBP1Only" db:"lbp1only"`
+	Background          string          `xml:"background"`
 	Shareable           int             `xml:"shareable"`
 	MinPlayers          uint            `xml:"minPlayers"`
 	MaxPlayers          uint            `xml:"maxPlayers"`

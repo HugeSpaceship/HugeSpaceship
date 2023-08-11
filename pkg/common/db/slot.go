@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -63,6 +65,8 @@ SELECT
   s.uploader,
   s.locationx,
   s.locationy,
+  s.name,
+  s.description,
   s.root_level, --FIXME: Add game to db schema
   s.icon,
   s.initially_locked,
@@ -72,6 +76,8 @@ SELECT
   s.shareable,
   s.min_players,
   s.max_players,
+  s.first_published,
+  s.last_updated,
  
   COUNT(DISTINCT h.owner) AS heart_count,
   COUNT(DISTINCT tu.owner) AS thumbs_up_count,
@@ -101,7 +107,7 @@ func GetSlot(ctx context.Context, id uint64) (slot.Slot, error) {
 	if err != nil {
 		return slot.Slot{}, err
 	}
-	err = pgxscan.Select(ctx, conn, &dbSlot.Resources, "SELECT resource_hash FROM slot_resources WHERE slot_id = $1 LIMIT 1;", id)
+	err = pgxscan.Select(ctx, conn, &dbSlot.Resources, "SELECT resource_hash FROM slot_resources WHERE slot_id = $1 AND resource_hash != $2 LIMIT 1;", id, dbSlot.RootLevel)
 	if err != nil {
 		return slot.Slot{}, err
 	}
@@ -111,13 +117,16 @@ func GetSlot(ctx context.Context, id uint64) (slot.Slot, error) {
 		return slot.Slot{}, err
 	}
 
-	dbSlot.FirstPublishedXML = dbSlot.FirstPublished.UnixMilli()
-	dbSlot.LastUpdatedXML = dbSlot.LastUpdated.UnixMilli()
-
+	dbSlot.FirstPublishedXML = strconv.FormatInt(dbSlot.FirstPublished.UnixMilli(), 10)
+	dbSlot.LastUpdatedXML = strconv.FormatInt(dbSlot.LastUpdated.UnixMilli(), 10)
+	dbSlot.Type = "user"
+	dbSlot.Game = 1
 	dbSlot.Location = common.Location{
 		X: dbSlot.LocationX,
 		Y: dbSlot.LocationY,
 	}
+	dbSlot.PublishedIn = common.GameType(strings.ToLower(string(common.LBP2)))
+	dbSlot.Icon = strings.TrimSpace(dbSlot.Icon)
 
 	return dbSlot, nil
 }
@@ -129,6 +138,7 @@ SELECT
   s.name,
   s.description,
   s.locationx,
+  s.background,
   s.locationy,
   s.root_level, --FIXME: Add game to db schema
   s.icon,
@@ -164,7 +174,7 @@ func GetSlotsBy(ctx context.Context, by uuid.UUID, offset int64, limit int64) (s
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	slots := slot.Slots[slot.SearchSlot]{}
 
-	err := pgxscan.Select(ctx, conn, &slots.Slots, getSearchSlotXML, by, offset, limit)
+	err := pgxscan.Select(ctx, conn, &slots.Slots, getSearchSlotXML, by, offset-1, limit)
 
 	if err != nil {
 		return slot.Slots[slot.SearchSlot]{}, err
@@ -177,10 +187,14 @@ func GetSlotsBy(ctx context.Context, by uuid.UUID, offset int64, limit int64) (s
 			Y: s.LocationY,
 		}
 		slots.Slots[i].Type = "user"
+		slots.Slots[i].Game = 1
+		slots.Slots[i].AverageRating = 3
+		slots.Slots[i].SearchScore = 10000
+		slots.Slots[i].Icon = strings.TrimSpace(s.Icon)
 	}
 
 	slots.Total, err = GetTotalSlots(ctx)
-	slots.HintStart = slots.Total - int(offset)
+	slots.HintStart = slots.Total - int(offset-1)
 	return slots, err
 }
 
