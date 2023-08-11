@@ -15,10 +15,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"time"
 )
 
 // main is the entrypoint for the API server
 func main() {
+	startTime := time.Now()
 	err := config.LoadConfig("apiserver")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")
@@ -43,7 +45,8 @@ func main() {
 		web_api.APIBootstrap(api)
 	}
 
-	err = ctx.Run(":80")
+	log.Info().Float64("startSecs", time.Since(startTime).Seconds()).Msg("Time to start")
+	err = ctx.Run("0.0.0.0:80")
 	if err != nil {
 		panic(err)
 	}
