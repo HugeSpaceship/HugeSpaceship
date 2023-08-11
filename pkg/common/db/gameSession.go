@@ -5,28 +5,36 @@ import (
 	"HugeSpaceship/pkg/common/model/common"
 	"context"
 	"net/netip"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
 
-const CreateSQL = `INSERT INTO sessions (userId, ip, token, game, platform) VALUES ($1,$2,$3,$4,$5)`
+const CreateSQL = `INSERT INTO sessions (userId, ip, token, game, platform, expiry) VALUES ($1,$2,$3,$4,$5,$6);`
 
-func (c *Context) NewSession(username string, gameType common.GameType, ip netip.Addr, platform common.Platform, token string) error {
+func (c *Context) NewSession(username string, gameType common.GameType, ip netip.Addr, platform common.Platform, token string, expiry time.Time) (auth.Session, error) {
 	userID, err := c.GetUserID(username)
 	if err != nil {
-		return nil
+		return auth.Session{}, nil
 
 	}
-
 	n, err := c.PurgeSessions(userID, gameType, platform)
 	if err != nil {
-		return err
+		return auth.Session{}, err
 	}
 	log.Debug().Int("clearedSessions", n).Str("user", username).Msg("Purged old sessions for user")
 
-	_, err = c.pool.Exec(c.ctx, CreateSQL, userID, ip, token, gameType, platform)
-	return err
+	_, err = c.pool.Exec(c.ctx, CreateSQL, userID, ip, token, gameType, platform, expiry)
+	return auth.Session{
+		UserID:     userID.UUID,
+		Username:   username,
+		Game:       gameType,
+		IP:         ip,
+		Token:      token,
+		ExpiryDate: expiry,
+		Platform:   platform,
+	}, err
 }
 
 func (c *Context) GetUserID(username string) (uuid.NullUUID, error) {
@@ -41,8 +49,7 @@ func (c *Context) GetUserID(username string) (uuid.NullUUID, error) {
 func (c *Context) GetSession(token string) (auth.Session, error) {
 	row := c.pool.QueryRow(context.Background(), "SELECT sessions.*, users.username FROM sessions INNER JOIN users ON users.id = sessions.userid WHERE token = $1;", token)
 	session := auth.Session{}
-	err := row.Scan(&session.UserID, &session.IP, &session.Token, &session.Game, &session.Platform, &session.Username)
-	c.pool.Reset() // *In soldier voice* this is a good idea
+	err := row.Scan(&session.UserID, &session.IP, &session.Token, &session.Game, &session.Platform, &session.ExpiryDate, &session.Username)
 	return session, err
 }
 

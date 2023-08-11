@@ -9,7 +9,6 @@ import (
 )
 
 type Session struct {
-	ID         int
 	UserID     uuid.UUID
 	Username   string
 	Game       common.GameType
