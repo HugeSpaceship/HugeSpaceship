@@ -27,5 +27,6 @@ func GetResourceHandler() gin.HandlerFunc {
 		if err != nil {
 			ctx.Error(err)
 		}
+		db.CloseContext(dbCtx)
 	}
 }

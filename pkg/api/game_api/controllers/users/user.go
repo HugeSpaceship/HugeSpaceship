@@ -8,7 +8,7 @@ import (
 func UserGetHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		dbCtx := db.GetContext()
-
+		defer db.CloseContext(dbCtx)
 		user, err := db.GetUserByName(dbCtx, ctx.Param("username"))
 		if err != nil {
 			ctx.Error(err)
@@ -20,5 +20,6 @@ func UserGetHandler() gin.HandlerFunc {
 			return
 		}
 		ctx.XML(200, &user)
+
 	}
 }

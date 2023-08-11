@@ -34,8 +34,13 @@ func GetContext() context.Context {
 	return context.WithValue(ctx, "conn", conn)
 }
 
+func CloseContext(ctx context.Context) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	conn.Release()
+}
+
 func open() {
-	poolConfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://hugespaceship:hugespaceship@%s:5432/hugespaceship", viper.GetString("db_host")))
+	poolConfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://hugespaceship:hugespaceship@%s:5432/hugespaceship?application_name=HugeSpaceship+DEV", viper.GetString("db_host")))
 	if err != nil {
 		panic(err.Error())
 	}

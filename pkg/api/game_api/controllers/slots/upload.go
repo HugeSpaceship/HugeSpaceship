@@ -12,6 +12,7 @@ import (
 func StartPublishHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		dbCtx := db.GetContext()
+		defer db.CloseContext(dbCtx)
 		s := slot.Slot{}
 		err := ctx.BindXML(&s)
 		if err != nil {
@@ -41,6 +42,7 @@ func StartPublishHandler() gin.HandlerFunc {
 func PublishHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		dbCtx := db.GetContext()
+		defer db.CloseContext(dbCtx)
 		slotData := new(slot.Upload)
 		err := ctx.BindXML(slotData)
 		if err != nil {
@@ -54,6 +56,7 @@ func PublishHandler() gin.HandlerFunc {
 		if err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatus(500)
+
 			return
 		}
 		log.Debug().Uint64("levelID", id).Str("user", session.(auth.Session).Username).Msg("Published Level")
