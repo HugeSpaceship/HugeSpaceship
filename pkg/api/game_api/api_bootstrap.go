@@ -20,6 +20,7 @@ func APIBootstrap(group *gin.RouterGroup) {
 	authGameAPI := group.Group("", middlewares.TicketAuthMiddleware())
 	authGameAPI.GET("/announce", controllers.AnnounceHandler())
 	authGameAPI.GET("/r/:hash", resources.GetResourceHandler())
+	authGameAPI.GET("/network_settings.nws", settings.NetSettingsHandler())
 
 	// LittleBigPlanet compatible API with digest calculation
 	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware())
