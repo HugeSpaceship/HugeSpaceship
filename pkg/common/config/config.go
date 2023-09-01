@@ -4,7 +4,7 @@ import "github.com/cristalhq/aconfig"
 import "github.com/cristalhq/aconfig/aconfigyaml"
 
 type Config struct {
-	Port     int `default:"8080" usage:"The listen port for the HTTP server"`
+	HTTPPort int `default:"8080" usage:"The listen port for the HTTP server"`
 	Database struct {
 		Host     string `required:"true"`
 		Port     uint16 `required:"true"`
@@ -25,14 +25,13 @@ type Config struct {
 func LoadConfig() (cfg *Config, err error) {
 	cfg = &Config{}
 	loader := aconfig.LoaderFor(cfg, aconfig.Config{
+		SkipFlags: true,
 		EnvPrefix: "HS",
 		Files:     []string{"/etc/hugespaceship/config.yml", "hugespaceship.yml"},
 		FileDecoders: map[string]aconfig.FileDecoder{
 			".yml": aconfigyaml.New(),
 		},
 	})
-
-	loader.Flags()
 
 	err = loader.Load()
 

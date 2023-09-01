@@ -1,0 +1,13 @@
+database:
+  host: "testHost"
+  port: 8425
+  username: "testUsername"
+  password: "testPassword"
+  database: "testDB"
+lbp_api:
+  digest_key: "test_digestKey"
+  alternate_digest_key: "test_altDigestKey"
+  enforce_digest: true
+log:
+  debug: true
+http_port: 8080
