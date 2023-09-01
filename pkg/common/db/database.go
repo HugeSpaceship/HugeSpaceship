@@ -15,11 +15,11 @@ type Context struct {
 	ctx  context.Context
 }
 
-var connection *Context
+var globalPool *pgxpool.Pool
 
 func GetContext() context.Context {
 	ctx := context.Background()
-	conn, err := connection.pool.Acquire(ctx)
+	conn, err := globalPool.Acquire(ctx)
 	if err != nil {
 		return nil
 	}
@@ -56,5 +56,6 @@ func Open(cfg *config.Config) *pgxpool.Pool {
 	if err != nil {
 		panic(err.Error())
 	}
+	globalPool = pool
 	return pool
 }
