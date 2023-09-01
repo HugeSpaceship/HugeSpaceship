@@ -10,4 +10,4 @@ lbp_api:
   enforce_digest: true
 log:
   debug: true
-http_port: 8080
+http_port: 8181

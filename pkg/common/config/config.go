@@ -11,7 +11,7 @@ type Config struct {
 		Username string `required:"true"`
 		Password string `required:"true"`
 		Database string `required:"true" usage:"The Database to use"`
-	} `usage:"Config for a postgresql database"`
+	} `usage:"Config for a postgresql database" env:"DB"`
 	LBPApi struct {
 		EnforceDigest      bool   `default:"false"`
 		DigestKey          string ``
