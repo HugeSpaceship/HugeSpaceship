@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"io"
 	"net/http"
 	"strings"
@@ -18,6 +17,7 @@ type DeferredWriter struct {
 	clientDigest    string
 	path            string
 	alternateDigest bool
+	cfg             *config.Config
 }
 
 func (w DeferredWriter) WriteHeaderNow() {
@@ -25,21 +25,22 @@ func (w DeferredWriter) WriteHeaderNow() {
 }
 
 func (w DeferredWriter) Write(data []byte) (int, error) {
-	digestKey := viper.GetString("mainline_digest")
+	digestKey := w.cfg.LBPApi.DigestKey
 	if w.alternateDigest {
-		digestKey = viper.GetString("vita_digest")
+		digestKey = w.cfg.LBPApi.AlternateDigestKey
 	}
 	w.Header().Add("X-Digest-A", utils.CalculateDigest(w.path, w.authCookie, digestKey, data, false))
 	return w.ResponseWriter.Write(data)
 }
 
-func NewDeferredWriter(writer gin.ResponseWriter, path, clientDigest, authCookie string, alternateDigest bool) DeferredWriter {
+func NewDeferredWriter(writer gin.ResponseWriter, path, clientDigest, authCookie string, alternateDigest bool, cfg *config.Config) DeferredWriter {
 	return DeferredWriter{
 		ResponseWriter:  writer,
 		authCookie:      authCookie,
 		clientDigest:    clientDigest,
 		path:            path,
 		alternateDigest: alternateDigest,
+		cfg:             cfg,
 	}
 }
 
@@ -77,7 +78,7 @@ func DigestMiddleware(cfg *config.Config) gin.HandlerFunc {
 			}
 		}
 		ctx.Header("X-Digest-B", digest)
-		deferredWriter := NewDeferredWriter(ctx.Writer, ctx.Request.URL.Path, digest, cookie, alternateDigest)
+		deferredWriter := NewDeferredWriter(ctx.Writer, ctx.Request.URL.Path, digest, cookie, alternateDigest, cfg)
 		ctx.Writer = deferredWriter
 
 		if !excludeBody {
