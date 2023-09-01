@@ -23,7 +23,7 @@ func main() {
 	// So we can time how long it took to start the server
 	startTime := time.Now()
 
-	cfg, err := config.LoadConfig()
+	cfg, err := config.LoadConfig(false)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")
 	}
