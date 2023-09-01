@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.3.1
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/rs/zerolog v1.30.0
 	github.com/spf13/viper v1.16.0
