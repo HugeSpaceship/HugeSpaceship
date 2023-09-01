@@ -22,10 +22,11 @@ type Config struct {
 	}
 }
 
-func LoadConfig() (cfg *Config, err error) {
+func LoadConfig(skipEnv bool) (cfg *Config, err error) {
 	cfg = &Config{}
 	loader := aconfig.LoaderFor(cfg, aconfig.Config{
 		SkipFlags: true,
+		SkipEnv:   skipEnv,
 		EnvPrefix: "HS",
 		Files:     []string{"/etc/hugespaceship/config.yml", "hugespaceship.yml"},
 		FileDecoders: map[string]aconfig.FileDecoder{

@@ -28,7 +28,7 @@ func testEnvConfig(t *testing.T) {
 	t.Setenv("HS_DB_PASSWORD", "testPassword")
 	t.Setenv("HS_DB_DATABASE", "testDB")
 
-	cfg, err := LoadConfig()
+	cfg, err := LoadConfig(false)
 	if err != nil {
 		t.Fatal("Failed to load config: ", err)
 	}
@@ -48,7 +48,7 @@ func testInvalidEnvConfig(t *testing.T) {
 
 	fmt.Println(os.Getenv("HS_HTTP_PORT"))
 
-	cfg, err := LoadConfig()
+	cfg, err := LoadConfig(false)
 	if err == nil {
 		t.Fatal("The config loaded in a situation where it shouldn't")
 	}
@@ -59,7 +59,7 @@ func testInvalidEnvConfig(t *testing.T) {
 }
 
 func testConfigFile(t *testing.T) {
-	cfg, err := LoadConfig()
+	cfg, err := LoadConfig(true)
 	if err != nil {
 		t.Fatal("Failed to load config", err)
 	}
