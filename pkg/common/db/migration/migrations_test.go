@@ -9,7 +9,10 @@ import (
 var testMigration string
 
 func TestGetMigration(t *testing.T) {
-	migration, err := GetMigration("000_Initial_Migration.sql")
+	migration, exists, err := GetMigration("000_Initial_Migration.sql")
+	if !exists {
+		t.Error("Migration not found")
+	}
 	if err != nil {
 		t.Error(err)
 	}

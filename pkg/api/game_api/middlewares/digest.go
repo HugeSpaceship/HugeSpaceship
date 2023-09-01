@@ -2,10 +2,10 @@ package middlewares
 
 import (
 	"HugeSpaceship/pkg/api/game_api/utils"
+	"HugeSpaceship/pkg/common/config"
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"io"
 	"net/http"
 	"strings"
@@ -17,6 +17,7 @@ type DeferredWriter struct {
 	clientDigest    string
 	path            string
 	alternateDigest bool
+	cfg             *config.Config
 }
 
 func (w DeferredWriter) WriteHeaderNow() {
@@ -24,25 +25,26 @@ func (w DeferredWriter) WriteHeaderNow() {
 }
 
 func (w DeferredWriter) Write(data []byte) (int, error) {
-	digestKey := viper.GetString("mainline_digest")
+	digestKey := w.cfg.LBPApi.DigestKey
 	if w.alternateDigest {
-		digestKey = viper.GetString("vita_digest")
+		digestKey = w.cfg.LBPApi.AlternateDigestKey
 	}
 	w.Header().Add("X-Digest-A", utils.CalculateDigest(w.path, w.authCookie, digestKey, data, false))
 	return w.ResponseWriter.Write(data)
 }
 
-func NewDeferredWriter(writer gin.ResponseWriter, path, clientDigest, authCookie string, alternateDigest bool) DeferredWriter {
+func NewDeferredWriter(writer gin.ResponseWriter, path, clientDigest, authCookie string, alternateDigest bool, cfg *config.Config) DeferredWriter {
 	return DeferredWriter{
 		ResponseWriter:  writer,
 		authCookie:      authCookie,
 		clientDigest:    clientDigest,
 		path:            path,
 		alternateDigest: alternateDigest,
+		cfg:             cfg,
 	}
 }
 
-func DigestMiddleware() gin.HandlerFunc {
+func DigestMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		digestHeader := "X-Digest-A"
 		excludeBody := false
@@ -59,20 +61,24 @@ func DigestMiddleware() gin.HandlerFunc {
 			body, _ = io.ReadAll(ctx.Request.Body) // if the client has sent a broken body, the only one that will suffer is them
 		}
 
-		digest := utils.CalculateDigest(ctx.Request.URL.Path, cookie, viper.GetString("main_digest"), body, excludeBody)
+		digest := utils.CalculateDigest(ctx.Request.URL.Path, cookie, cfg.LBPApi.DigestKey, body, excludeBody)
 
 		alternateDigest := false
 
 		if digest != ctx.GetHeader(digestHeader) {
-			digest = utils.CalculateDigest(ctx.Request.URL.Path, cookie, viper.GetString("vita_digest"), body, excludeBody)
+			digest = utils.CalculateDigest(ctx.Request.URL.Path, cookie, cfg.LBPApi.AlternateDigestKey, body, excludeBody)
 			alternateDigest = true
 			if digest != ctx.GetHeader(digestHeader) {
-				log.Debug().Msg("Failed to authenticate digest, aborting request")
-				ctx.AbortWithStatus(http.StatusForbidden)
+				if cfg.LBPApi.EnforceDigest {
+					log.Debug().Msg("Failed to authenticate digest, aborting request")
+					ctx.AbortWithStatus(http.StatusForbidden)
+				} else {
+					log.Warn().Msg("Invalid digest from client, however digests are not enforced")
+				}
 			}
 		}
 		ctx.Header("X-Digest-B", digest)
-		deferredWriter := NewDeferredWriter(ctx.Writer, ctx.Request.URL.Path, digest, cookie, alternateDigest)
+		deferredWriter := NewDeferredWriter(ctx.Writer, ctx.Request.URL.Path, digest, cookie, alternateDigest, cfg)
 		ctx.Writer = deferredWriter
 
 		if !excludeBody {

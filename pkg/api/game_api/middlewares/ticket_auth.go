@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"HugeSpaceship/pkg/common/db"
 	"HugeSpaceship/pkg/common/db/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -14,7 +15,9 @@ func TicketAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		session, exists := auth.GetSession(token)
+		dbCtx := db.GetContext()
+		defer db.CloseContext(dbCtx)
+		session, exists := auth.GetSession(dbCtx, token)
 
 		if !exists {
 			ctx.AbortWithStatus(http.StatusForbidden)

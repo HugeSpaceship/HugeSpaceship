@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"HugeSpaceship/pkg/common/db"
 	"HugeSpaceship/pkg/common/db/auth"
 	"HugeSpaceship/pkg/common/model/lbp_xml"
 	"HugeSpaceship/pkg/npticket"
@@ -28,7 +29,10 @@ func LoginHandler() gin.HandlerFunc {
 		log.Debug().Msg("Verified NPTicket")
 		game := c.Query("game")
 
-		token, err := auth.NewSession(ticket, netip.MustParseAddr(c.ClientIP()), game)
+		dbCtx := db.GetContext()
+		defer db.CloseContext(dbCtx)
+
+		token, err := auth.NewSession(dbCtx, ticket, netip.MustParseAddr(c.ClientIP()), game)
 		if err != nil {
 			c.Error(err)
 			c.AbortWithStatus(403)

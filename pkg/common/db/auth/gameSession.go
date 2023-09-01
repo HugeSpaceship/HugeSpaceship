@@ -5,6 +5,7 @@ import (
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/common/model/common"
 	"HugeSpaceship/pkg/npticket/types"
+	"context"
 	"net/netip"
 	"time"
 
@@ -14,11 +15,10 @@ import (
 
 var sessionCache = make(map[string]auth.Session)
 
-func NewSession(ticket types.Ticket, ip netip.Addr, game string) (string, error) {
-	c := db.GetConnection()
+func NewSession(ctx context.Context, ticket types.Ticket, ip netip.Addr, game string) (string, error) {
 	log.Debug().Msg("got connection")
-	if !c.UserExists(ticket.Username) {
-		err := c.CreateUser(ticket.Username)
+	if !db.UserExists(ctx, ticket.Username) {
+		err := db.CreateUser(ctx, ticket.Username)
 		if err != nil {
 			return "", err
 		}
@@ -36,7 +36,7 @@ func NewSession(ticket types.Ticket, ip netip.Addr, game string) (string, error)
 		gameType = common.LBPV
 	}
 
-	session, err := c.NewSession(ticket.Username, gameType, ip, platform, token, time.Now().Add(5*time.Hour))
+	session, err := db.NewSession(ctx, ticket.Username, gameType, ip, platform, token, time.Now().Add(5*time.Hour))
 	if err != nil {
 		return "", err
 	}
@@ -46,14 +46,12 @@ func NewSession(ticket types.Ticket, ip netip.Addr, game string) (string, error)
 	return token, nil
 }
 
-func GetSession(token string) (session auth.Session, exists bool) {
-
-	c := db.GetConnection()
+func GetSession(ctx context.Context, token string) (session auth.Session, exists bool) {
 
 	if session, exists := sessionCache[token]; exists {
 		if time.Now().After(session.ExpiryDate) {
 			delete(sessionCache, token)
-			err := c.RemoveSession(token)
+			err := db.RemoveSession(ctx, token)
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to remove expired session")
 			}
@@ -61,14 +59,14 @@ func GetSession(token string) (session auth.Session, exists bool) {
 		return session, exists
 	}
 
-	session, err := c.GetSession(token)
+	session, err := db.GetSession(ctx, token)
 
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to get session")
 		return session, false
 	}
 	if time.Now().After(session.ExpiryDate) { // If the session is expired
-		err := c.RemoveSession(token)
+		err := db.RemoveSession(ctx, token)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to remove expired session")
 		}

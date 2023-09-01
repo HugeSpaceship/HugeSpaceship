@@ -27,20 +27,20 @@ func ListMigrations() []string {
 	return migrationNames
 }
 
-func GetMigrationByNumber(number int) (string, error) {
+func GetMigrationByNumber(number int) (string, bool, error) {
 	for _, file := range ListMigrations() {
 		if strings.HasPrefix(file, fmt.Sprintf("%03d", number)) {
 			return GetMigration(file)
 		}
 	}
-	return "", errors.New("no migrations found for id " + strconv.Itoa(number))
+	return "", false, errors.New("no migrations found for id " + strconv.Itoa(number))
 }
 
-func GetMigration(name string) (string, error) {
+func GetMigration(name string) (string, bool, error) {
 	migration, err := migrations.ReadFile("migrations/" + name)
 	if err != nil {
-		return "", err
+		return "", true, err
 	}
 
-	return string(migration), nil
+	return string(migration), true, nil
 }

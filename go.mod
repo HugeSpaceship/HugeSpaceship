@@ -3,18 +3,19 @@ module HugeSpaceship
 go 1.20
 
 require (
+	github.com/cristalhq/aconfig v0.18.4
+	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.3.1
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/rs/zerolog v1.30.0
-	github.com/spf13/viper v1.16.0
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.0.0
 )
 
 require (
-	github.com/bytedance/sonic v1.9.1 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/bytedance/sonic v1.10.0 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

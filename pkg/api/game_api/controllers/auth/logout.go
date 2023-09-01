@@ -10,7 +10,11 @@ import (
 func LogoutHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session, _ := ctx.Get("session")
-		err := db.GetConnection().RemoveSession(session.(auth.Session).Token)
+
+		dbCtx := db.GetContext()
+		defer db.CloseContext(dbCtx)
+
+		err := db.RemoveSession(dbCtx, session.(auth.Session).Token)
 		if err != nil {
 			er2 := ctx.Error(err)
 			if er2 != nil {
