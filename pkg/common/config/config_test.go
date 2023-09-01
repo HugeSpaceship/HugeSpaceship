@@ -85,7 +85,7 @@ func testConfigFile(t *testing.T) {
 		t.Error("Unexpected value")
 	}
 	if cfg.Database.Host != "testHost" {
-		t.Error("Unexpected value")
+		t.Error("Unexpected value, expected testHost", cfg.Database.Host)
 	}
 	if cfg.Database.Port != 8425 {
 		t.Error("Unexpected value")
