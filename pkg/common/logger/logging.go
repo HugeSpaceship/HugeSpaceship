@@ -1,16 +1,16 @@
 package logger
 
 import (
+	"HugeSpaceship/pkg/common/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"os"
 )
 
-func LoggingInit(service string) {
+func LoggingInit(service string, config *config.Config) {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-	if viper.GetBool("debug") {
+	if config.Log.Debug {
 		log.Logger = log.With().Caller().Logger().Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	} else {
 		file, _ := os.OpenFile("./hs-"+service+".log", os.O_CREATE|os.O_WRONLY, 0644)

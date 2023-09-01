@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"HugeSpaceship/pkg/api/game_api/utils"
+	"HugeSpaceship/pkg/common/config"
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -42,7 +43,7 @@ func NewDeferredWriter(writer gin.ResponseWriter, path, clientDigest, authCookie
 	}
 }
 
-func DigestMiddleware() gin.HandlerFunc {
+func DigestMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		digestHeader := "X-Digest-A"
 		excludeBody := false
@@ -59,16 +60,20 @@ func DigestMiddleware() gin.HandlerFunc {
 			body, _ = io.ReadAll(ctx.Request.Body) // if the client has sent a broken body, the only one that will suffer is them
 		}
 
-		digest := utils.CalculateDigest(ctx.Request.URL.Path, cookie, viper.GetString("main_digest"), body, excludeBody)
+		digest := utils.CalculateDigest(ctx.Request.URL.Path, cookie, cfg.LBPApi.DigestKey, body, excludeBody)
 
 		alternateDigest := false
 
 		if digest != ctx.GetHeader(digestHeader) {
-			digest = utils.CalculateDigest(ctx.Request.URL.Path, cookie, viper.GetString("vita_digest"), body, excludeBody)
+			digest = utils.CalculateDigest(ctx.Request.URL.Path, cookie, cfg.LBPApi.AlternateDigestKey, body, excludeBody)
 			alternateDigest = true
 			if digest != ctx.GetHeader(digestHeader) {
-				log.Debug().Msg("Failed to authenticate digest, aborting request")
-				ctx.AbortWithStatus(http.StatusForbidden)
+				if cfg.LBPApi.EnforceDigest {
+					log.Debug().Msg("Failed to authenticate digest, aborting request")
+					ctx.AbortWithStatus(http.StatusForbidden)
+				} else {
+					log.Warn().Msg("Invalid digest from client, however digests are not enforced")
+				}
 			}
 		}
 		ctx.Header("X-Digest-B", digest)

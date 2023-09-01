@@ -9,12 +9,10 @@ import (
 	"io"
 )
 
-func (c *Context) UploadResource(reader io.ReadCloser, contentLength int64, hash string, uploader uuid.UUID) error {
-	conn, err := c.pool.Acquire(c.ctx)
-	if err != nil {
-		return err
-	}
-	tx, err := conn.Begin(c.ctx)
+func UploadResource(ctx context.Context, reader io.ReadCloser, contentLength int64, hash string, uploader uuid.UUID) error {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -22,11 +20,11 @@ func (c *Context) UploadResource(reader io.ReadCloser, contentLength int64, hash
 	if err != nil {
 		return err
 	}
-	oid, err := lobs.Create(c.ctx, 0)
+	oid, err := lobs.Create(ctx, 0)
 	if err != nil {
 		return err
 	}
-	lob, err := lobs.Open(c.ctx, oid, pgx.LargeObjectModeWrite)
+	lob, err := lobs.Open(ctx, oid, pgx.LargeObjectModeWrite)
 	if err != nil {
 		return err
 	}
@@ -42,12 +40,12 @@ func (c *Context) UploadResource(reader io.ReadCloser, contentLength int64, hash
 		return err
 	}
 
-	_, err = c.pool.Exec(c.ctx, "INSERT INTO resources (originaluploader,size,file,hash) VALUES ($1, $2, $3, $4)", uploader, written, oid, hash)
+	_, err = conn.Exec(ctx, "INSERT INTO resources (originaluploader,size,file,hash) VALUES ($1, $2, $3, $4)", uploader, written, oid, hash)
 	if err != nil {
 		return err
 	}
 
-	err = tx.Commit(c.ctx)
+	err = tx.Commit(ctx)
 	return err
 }
 
@@ -92,32 +90,4 @@ func ResourceExists(ctx context.Context, hash string) (exists bool, err error) {
 		return true, err
 	}
 	return false, err
-}
-
-func GetLevelResources(ctx context.Context, id uuid.UUID) ([]string, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-
-	count := conn.QueryRow(ctx, "SELECT count(resource_hash) FROM slot_resources")
-	var resCount uint
-	err := count.Scan(&resCount)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := conn.Query(ctx, "SELECT resource_hash FROM slot_resources WHERE slot_id = $1", id)
-	if err != nil {
-		return nil, err
-	}
-	resources := make([]string, resCount)
-	i := 0
-	for rows.Next() {
-		var resource string
-		err := rows.Scan(&resource)
-		if err != nil {
-			return nil, err
-		}
-		resources[i] = resource
-		i++
-	}
-	return resources, nil
 }

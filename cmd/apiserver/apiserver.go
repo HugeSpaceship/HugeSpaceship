@@ -10,25 +10,31 @@ import (
 	"HugeSpaceship/pkg/api/web_api"
 	"HugeSpaceship/pkg/common/config"
 	"HugeSpaceship/pkg/common/db"
+	"HugeSpaceship/pkg/common/db/migration"
 	"HugeSpaceship/pkg/common/logger"
 	_ "embed"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"time"
 )
 
 // main is the entrypoint for the API server
 func main() {
+	// So we can time how long it took to start the server
 	startTime := time.Now()
-	err := config.LoadConfig("apiserver")
+
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")
 	}
 
-	logger.LoggingInit("apiserver")
+	logger.LoggingInit("apiserver", cfg)
 
-	_ = db.GetConnection()
+	pool := db.Open(cfg) // Open a connection to the DB
+	err = migration.MigrateDB(pool)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to migrate database")
+	}
 
 	ctx := gin.New()
 	ctx.Use(logger.LoggingMiddleware())
@@ -36,14 +42,10 @@ func main() {
 	api := ctx.Group("/api")
 
 	// LittleBigPlanet compatible API
-	if viper.GetBool("enable_gameserver") {
-		gameAPI := api.Group("/LBP_XML")
-		game_api.APIBootstrap(gameAPI)
-	}
+	game_api.APIBootstrap(api, cfg)
+
 	// Web API
-	if viper.GetBool("enable_api") {
-		web_api.APIBootstrap(api)
-	}
+	web_api.APIBootstrap(api)
 
 	log.Info().Float64("startSecs", time.Since(startTime).Seconds()).Msg("Time to start")
 	err = ctx.Run("0.0.0.0:80")

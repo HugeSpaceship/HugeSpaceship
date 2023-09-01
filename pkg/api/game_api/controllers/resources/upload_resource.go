@@ -10,8 +10,10 @@ func UploadResources() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session, _ := ctx.Get("session")
 
+		dbCtx := db.GetContext()
+
 		// TODO: Check if resouce exists!! THIS IS IMPORTANT
-		err := db.GetConnection().UploadResource(ctx.Request.Body, ctx.Request.ContentLength, ctx.Param("hash"), session.(auth.Session).UserID)
+		err := db.UploadResource(dbCtx, ctx.Request.Body, ctx.Request.ContentLength, ctx.Param("hash"), session.(auth.Session).UserID)
 		if err != nil {
 			_ = ctx.Error(err)
 			ctx.AbortWithStatus(200)

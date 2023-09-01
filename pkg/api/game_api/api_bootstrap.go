@@ -9,21 +9,24 @@ import (
 	"HugeSpaceship/pkg/api/game_api/controllers/slots"
 	"HugeSpaceship/pkg/api/game_api/controllers/users"
 	"HugeSpaceship/pkg/api/game_api/middlewares"
+	"HugeSpaceship/pkg/common/config"
 	"github.com/gin-gonic/gin"
 )
 
-func APIBootstrap(group *gin.RouterGroup) {
-	group.POST("/login", auth.LoginHandler())
-	group.GET("/eula", controllers.EulaHandler())
+func APIBootstrap(group *gin.RouterGroup, cfg *config.Config) {
+	gameAPI := group.Group("/LBP_XML")
+
+	gameAPI.POST("/login", auth.LoginHandler())
+	gameAPI.GET("/eula", controllers.EulaHandler())
 
 	// LittleBigPlanet compatible API, required NpTicket auth
-	authGameAPI := group.Group("", middlewares.TicketAuthMiddleware())
+	authGameAPI := gameAPI.Group("", middlewares.TicketAuthMiddleware())
 	authGameAPI.GET("/announce", controllers.AnnounceHandler())
 	authGameAPI.GET("/r/:hash", resources.GetResourceHandler())
 	authGameAPI.GET("/network_settings.nws", settings.NetSettingsHandler())
 
 	// LittleBigPlanet compatible API with digest calculation
-	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware())
+	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware(cfg))
 	digestRequiredAPI.GET("/user/:username", users.UserGetHandler())
 	digestRequiredAPI.POST("/match", match.MatchEndpoint())
 	digestRequiredAPI.POST("/npdata", settings.NpDataEndpoint())

@@ -6,25 +6,33 @@ import (
 	"github.com/rs/zerolog/log"
 	"strconv"
 	"strings"
+	"time"
 )
 
+// MigrateDB migrates the Database using the migrations that get embedded
 func MigrateDB(connection *pgxpool.Pool) error {
+	startTime := time.Now()
+	log.Info().Msg("Starting DB migration")
 	for { // While there are more migrations
-		sql, err := nextMigration(connection)
-		if err != nil {
-			log.Debug().Err(err).Msg("Failed to get migration, we're probably done")
+		sql, hasNext, err := nextMigration(connection)
+		if !hasNext {
 			break
 		}
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to migrate DB")
+		}
 		if _, err = connection.Exec(context.Background(), sql); err != nil { // Do the migration
-			log.Error().Err(err).Str("migration", sql).Msg("Failed to migrate")
+			log.Fatal().Err(err).Str("migration", sql).Msg("Failed to migrate DB")
 			return err // If something explodes, bail
 		}
 	}
 
+	log.Info().Int("migrationMs", int(time.Since(startTime).Milliseconds())).Msg("Migration Complete")
+
 	return nil
 }
 
-func nextMigration(conn *pgxpool.Pool) (string, error) {
+func nextMigration(conn *pgxpool.Pool) (string, bool, error) {
 	row := conn.QueryRow(context.Background(), "SELECT * FROM migrations ORDER BY id DESC LIMIT 1")
 
 	migration := Migration{}

@@ -1,14 +1,13 @@
 package db
 
 import (
-	"HugeSpaceship/pkg/common/db/migration"
+	"HugeSpaceship/pkg/common/config"
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/spf13/viper"
+	"github.com/rs/zerolog/log"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
-	"sync"
 )
 
 type Context struct {
@@ -17,13 +16,6 @@ type Context struct {
 }
 
 var connection *Context
-
-var connectOnce = sync.Once{}
-
-func GetConnection() *Context {
-	connectOnce.Do(open)
-	return connection
-}
 
 func GetContext() context.Context {
 	ctx := context.Background()
@@ -39,27 +31,30 @@ func CloseContext(ctx context.Context) {
 	conn.Release()
 }
 
-func open() {
-	poolConfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://hugespaceship:hugespaceship@%s:5432/hugespaceship?application_name=HugeSpaceship+DEV", viper.GetString("db_host")))
+// Open initializes a connection to the database based on the fields in cfg.
+func Open(cfg *config.Config) *pgxpool.Pool {
+	dbOpenStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?application_name=%s",
+		cfg.Database.Username,
+		cfg.Database.Password,
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.Database,
+		"HugeSpaceship+Dev", // because it's a URL it needs the spaces to be escaped with + signs
+	)
+
+	dbCfg, err := pgxpool.ParseConfig(dbOpenStr) // We don't need to use the field parser because we already have all the fields
 	if err != nil {
-		panic(err.Error())
+		log.Fatal().Err(err).Msg("Failed to parse DB config, check the config file")
 	}
 
-	poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		pgxUUID.Register(conn.TypeMap())
+	dbCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxUUID.Register(conn.TypeMap()) // Allows us to use UUIDs in SQL
 		return nil
 	}
 
-	conn, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
+	pool, err := pgxpool.NewWithConfig(context.Background(), dbCfg)
 	if err != nil {
 		panic(err.Error())
 	}
-	if err != nil {
-		panic(err.Error())
-	}
-	err = migration.MigrateDB(conn)
-	if err != nil {
-		panic(err.Error())
-	}
-	connection = &Context{pool: conn, ctx: context.Background()}
+	return pool
 }
