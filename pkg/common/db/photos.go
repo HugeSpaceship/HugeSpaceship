@@ -3,7 +3,6 @@ package db
 import (
 	"HugeSpaceship/pkg/common/model/lbp_xml/photos"
 	"context"
-	"errors"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -31,8 +30,7 @@ func InsertPhoto(ctx context.Context, photo photos.UploadPhoto, author uuid.UUID
 	row := tx.QueryRow(ctx, photoInsertSQL, domain, author, photo.Small, photo.Medium, photo.Large, photo.Plan, photo.Slot.Type, slotField)
 	err = row.Scan(&id)
 	if err != nil {
-		er2 := tx.Rollback(ctx)
-		err = errors.Join(err, er2)
+		tx.Rollback(ctx)
 		return
 	}
 
