@@ -41,5 +41,8 @@ func APIBootstrap(group *gin.RouterGroup, cfg *config.Config) {
 	digestRequiredAPI.GET("/s/user/:id", slots.GetSlotHandler())
 	digestRequiredAPI.POST("/publish", slots.PublishHandler())
 	digestRequiredAPI.POST("/updateUser", users.UpdateUserHandler())
-	digestRequiredAPI.POST("/showModerated", resources.ShowModeratedHandler())
+	digestRequiredAPI.POST("/showModerated", moderation.ShowModeratedHandler())
+
+	digestRequiredAPI.POST("/uploadPhoto", photos.UploadPhoto())
+	digestRequiredAPI.POST("/photos/by", photos.UploadPhoto())
 }

@@ -3,6 +3,7 @@ package config
 import "github.com/cristalhq/aconfig"
 import "github.com/cristalhq/aconfig/aconfigyaml"
 
+// Config is the struct that contains all the global service config for the various components of the application
 type Config struct {
 	HTTPPort int `default:"8080" usage:"The listen port for the HTTP server"`
 	Database struct {
@@ -22,6 +23,7 @@ type Config struct {
 	}
 }
 
+// LoadConfig loads the configuration from various locations and returns a pointer to a Config struct
 func LoadConfig(skipEnv bool) (cfg *Config, err error) {
 	cfg = &Config{}
 	loader := aconfig.LoaderFor(cfg, aconfig.Config{
@@ -35,6 +37,5 @@ func LoadConfig(skipEnv bool) (cfg *Config, err error) {
 	})
 
 	err = loader.Load()
-
 	return cfg, err
 }

@@ -48,7 +48,7 @@ func DigestMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		digestHeader := "X-Digest-A"
 		excludeBody := false
-		if strings.HasPrefix(ctx.Request.URL.Path, "/api/LBP_XML/upload") {
+		if strings.Contains(ctx.Request.URL.Path, "/upload/") {
 			digestHeader = "X-Digest-B"
 			excludeBody = true
 		}
