@@ -15,8 +15,6 @@ import (
 	_ "embed"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"os"
-	"os/signal"
 )
 
 // main is the entrypoint for the API server
@@ -43,7 +41,7 @@ func main() {
 
 	// LittleBigPlanet compatible API
 	game_api.APIBootstrap(api, cfg)
-
+	game_api.ResourceBootstrap(api)
 	// Web API
 	web_api.APIBootstrap(api)
 
