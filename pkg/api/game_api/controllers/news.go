@@ -30,6 +30,7 @@ func NewsHandler() gin.HandlerFunc {
 											NpHandle: npdata.NpHandle{
 												Username: "Zaprit282",
 											},
+
 											Content: "Test Frame Item",
 										},
 									},

@@ -4,6 +4,8 @@ import (
 	"HugeSpaceship/pkg/common/db"
 	"HugeSpaceship/pkg/common/model/auth"
 	"HugeSpaceship/pkg/common/model/lbp_xml/slot"
+	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -67,5 +69,32 @@ func PublishHandler() gin.HandlerFunc {
 			return
 		}
 		ctx.XML(200, &s)
+	}
+}
+
+func UnPublishHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		dbCtx := db.GetContext()
+		defer db.CloseContext(dbCtx)
+
+		session, _ := ctx.Get("session")
+
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+		if err != nil {
+			ctx.String(400, "Invalid ID")
+			return
+		}
+
+		uploader, err := db.GetLevelOwner(ctx, id)
+		if uploader != session.(auth.Session).UserID {
+			ctx.String(http.StatusForbidden, "User does not own level")
+		}
+
+		err = db.DeleteSlot(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusInternalServerError, "Failed to delete level")
+		}
+
+		ctx.Status(200)
 	}
 }

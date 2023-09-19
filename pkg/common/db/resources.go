@@ -49,6 +49,16 @@ func UploadResource(ctx context.Context, reader io.ReadCloser, contentLength int
 	return err
 }
 
+func ResourceExists(ctx context.Context, hash string) (bool, error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	row := conn.QueryRow(ctx, "SELECT count(1) FROM resources WHERE hash = $1", hash)
+	var count uint64
+	err := row.Scan(&count)
+
+	return count > 0, err
+}
+
+// GetResource Gets a resource from the DB as an io reader and a transaction that must be closed once the resource is no longer needed
 func GetResource(ctx context.Context, hash string) (io.ReadSeekCloser, pgx.Tx, int64, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	row := conn.QueryRow(ctx, "SELECT file, size FROM resources WHERE hash = $1", hash)
@@ -77,17 +87,4 @@ func GetResource(ctx context.Context, hash string) (io.ReadSeekCloser, pgx.Tx, i
 	}
 
 	return lob, tx, size, nil
-}
-
-func ResourceExists(ctx context.Context, hash string) (exists bool, err error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-
-	var count int
-	row := conn.QueryRow(ctx, "SELECT count(1) FROM resources WHERE hash = $1", hash)
-	err = row.Scan(&count)
-
-	if count != 0 {
-		return true, err
-	}
-	return false, err
 }

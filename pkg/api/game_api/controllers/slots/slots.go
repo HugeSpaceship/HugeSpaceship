@@ -46,6 +46,7 @@ func GetSlotHandler() gin.HandlerFunc {
 		if levelID == 0 {
 			ctx.AbortWithStatus(404)
 		}
+
 		slot, err := db.GetSlot(dbCtx, uint64(levelID))
 		if err != nil {
 			_ = ctx.Error(err)
