@@ -4,6 +4,8 @@ import (
 	"HugeSpaceship/pkg/api/game_api/controllers"
 	"HugeSpaceship/pkg/api/game_api/controllers/auth"
 	"HugeSpaceship/pkg/api/game_api/controllers/match"
+	"HugeSpaceship/pkg/api/game_api/controllers/moderation"
+	"HugeSpaceship/pkg/api/game_api/controllers/photos"
 	"HugeSpaceship/pkg/api/game_api/controllers/resources"
 	"HugeSpaceship/pkg/api/game_api/controllers/settings"
 	"HugeSpaceship/pkg/api/game_api/controllers/slots"
@@ -40,6 +42,10 @@ func APIBootstrap(group *gin.RouterGroup, cfg *config.Config) {
 	digestRequiredAPI.GET("/slots/by", slots.GetSlotsByHandler())
 	digestRequiredAPI.GET("/s/user/:id", slots.GetSlotHandler())
 	digestRequiredAPI.POST("/publish", slots.PublishHandler())
+	digestRequiredAPI.POST("/unpublish/:id", slots.UnPublishHandler())
 	digestRequiredAPI.POST("/updateUser", users.UpdateUserHandler())
-	digestRequiredAPI.POST("/showModerated", resources.ShowModeratedHandler())
+	digestRequiredAPI.POST("/showModerated", moderation.ShowModeratedHandler())
+
+	digestRequiredAPI.POST("/uploadPhoto", photos.UploadPhoto())
+	digestRequiredAPI.POST("/photos/by", photos.GetPhotosBy())
 }

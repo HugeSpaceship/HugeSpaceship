@@ -8,4 +8,5 @@ type PhotoSlot struct {
 	ID          int64    `xml:"id"`
 	Name        string   `xml:"name,omitempty"`
 	Description string   `xml:"description,omitempty"`
+	RootLevel   string   `xml:"rootlevel,omitempty"`
 }

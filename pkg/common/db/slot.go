@@ -204,3 +204,17 @@ func GetTotalSlots(ctx context.Context) (int, error) {
 	var total int
 	return total, row.Scan(&total)
 }
+
+func GetLevelOwner(ctx context.Context, id uint64) (uploader uuid.UUID, err error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	row := conn.QueryRow(ctx, "SELECT uploader FROM slots WHERE id = $1;", id)
+
+	err = row.Scan(&uploader)
+	return
+}
+
+func DeleteSlot(ctx context.Context, id uint64) (err error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	_, err = conn.Exec(ctx, "DELETE FROM slots WHERE id = $1;", id)
+	return
+}

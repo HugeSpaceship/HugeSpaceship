@@ -1,4 +1,4 @@
-package resources
+package moderation
 
 import "github.com/gin-gonic/gin"
 

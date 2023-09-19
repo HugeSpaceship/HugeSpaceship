@@ -10,11 +10,6 @@ import (
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 )
 
-type Context struct {
-	pool *pgxpool.Pool
-	ctx  context.Context
-}
-
 var globalPool *pgxpool.Pool
 
 func GetContext() context.Context {
