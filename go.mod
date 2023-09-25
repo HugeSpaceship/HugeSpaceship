@@ -3,7 +3,7 @@ module HugeSpaceship
 go 1.20
 
 require (
-	github.com/cristalhq/aconfig v0.18.4
+	github.com/cristalhq/aconfig v0.18.5
 	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gin-gonic/gin v1.9.1
