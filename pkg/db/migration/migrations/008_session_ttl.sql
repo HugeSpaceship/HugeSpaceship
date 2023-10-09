@@ -1,0 +1,1 @@
+ALTER TABLE sessions ADD COLUMN expiry timestamp without time zone;
