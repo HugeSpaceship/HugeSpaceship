@@ -11,7 +11,7 @@ func TestLoadConfig(t *testing.T) {
 	t.Run("Environment config test", testEnvConfig)
 	t.Run("Environment config test with invalid data", testInvalidEnvConfig)
 
-	err := os.Chdir("../../../test") // So we can load the config files
+	err := os.Chdir("../../test") // So we can load the config files
 	if err != nil {
 		t.Fatal("Can't chdir to config dir")
 	}
