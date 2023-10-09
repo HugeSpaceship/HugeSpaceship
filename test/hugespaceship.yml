@@ -1,13 +1,15 @@
+http_port: 8181
 database:
   host: "testHost"
   port: 8425
   username: "testUsername"
   password: "testPassword"
   database: "testDB"
-lbp_api:
+api:
   digest_key: "test_digestKey"
   alternate_digest_key: "test_altDigestKey"
   enforce_digest: true
+resource_server:
+  enabled: true
 log:
   debug: true
-http_port: 8181
