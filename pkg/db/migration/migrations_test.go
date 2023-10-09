@@ -2,6 +2,7 @@ package migration
 
 import (
 	_ "embed"
+	"fmt"
 	"testing"
 )
 
@@ -16,7 +17,14 @@ func TestGetMigration(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if migration != testMigration {
+
+	expectedMigration := fmt.Sprintf(migrationTemplate, "000_Initial_Migration", testMigration, "000_Initial_Migration")
+
+	if migration != expectedMigration {
+		fmt.Println("Got: ")
+		fmt.Println(migration)
+		fmt.Println("Expected: ")
+		fmt.Println(expectedMigration)
 		t.Error("Migration does not match expected result")
 	}
 }

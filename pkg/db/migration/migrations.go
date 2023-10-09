@@ -56,5 +56,7 @@ func GetMigration(name string) (string, bool, error) {
 		return "", true, err
 	}
 
-	return fmt.Sprintf(migrationTemplate, name, string(migration), name), true, nil
+	migrationName := strings.Split(name, ".")[0]
+
+	return fmt.Sprintf(migrationTemplate, migrationName, string(migration), migrationName), true, nil
 }
