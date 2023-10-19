@@ -8,9 +8,10 @@ package main
 import (
 	"HugeSpaceship/internal/api/game_api"
 	"HugeSpaceship/internal/config"
+	"HugeSpaceship/internal/website"
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/db/migration"
-	logger2 "HugeSpaceship/pkg/logger"
+	"HugeSpaceship/pkg/logger"
 	_ "embed"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -24,7 +25,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to load config")
 	}
 
-	logger2.LoggingInit("apiserver", cfg)
+	logger.LoggingInit("apiserver", cfg)
 
 	pool := db.Open(cfg)            // Open a connection to the DB
 	err = migration.MigrateDB(pool) // Migrate the DB to the latest schema
@@ -34,7 +35,7 @@ func main() {
 
 	// Init the web framework
 	ctx := gin.New()
-	ctx.Use(logger2.LoggingMiddleware())
+	ctx.Use(logger.LoggingMiddleware())
 
 	// everything starts at /api
 	api := ctx.Group("/LITTLEGIBPLANETPS3_XML")
@@ -50,6 +51,10 @@ func main() {
 	if cfg.ResourceServer.Enabled {
 		game_api.ResourceBootstrap(api, cfg)
 		game_api.ResourceBootstrap(api2, cfg)
+	}
+
+	if cfg.Website.Enabled {
+		website.Bootstrap(ctx, cfg)
 	}
 
 	err = ctx.Run("0.0.0.0:" + strconv.Itoa(cfg.HTTPPort))

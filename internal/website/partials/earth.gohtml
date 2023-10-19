@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{.Info.InstanceName}} - Home</title>
+    {{template "includes.gohtml" .}}
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three@v0.157.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@v0.157.0/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+
+<body>
+
+    {{template "header.gohtml" .}}
+    {{template "login.gohtml" .}}
+    <h1>Welcome to {{.Info.InstanceName}}</h1>
+
+
+
+
+    <script>
+        const levels = [
+            {{range .Levels}}
+                "{{.Name}}", {{.Location.X}}, {{.Location.X}},
+            {{end}}
+        ];
+    </script>
+    <script type="module" src="/static/js/earth-render.js"></script>
+    <div id="container"></div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<div id="login-form" class="login-background">
+    <form>
+        <a class="close-button" onclick="setLoginFormVisible(false)">Close</a>
+        <h2 class="modal-text">Login to {{.Info.InstanceName}}</h2>
+
+        <label class="modal-text" for="login-username">Username</label>
+        <input type="text" name="username" id="login-username">
+
+        <br>
+
+        <label class="modal-text" for="login-password">Password</label>
+        <input type="password" name="password" id="login-password">
+
+        <br>
+        <input type="submit" style="margin-left: 20px">
+    </form>
+</div>

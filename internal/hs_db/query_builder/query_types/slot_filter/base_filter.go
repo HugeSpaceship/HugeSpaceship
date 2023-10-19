@@ -3,7 +3,6 @@ package slot_filter
 import (
 	"HugeSpaceship/internal/hs_db"
 	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml"
 	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"context"
 	_ "embed"
@@ -11,13 +10,14 @@ import (
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"math"
+	"strconv"
 	"strings"
 )
 
 type baseSlotFilter struct {
-	extraParams []any
-	whereConds  []string
-	queryFunc   func() string
+	extraParams     []any
+	whereConditions []string
+	queryFunc       func() string
 }
 
 //go:embed slot.sql
@@ -27,21 +27,39 @@ func (b baseSlotFilter) GetQueryBase() string {
 	return slotSQL
 }
 
-func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain uint, page lbp_xml.PaginationData) (slot.PaginatedSlotList[slot.SearchSlot], error) {
+func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain int, skip, take uint) (slot.PaginatedSlotList[slot.SearchSlot], error) {
 	slots := slot.PaginatedSlotList[slot.SearchSlot]{}
 
 	params := []any{
-		domain, page.Start - 1, page.Size,
+		skip - 1, take,
+	}
+	if domain >= 0 {
+		params = append([]any{domain}, params...)
 	}
 
-	whereString := "(domain = $1)"
-	if b.whereConds != nil {
-		for _, where := range b.whereConds {
+	var whereString string
+	domainParam := false
+	if domain >= 0 {
+		whereString = "WHERE (domain = $1)"
+		domainParam = true
+	}
+	if b.whereConditions != nil {
+		for _, where := range b.whereConditions {
 			whereString += fmt.Sprintf(" AND (%s)", where)
 		}
 	}
 
 	query := fmt.Sprintf(b.queryFunc(), whereString)
+	placeHolderCount := strings.Count(query, "?")
+	for i := 1; i < placeHolderCount+1; i++ {
+		if domainParam {
+			query = strings.Replace(query, "?", "$"+strconv.Itoa(i+1), 1)
+		} else {
+			query = strings.Replace(query, "?", "$"+strconv.Itoa(i), 1)
+		}
+	}
+	fmt.Println(query)
+
 	err := pgxscan.Select(context.Background(), tx, &slots.Slots, query, append(params, b.extraParams...)...)
 
 	if err != nil {
@@ -49,6 +67,9 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain uint, page lbp_xml.Pagination
 	}
 
 	for i, s := range slots.Slots {
+		if s.Name == "" {
+			slots.Slots[i].Name = "Untitled Level"
+		}
 		slots.Slots[i].NPHandle, err = hs_db.NpHandleByUserID(tx, s.Uploader)
 		slots.Slots[i].Type = "user"
 		slots.Slots[i].Location = common.Location{
@@ -60,15 +81,19 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain uint, page lbp_xml.Pagination
 		slots.Slots[i].Icon = strings.TrimSpace(s.Icon)
 	}
 
-	slots.Total, err = hs_db.GetTotalSlotsByDomain(tx, domain)
-	slots.HintStart = uint64(math.Min(float64(page.Start+page.Size), float64(slots.Total)))
+	if domain >= 0 {
+		slots.Total, err = hs_db.GetTotalSlotsByDomain(tx, uint(domain))
+	} else {
+		slots.Total, err = hs_db.GetTotalSlots(tx)
+	}
+	slots.HintStart = uint64(math.Min(float64(skip+take), float64(slots.Total)))
 
 	return slots, err
 }
 func newBaseSlotFilter(sqlFunc func() string, whereConditions []string, extraParams ...any) *baseSlotFilter {
 	return &baseSlotFilter{
-		extraParams: extraParams,
-		whereConds:  whereConditions,
-		queryFunc:   sqlFunc,
+		extraParams:     extraParams,
+		whereConditions: whereConditions,
+		queryFunc:       sqlFunc,
 	}
 }

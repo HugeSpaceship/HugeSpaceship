@@ -1,0 +1,5 @@
+<script src="/static/js/login-form.js"></script>
+<link rel="stylesheet" href="/static/css/primary.css">
+{{range $stylesheet := .Info.InstanceTheme.Stylesheets}}
+    <link rel="stylesheet" href="/static/themes/{{$.Info.InstanceTheme.Path}}/css/{{$stylesheet}}">
+{{end}}

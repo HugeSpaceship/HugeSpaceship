@@ -24,10 +24,12 @@ type Config struct {
 		CacheLocation  string `default:"./r"`
 	}
 	Website struct {
-		Enable bool
+		Enabled              bool
+		UseEmbeddedResources bool
 	}
 	Log struct {
-		Debug bool `default:"false"`
+		Debug bool   `default:"false"`
+		Level string `default:"info"`
 	}
 }
 

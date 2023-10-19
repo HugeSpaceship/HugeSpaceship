@@ -118,9 +118,8 @@ func GetSlot(ctx context.Context, id uint64) (slot.Slot, error) {
 	return dbSlot, nil
 }
 
-func GetTotalSlots(ctx context.Context) (uint64, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	row := conn.QueryRow(ctx, "SELECT COUNT(1) FROM slots;")
+func GetTotalSlots(conn pgx.Tx) (uint64, error) {
+	row := conn.QueryRow(context.Background(), "SELECT COUNT(1) FROM slots;")
 	var total uint64
 	return total, row.Scan(&total)
 }

@@ -30,6 +30,6 @@ FROM
     thumbs_down AS td ON s.id = td.slot_id
         LEFT JOIN
     plays AS p ON s.id = p.slot_id
-WHERE %s
+%s
 GROUP BY
     s.id
