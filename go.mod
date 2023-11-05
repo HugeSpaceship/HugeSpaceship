@@ -7,7 +7,7 @@ require (
 	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/rs/zerolog v1.31.0
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.0.0
