@@ -20,6 +20,8 @@ func ResourceBootstrap(group *gin.RouterGroup, cfg *config.Config) {
 }
 
 func APIBootstrap(gameAPI *gin.RouterGroup, cfg *config.Config) {
+	gameAPI.Use(middlewares.ServerHeaderMiddleware)
+
 	gameAPI.POST("/login", auth.LoginHandler())
 	gameAPI.GET("/eula", middlewares.DigestMiddleware(cfg), controllers.EulaHandler())
 
@@ -38,6 +40,7 @@ func APIBootstrap(gameAPI *gin.RouterGroup, cfg *config.Config) {
 	digestRequiredAPI.GET("/news", controllers.NewsHandler())
 	digestRequiredAPI.GET("/news/:id", controllers.LBP2NewsHandler())
 	digestRequiredAPI.GET("/stream", controllers.StreamHandler())
+	digestRequiredAPI.GET("/ChallengeConfig.xml", settings.ChallengeConfigHandler())
 
 	digestRequiredAPI.GET("/slots/by", slots.GetSlotsByHandler())
 	digestRequiredAPI.GET("/s/user/:id", slots.GetSlotHandler())

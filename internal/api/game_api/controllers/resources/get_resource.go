@@ -16,18 +16,33 @@ import (
 
 var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
 
+func getResourceFromCache(cfg *config.Config, hash string) string {
+	filePath := path.Join(cfg.ResourceServer.CacheLocation, nonAlphanumericRegex.ReplaceAllString(hash, ""))
+	_, err := os.Stat(filePath)
+	if err != nil {
+		log.Debug().Str("hash", hash).Msg("Resource not in cache...")
+	} else {
+		log.Debug().Str("hash", hash).Msg("Serving resource from cache")
+	}
+	return filePath
+}
+
+func closeResource(resource io.ReadSeekCloser, tx pgx.Tx) {
+	err := resource.Close()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to close resource")
+	}
+	err = tx.Commit(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to commit")
+	}
+}
+
 func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		hash := ctx.Param("hash")
 		if cfg.ResourceServer.CacheResources { // check for cache
-			filePath := path.Join(cfg.ResourceServer.CacheLocation, nonAlphanumericRegex.ReplaceAllString(hash, ""))
-			_, err := os.Stat(filePath)
-			if err != nil {
-				log.Debug().Str("hash", hash).Msg("Resource not in cache...")
-			} else {
-				log.Debug().Str("hash", hash).Msg("Serving resource from cache")
-				ctx.File(filePath)
-			}
+			ctx.File(getResourceFromCache(cfg, hash))
 		}
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
@@ -38,16 +53,7 @@ func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
 			ctx.AbortWithStatus(404)
 			return
 		}
-		defer func(tx pgx.Tx, dbCtx context.Context, ctx *gin.Context) {
-			err := resource.Close()
-			if err != nil {
-				ctx.Error(err)
-			}
-			err = tx.Commit(dbCtx)
-			if err != nil {
-				ctx.Error(err)
-			}
-		}(tx, dbCtx, ctx)
+		defer closeResource(resource, tx)
 		ctx.DataFromReader(200, size, "application/octet-stream", resource, nil)
 
 		// Caches resources by resetting the read pointer on the db LOB

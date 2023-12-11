@@ -13,6 +13,7 @@ import (
 	"HugeSpaceship/pkg/db/migration"
 	"HugeSpaceship/pkg/logger"
 	_ "embed"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"strconv"
@@ -38,25 +39,20 @@ func main() {
 	ctx.Use(logger.LoggingMiddleware())
 
 	// everything starts at /api
-	api := ctx.Group("/LITTLEGIBPLANETPS3_XML")
-	api2 := ctx.Group("/LITTLEBIGPLANETPS3_XML")
-	api3 := ctx.Group("/api/LBP_XML")
+	api := ctx.Group("/api/LBP_XML")
 	// LittleBigPlanet compatible API
 	game_api.APIBootstrap(api, cfg)
 
-	// LittleBigPlanet compatible API, but with brainfart this time
-	game_api.APIBootstrap(api2, cfg)
-	game_api.APIBootstrap(api3, cfg)
 	// Resource server
 	if cfg.ResourceServer.Enabled {
 		game_api.ResourceBootstrap(api, cfg)
-		game_api.ResourceBootstrap(api2, cfg)
 	}
 
 	if cfg.Website.Enabled {
 		website.Bootstrap(ctx, cfg)
 	}
 
+	fmt.Println("THISAB GDJSKNFMAKENTKLADLGWNEJKGHELR")
 	err = ctx.Run("0.0.0.0:" + strconv.Itoa(cfg.HTTPPort))
 	if err != nil {
 		panic(err)

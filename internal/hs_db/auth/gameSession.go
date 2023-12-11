@@ -29,12 +29,6 @@ func NewSession(ctx context.Context, ticket types.Ticket, ip netip.Addr, game st
 	platform := common.PS3
 	gameType := common.LBP2
 
-	if g, exists := common.GameIDs[titleID]; exists {
-		gameType = g
-	} else {
-		return "", errors.New("invalid game")
-	}
-
 	if ticket.Footer.Signatory == types.RPCNSignatoryID {
 		platform = common.RPCS3
 	}
@@ -45,6 +39,12 @@ func NewSession(ctx context.Context, ticket types.Ticket, ip netip.Addr, game st
 	case "lbp-psp":
 		platform = common.PSP
 		gameType = common.LBPPSP
+	default:
+		if g, exists := common.GameIDs[titleID]; exists && game == "" {
+			gameType = g
+		} else {
+			return "", errors.New("invalid game")
+		}
 	}
 
 	session, err := hs_db.NewSession(ctx, ticket.Username, gameType, ip, platform, token, time.Now().Add(5*time.Hour))

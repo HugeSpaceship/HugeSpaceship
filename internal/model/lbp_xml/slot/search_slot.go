@@ -31,8 +31,7 @@ type SearchSlot struct {
 	MinPlayers          uint            `xml:"minPlayers"`
 	MaxPlayers          uint            `xml:"maxPlayers"`
 	HeartCount          int64           `xml:"heartCount"`
-	Thumbsup            int64           `xml:"thumbsup" db:"thumbs_up_count"`
-	Thumbsdown          int64           `xml:"thumbsdown" db:"thumbs_down_count"`
+	Thumbsup            int64           `xml:"thumbsup" db:"thumbs_count"`
 	AverageRating       float32         `xml:"averageRating"`
 	PlayerCount         uint64          `xml:"playerCount"`
 	MatchingPlayers     uint64          `xml:"matchingPlayers"`

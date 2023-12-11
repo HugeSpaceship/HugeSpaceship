@@ -7,5 +7,6 @@ func GetTheme(name string) *Theme {
 			return &theme
 		}
 	}
+
 	return nil
 }

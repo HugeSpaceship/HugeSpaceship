@@ -17,6 +17,7 @@ func HomePage(info common.Info) gin.HandlerFunc {
 		if err != nil {
 			c.Error(err)
 			c.String(500, "I fucked it up somehow")
+			return
 		}
 		c.HTML(200, "home.gohtml", gin.H{
 			"Info":   info,

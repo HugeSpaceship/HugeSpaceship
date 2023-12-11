@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+
+  "$id": "https://zaprit.github.io/hs-theme-schema.json",
+  "title": "Theme",
+  "description": "A HugeSpaceship Theme",
+  "type": "object",
+
+  "properties": {
+    "version": {
+      "description": "Version is used to check if a theme is outdated and will likely not work with the current server version",
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "id": {
+      "description": "ID is a unique identifier for a theme",
+      "type": "string"
+    },
+    "theme-version": {
+      "description": "What is the version of the theme",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of a theme",
+      "type": "string"
+    },
+    "description": {
+      "description": "A description of a theme",
+      "type": "string"
+    },
+    "author": {
+      "description": "Who made the theme",
+      "type": "string"
+    },
+    "stylesheets": {
+      "description": "A list of stylesheets that will be loaded by clients, paths are relative to the theme's css folder",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [ "version", "id", "name", "stylesheets"]
+}

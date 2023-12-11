@@ -30,7 +30,7 @@
 }
 
 #login-form {
-    font-family: "Crikey Squat", "CrikeySquat Nerd Font";
+    font-family: sans-serif;
     /*background-color: #466970;*/
     border-radius: 20px;
     position:fixed;

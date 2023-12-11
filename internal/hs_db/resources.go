@@ -2,6 +2,9 @@ package hs_db
 
 import (
 	"context"
+	"crypto/sha1"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -10,7 +13,16 @@ import (
 )
 
 func UploadResource(ctx context.Context, reader io.ReadCloser, contentLength int64, hash string, uploader uuid.UUID) error {
+	defer reader.Close()
 	conn := ctx.Value("conn").(*pgxpool.Conn)
+
+	res, err := io.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+	if fmt.Sprintf("%x", sha1.Sum(res)) != hash {
+		return errors.New("mismatched hash")
+	}
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {
@@ -30,17 +42,19 @@ func UploadResource(ctx context.Context, reader io.ReadCloser, contentLength int
 	if err != nil {
 		return err
 	}
-	written, err := io.Copy(lob, reader)
+
+	written, err := lob.Write(res)
 	if err != nil {
 		return err
 	}
-	if contentLength != written {
-		// TODO: error if the content length was wrong
-		log.Debug().Int64("content-length", contentLength).Int64("bytes-written", written).Msg("unexpected content length")
-	}
-	err = reader.Close()
-	if err != nil {
-		return err
+	if contentLength != int64(written) {
+		_ = lob.Truncate(0) // if it's not uploaded correctly then break
+		lob.Close()
+		err := lobs.Unlink(ctx, oid)
+		if err != nil {
+			return errors.Join(err, errors.New("invalid content length"))
+		}
+		return errors.New("invalid content length")
 	}
 
 	_, err = conn.Exec(ctx, "INSERT INTO resources (originaluploader,size,file,hash) VALUES ($1, $2, $3, $4)", uploader, written, oid, hash)
