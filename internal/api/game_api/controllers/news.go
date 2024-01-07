@@ -40,6 +40,34 @@ func NewsHandler() gin.HandlerFunc {
 						},
 					},
 				},
+
+				{
+					ID:    "2",
+					Title: "Other Category",
+					Items: []lbp_xml.NewsItem{
+						{
+							ID:      "test-item-2",
+							Subject: "This is a different test news item",
+							Content: lbp_xml.NewsItemContent{
+								Content: []lbp_xml.NewsFrame{
+									{
+										Width: "100",
+										Title: "Other Test Frame",
+										Item: lbp_xml.NewsFrameItem{
+											Width: "50",
+											NpHandle: npdata.NpHandle{
+												Username: "Zaprit",
+											},
+
+											Content: "FUCK\n",
+										},
+									},
+								},
+							},
+							Timestamp: time.Now().Unix(),
+						},
+					},
+				},
 			},
 		})
 	}

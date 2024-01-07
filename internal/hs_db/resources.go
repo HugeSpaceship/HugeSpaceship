@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -73,6 +74,20 @@ func ResourceExists(ctx context.Context, hash string) (bool, error) {
 	err := row.Scan(&count)
 
 	return count > 0, err
+}
+
+const resourceCheckQuery = `
+SELECT l.hash
+from UNNEST($1) as l(hash)
+LEFT JOIN resources r on l.hash = r.hash
+WHERE r.hash is null;
+`
+
+func CheckResources(ctx context.Context, hashes []string) ([]string, error) {
+	conn := ctx.Value("conn").(*pgxpool.Conn)
+	out := make([]string, 0, len(hashes))
+	err := pgxscan.Select(ctx, conn, &out, resourceCheckQuery, hashes)
+	return out, err
 }
 
 // GetResource Gets a resource from the DB as an io reader and a transaction that must be closed once the resource is no longer needed

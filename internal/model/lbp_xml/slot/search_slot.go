@@ -31,21 +31,22 @@ type SearchSlot struct {
 	MinPlayers          uint            `xml:"minPlayers"`
 	MaxPlayers          uint            `xml:"maxPlayers"`
 	HeartCount          int64           `xml:"heartCount"`
-	Thumbsup            int64           `xml:"thumbsup" db:"thumbs_count"`
+	ThumbsUp            int64           `xml:"thumbsup" db:"thumbs_up_count"`
+	ThumbsDown          int64           `xml:"thumbsdown" db:"thumbs_down_count"`
 	AverageRating       float32         `xml:"averageRating"`
 	PlayerCount         uint64          `xml:"playerCount"`
 	MatchingPlayers     uint64          `xml:"matchingPlayers"`
 	MMPick              bool            `xml:"mmpick"`
 	IsAdventurePlanet   bool            `xml:"isAdventurePlanet"`
 	Ps4Only             bool            `xml:"ps4Only"`
-	PlayCount           uint64          `xml:"playCount"`
+	PlayCount           uint64          `xml:"playCount" db:"total_play_count"`
 	CompletionCount     uint64          `xml:"completionCount"`
 	Lbp1PlayCount       uint64          `xml:"lbp1PlayCount"`
 	Lbp1CompletionCount uint64          `xml:"lbp1CompletionCount"`
 	Lbp1UniquePlayCount uint64          `xml:"lbp1UniquePlayCount"`
 	Lbp2PlayCount       uint64          `xml:"lbp2PlayCount"`
 	Lbp2CompletionCount uint64          `xml:"lbp2CompletionCount"`
-	UniquePlayCount     uint64          `xml:"uniquePlayCount"`
+	UniquePlayCount     uint64          `xml:"uniquePlayCount" db:"play_count"`
 	Lbp3PlayCount       uint64          `xml:"lbp3PlayCount"`
 	Lbp3CompletionCount uint64          `xml:"lbp3CompletionCount"`
 	Lbp3UniquePlayCount uint64          `xml:"lbp3UniquePlayCount"`

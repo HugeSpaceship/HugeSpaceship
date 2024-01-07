@@ -3,13 +3,14 @@ package lbp_xml
 import "github.com/gin-gonic/gin"
 
 type PaginationData struct {
-	Size  uint `form:"pageSize"`
-	Start uint `form:"pageStart"`
-	Page  uint `form:"page"`
+	Size   uint `form:"pageSize"`
+	Start  uint `form:"pageStart"`
+	Page   uint `form:"page"`
+	Domain uint `form:"-"`
 }
 
 func GetPageinationData(ctx *gin.Context) (PaginationData, error) {
-	pageData := PaginationData{}
+	pageData := PaginationData{Domain: ctx.GetUint("domain")}
 	err := ctx.ShouldBindQuery(&pageData)
 	if pageData.Page != 0 {
 		pageData.Size = 50

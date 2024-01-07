@@ -1,5 +1,7 @@
 package theming
 
+import "html/template"
+
 // Theme defines a server-owner editable theme for the website
 type Theme struct {
 	// Version is used to check if a theme is outdated and will likely not work with the current server version
@@ -12,7 +14,7 @@ type Theme struct {
 	Name string `json:"name"`
 	// Some info about the theme
 	Description string `json:"description"`
-	// Who make the theme
+	// Who made the theme
 	Author string `json:"author"`
 	// Path to the theme
 	Path string `json:"-"`
@@ -20,6 +22,10 @@ type Theme struct {
 	Stylesheets []string `json:"stylesheets"`
 	// If a theme is built-in then it is loaded as an embedded resource, instead of as a file
 	BuiltIn bool `json:"-"`
+	// If the theme replaces the built-in templates
+	OverrideTemplates bool `json:"override-templates"`
+	// The template associated with the theme, this is used so that the theme can override parts of the default template.
+	Template *template.Template `json:"-"`
 }
 
 // BuiltInThemes is a list of the themes that come pre-installed with HugeSpaceship

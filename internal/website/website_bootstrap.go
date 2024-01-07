@@ -7,26 +7,40 @@ import (
 	"HugeSpaceship/internal/website/theming"
 	"embed"
 	"github.com/gin-gonic/gin"
+	"io/fs"
+	"net/http"
 )
 
 //go:embed static
 var staticFiles embed.FS
 
 func Bootstrap(ctx *gin.Engine, cfg *config.Config) {
-	// TODO: Embed files by default, but allow loading files locally if the user wants to, will be useful for debugging
-
-	theme := theming.GetTheme("builtin.hugespaceship.shuttle")
-	if theme == nil {
-		panic("Invalid theme")
-	}
-
 	info := common.Info{
-		InstanceName:  "HugeSpaceship DEV",
-		InstanceTheme: theme,
+		InstanceName: "HugeSpaceship DEV",
+		Debug:        cfg.Log.Debug,
 	}
 
-	ctx.LoadHTMLGlob("./internal/website/partials/*")
-	ctx.Static("/static", "./internal/website/static")
+	if cfg.Website.UseEmbeddedResources {
+		static, err := fs.Sub(staticFiles, "static")
+		if err != nil {
+			panic(err)
+		}
+		ctx.StaticFS("/static", http.FS(static))
+	} else {
+		ctx.Static("/static", cfg.Website.WebRoot)
+	}
+
+	themes, err := theming.LoadThemes(cfg.Website.ThemePath, ctx)
+	if err != nil {
+		panic(err) // Should only ever be a dir issue, should probably do some error handling here though
+	}
+
+	var exists bool
+	info.InstanceTheme, exists = themes.GetTheme(cfg.Website.DefaultTheme)
+	if !exists {
+		info.InstanceTheme, _ = themes.GetTheme("builtin.hugespaceship.shuttle")
+	}
+
 	ctx.GET("/", pages.HomePage(info))
 	ctx.GET("/earth", pages.EarthPage(info))
 }

@@ -67,6 +67,7 @@ func GetSession(ctx context.Context, token string) (session auth.Session, exists
 				log.Error().Err(err).Msg("Failed to remove expired session")
 			}
 		}
+		log.Debug().Msg("Using cached session")
 		return session, exists
 	}
 
@@ -81,7 +82,7 @@ func GetSession(ctx context.Context, token string) (session auth.Session, exists
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to remove expired session")
 		}
-		return auth.Session{}, false // The auth middleware should NOT continue if the session doesn't exist
+		return auth.Session{}, false // The auth middlewares should NOT continue if the session doesn't exist
 	}
 	return session, true
 }

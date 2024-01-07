@@ -5,7 +5,6 @@ import (
 	"HugeSpaceship/internal/model/lbp_xml"
 	"HugeSpaceship/pkg/db"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -22,15 +21,11 @@ func ShowNotUploadedHandler() gin.HandlerFunc {
 		}
 
 		// This checks to see if the resources already exist in the DB
-		resourcesToUpload := make([]string, 0, len(r.Resources))
-		for i := range r.Resources {
-			exists, err := hs_db.ResourceExists(dbCtx, r.Resources[i])
-			if err != nil {
-				log.Error().Err(err).Msg("failed to check if resource exists, assuming it doesn't")
-			}
-			if !exists {
-				resourcesToUpload = append(resourcesToUpload, r.Resources[i])
-			}
+		resourcesToUpload, err := hs_db.CheckResources(dbCtx, r.Resources)
+		if err != nil {
+			ctx.Error(err)
+			ctx.Status(500)
+			return
 		}
 
 		ctx.XML(200, lbp_xml.Resources{

@@ -31,16 +31,14 @@ func LoginHandler() gin.HandlerFunc {
 		log.Debug().Msg("Verified NPTicket")
 		game := c.Query("game")
 
-		if c.GetHeader("X-exe-v") != "" {
-			game = "lbp-psp"
-			c.Header("X-exe-v", c.GetHeader("X-exe-v"))
-			c.Header("X-data-v", c.GetHeader("X-data-v"))
-		}
-
 		log.Debug().Msg("Getting Context")
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
 		log.Debug().Msg("Got Context, getting session")
+
+		if c.GetHeader("X-exe-v") != "" {
+			game = "lbp-psp"
+		}
 
 		token, err := auth.NewSession(dbCtx, ticket, netip.MustParseAddr(c.ClientIP()), game, c.Query("titleID"))
 		if err != nil {

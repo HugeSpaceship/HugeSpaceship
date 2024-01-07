@@ -5,7 +5,6 @@ import (
 	"HugeSpaceship/internal/config"
 	"bytes"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -17,13 +16,8 @@ import (
 const DigestHeaderA = "X-Digest-A"
 const DigestHeaderB = "X-Digest-B"
 
-// Header names for psp "digests"
-
-const PSPExeHeader = "X-exe-v"
-const PSPDataHeader = "X-data-v"
-
 // DeferredWriter is a fairly simple gin ResponseWriter that doesn't write all its headers immediately.
-// This allows a digest to be written even after the digest middleware has executed.
+// This allows a digest to be written even after the digest middlewares has executed.
 // Probably not the best way of doing it, but it works so whatever.
 type DeferredWriter struct {
 	gin.ResponseWriter
@@ -84,15 +78,6 @@ func GetRequestDigest(cfg *config.Config, path, digestHeader, cookie string, bod
 func DigestMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		// If we're on PSP, set the required headers and bail
-		if ctx.GetHeader(PSPExeHeader) != "" {
-			fmt.Println("THE DIGEST IS SUS")
-			ctx.Writer.Header()[PSPDataHeader] = []string{ctx.GetHeader(PSPDataHeader)}
-			ctx.Writer.Header()[PSPExeHeader] = []string{ctx.GetHeader(PSPExeHeader)}
-
-			return
-		}
-
 		digestHeader := DigestHeaderA
 		excludeBody := false
 		// Check if we're on the upload endpoint because that expects things to be done differently
@@ -130,6 +115,6 @@ func DigestMiddleware(cfg *config.Config) gin.HandlerFunc {
 			ctx.Header(DigestHeaderA, utils.CalculateDigest(ctx.Request.URL.Path, cookie, digest, nil, true))
 		}
 
-		ctx.Next() // Go to the next handler in the middleware chain
+		ctx.Next() // Go to the next handler in the middlewares chain
 	}
 }

@@ -25,8 +25,7 @@ func GetSlotsByHandler() gin.HandlerFunc {
 			return
 		}
 
-		domain := ctx.GetUint("domain")
-		slots, err := query_builder.RunQuery(dbCtx, slot_filter.NewSlotsByFilter(userID), pageData, domain)
+		slots, err := query_builder.RunQuery(dbCtx, slot_filter.NewSlotsByFilter(userID), pageData)
 		if err != nil {
 			ctx.Error(err)
 			ctx.Status(http.StatusInternalServerError)
@@ -34,6 +33,15 @@ func GetSlotsByHandler() gin.HandlerFunc {
 		}
 
 		ctx.Render(200, utils.LBPXML{Data: slots})
+	}
+}
+
+func GetSlotsHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		dbCtx := db.GetContext()
+		defer db.CloseContext(dbCtx)
+
+		query_builder.RenderQuery(dbCtx, ctx, slot_filter.NewLatestFilter())
 	}
 }
 
@@ -79,8 +87,7 @@ func LuckyDipHandler() gin.HandlerFunc {
 			return
 		}
 
-		domain := ctx.GetUint("domain")
-		slots, err := query_builder.RunQuery(dbCtx, slot_filter.NewLuckyDipFilter(seed), pageData, domain)
+		slots, err := query_builder.RunQuery(dbCtx, slot_filter.NewLuckyDipFilter(seed), pageData)
 		if err != nil {
 			ctx.Error(err)
 		}
@@ -98,8 +105,7 @@ func HighestRatedLevelsHandler() gin.HandlerFunc {
 			ctx.AbortWithStatus(http.StatusBadRequest)
 		}
 
-		domain := ctx.GetUint("domain")
-		slots, err := query_builder.RunQuery(dbCtx, slot_filter.NewHighestRatedFilter(), pageData, domain)
+		slots, err := query_builder.RunQuery(dbCtx, slot_filter.NewHighestRatedFilter(), pageData)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusInternalServerError)
 		}

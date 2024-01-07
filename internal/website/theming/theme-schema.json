@@ -42,5 +42,5 @@
       "uniqueItems": true
     }
   },
-  "required": [ "version", "id", "name", "stylesheets"]
+  "required": [ "version", "id", "name", "stylesheets" ]
 }

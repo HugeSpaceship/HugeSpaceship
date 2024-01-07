@@ -18,8 +18,8 @@ const TestAuthCookie = "0123456789"
 
 var cfg = config.Config{
 	API: struct {
-		EnforceDigest      bool   `default:"false"`
-		DigestKey          string ``
+		EnforceDigest      bool `default:"false"`
+		DigestKey          string
 		AlternateDigestKey string
 	}{EnforceDigest: true, DigestKey: TestDigest, AlternateDigestKey: TestAltDigest},
 }

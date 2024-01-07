@@ -15,6 +15,10 @@ import (
 
 var userCreateSQL = `INSERT INTO users(id, username, psn_uid, rpcn_uid) VALUES ($1,$2,$3,$4)`
 
+func invalidResourceError() error {
+	return errors.New("invalid resource")
+}
+
 func CreateUser(ctx context.Context, username string, uid uint64) error {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	id, err := uuid.NewUUID()
@@ -100,11 +104,11 @@ func UpdatePlanet(ctx context.Context, id uuid.UUID, update lbp_xml.PlanetUpdate
 	defer tx.Rollback(ctx)
 	if strings.TrimSpace(update.Planets) != "" {
 		if len(update.Planets) > 40 {
-			return errors.New("invalid resource")
+			return invalidResourceError()
 		}
 		switch game {
 		case common.LBP2:
-			_, err := tx.Exec(ctx, "UPDATE users SET planet_lbp2 = $1, planet_lbp3 = $1  WHERE id = $2", update.Planets, id)
+			_, err := tx.Exec(ctx, "UPDATE users SET planet_lbp2 = $1, planet_lbp3 = $1 WHERE id = $2", update.Planets, id)
 			if err != nil {
 				return err
 			}
@@ -124,7 +128,7 @@ func UpdatePlanet(ctx context.Context, id uuid.UUID, update lbp_xml.PlanetUpdate
 	}
 	if strings.TrimSpace(update.CCPlanet) != "" {
 		if len(update.CCPlanet) > 40 {
-			return errors.New("invalid resource")
+			return invalidResourceError()
 		}
 		_, err := tx.Exec(ctx, "UPDATE users SET planet_cc = $1 WHERE id = $2", update.CCPlanet, id)
 		if err != nil {
@@ -155,7 +159,7 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update lbp_xml.UpdateUser) er
 
 	if strings.TrimSpace(update.Icon) != "" {
 		if len(update.Icon) > 40 {
-			return errors.New("invalid resource")
+			return invalidResourceError()
 		}
 		_, err := tx.Exec(ctx, "UPDATE users SET avatar_hash = $1 WHERE id = $2", update.Icon, id)
 		if err != nil {
@@ -165,7 +169,7 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update lbp_xml.UpdateUser) er
 
 	if strings.TrimSpace(update.BooHash) != "" {
 		if len(update.BooHash) > 40 {
-			return errors.New("invalid resource")
+			return invalidResourceError()
 		}
 		_, err := tx.Exec(ctx, "UPDATE users SET boo_icon = $1 WHERE id = $2", update.BooHash, id)
 		if err != nil {
@@ -174,7 +178,7 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update lbp_xml.UpdateUser) er
 	}
 	if strings.TrimSpace(update.MehHash) != "" {
 		if len(update.MehHash) > 40 {
-			return errors.New("invalid resource")
+			return invalidResourceError()
 		}
 		_, err := tx.Exec(ctx, "UPDATE users SET meh_icon = $1 WHERE id = $2", update.MehHash, id)
 		if err != nil {
@@ -183,7 +187,7 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update lbp_xml.UpdateUser) er
 	}
 	if strings.TrimSpace(update.YayHash) != "" {
 		if len(update.YayHash) > 40 {
-			return errors.New("invalid resource")
+			return invalidResourceError()
 		}
 		_, err := tx.Exec(ctx, "UPDATE users SET yay_icon = $1 WHERE id = $2", update.YayHash, id)
 		if err != nil {

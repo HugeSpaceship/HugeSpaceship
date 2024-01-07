@@ -20,7 +20,7 @@ func ResourceBootstrap(group *gin.RouterGroup, cfg *config.Config) {
 }
 
 func APIBootstrap(gameAPI *gin.RouterGroup, cfg *config.Config) {
-	gameAPI.Use(middlewares.ServerHeaderMiddleware)
+	gameAPI.Use(middlewares.PSPVersionMiddleware, middlewares.ServerHeaderMiddleware)
 
 	gameAPI.POST("/login", auth.LoginHandler())
 	gameAPI.GET("/eula", middlewares.DigestMiddleware(cfg), controllers.EulaHandler())
@@ -42,13 +42,17 @@ func APIBootstrap(gameAPI *gin.RouterGroup, cfg *config.Config) {
 	digestRequiredAPI.GET("/stream", controllers.StreamHandler())
 	digestRequiredAPI.GET("/ChallengeConfig.xml", settings.ChallengeConfigHandler())
 
+	digestRequiredAPI.GET("/slots", slots.GetSlotsHandler())
 	digestRequiredAPI.GET("/slots/by", slots.GetSlotsByHandler())
-	digestRequiredAPI.GET("/s/user/:id", slots.GetSlotHandler())
+
 	digestRequiredAPI.GET("/slots/lbp2luckydip", slots.LuckyDipHandler())
 	digestRequiredAPI.GET("/slots/thumbs", slots.HighestRatedLevelsHandler())
 	digestRequiredAPI.GET("/slots/lbp2cool", slots.HighestRatedLevelsHandler())
 	digestRequiredAPI.GET("/slots/cool", slots.HighestRatedLevelsHandler())
 	digestRequiredAPI.GET("/slots/highestRated", slots.HighestRatedLevelsHandler())
+	digestRequiredAPI.GET("/s/user/:id", slots.GetSlotHandler())
+
+	digestRequiredAPI.POST("/scoreboard/:levelType/:levelID", slots.UploadScoreHandler())
 
 	digestRequiredAPI.POST("/startPublish", slots.StartPublishHandler())
 	digestRequiredAPI.POST("/publish", slots.PublishHandler())

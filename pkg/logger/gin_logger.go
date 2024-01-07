@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// LoggingMiddleware is a Gin middleware that logs to zerolog.
+// LoggingMiddleware is a Gin middlewares that logs to zerolog.
 func LoggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()

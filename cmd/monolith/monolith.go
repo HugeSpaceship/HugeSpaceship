@@ -1,7 +1,8 @@
 package main
 
 /*
-	The API server is the service that manages both the LittleBigPlanet API, and the new API for querying data
+	The Monolith server contains all the individual services as one, this is to aid in development.
+	It's also for smaller instances where scalability is not yet an issue
 
 */
 
@@ -13,20 +14,19 @@ import (
 	"HugeSpaceship/pkg/db/migration"
 	"HugeSpaceship/pkg/logger"
 	_ "embed"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"strconv"
 )
 
-// main is the entrypoint for the API server
+// main is the entrypoint for the server
 func main() {
 	cfg, err := config.LoadConfig(false)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")
 	}
 
-	logger.LoggingInit("apiserver", cfg)
+	logger.LoggingInit("hugespaceship", cfg)
 
 	pool := db.Open(cfg)            // Open a connection to the DB
 	err = migration.MigrateDB(pool) // Migrate the DB to the latest schema
@@ -44,15 +44,10 @@ func main() {
 	game_api.APIBootstrap(api, cfg)
 
 	// Resource server
-	if cfg.ResourceServer.Enabled {
-		game_api.ResourceBootstrap(api, cfg)
-	}
+	game_api.ResourceBootstrap(api, cfg)
 
-	if cfg.Website.Enabled {
-		website.Bootstrap(ctx, cfg)
-	}
+	website.Bootstrap(ctx, cfg)
 
-	fmt.Println("THISAB GDJSKNFMAKENTKLADLGWNEJKGHELR")
 	err = ctx.Run("0.0.0.0:" + strconv.Itoa(cfg.HTTPPort))
 	if err != nil {
 		panic(err)
