@@ -5,7 +5,7 @@ import "github.com/cristalhq/aconfig/aconfigyaml"
 
 // Config is the struct that contains all the global service config for the various components of the application
 type Config struct {
-	HTTPPort int `default:"8080" usage:"The listen port for the HTTP server"`
+	HTTPPort int `default:"8080" usage:"The listen port for the HTTP server" env:"HTTP_PORT"`
 	Database struct {
 		Host     string `required:"true"`
 		Port     uint16 `required:"true"`
@@ -14,8 +14,8 @@ type Config struct {
 		Database string `required:"true" usage:"The Database to use"`
 	} `usage:"Config for a postgresql database" env:"DB"`
 	API struct {
-		EnforceDigest      bool   `default:"false"`
-		DigestKey          string ``
+		EnforceDigest      bool `default:"false"`
+		DigestKey          string
 		AlternateDigestKey string
 	}
 	ResourceServer struct {
@@ -24,10 +24,17 @@ type Config struct {
 		CacheLocation  string `default:"./r"`
 	}
 	Website struct {
-		Enable bool
+		Enabled              bool   `default:"true"`
+		UseEmbeddedResources bool   `default:"true"`
+		WebRoot              string `env:"WEBROOT"`
+		ThemePath            string
+		DefaultTheme         string
+		AllowUserThemes      bool
 	}
 	Log struct {
-		Debug bool `default:"false"`
+		Debug       bool   `default:"false"` // Debug controls the web server debug
+		FileLogging bool   `default:"true"`
+		Level       string `default:"info"`
 	}
 }
 

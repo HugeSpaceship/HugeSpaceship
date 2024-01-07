@@ -103,4 +103,7 @@ var GameIDs = map[string]GameType{
 	"CUSA01072": LBP3,
 	"CUSA01077": LBP3,
 	"CUSA01304": LBP3,
+
+	// LBPV
+	"PCSF00021": LBPV,
 }

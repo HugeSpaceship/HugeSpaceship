@@ -5,6 +5,7 @@ import (
 	"HugeSpaceship/internal/model/auth"
 	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"HugeSpaceship/pkg/db"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -51,17 +52,35 @@ func PublishHandler() gin.HandlerFunc {
 			_ = ctx.Error(err)
 			ctx.AbortWithStatus(400)
 		}
-		domain := ctx.GetInt("domain")
+		domain := ctx.GetUint("domain")
 		session, _ := ctx.Get("session")
 
-		id, err := hs_db.InsertSlot(dbCtx, slotData, session.(auth.Session).UserID, hs_db.GetGameFromSession(session.(auth.Session)), domain)
-		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(500)
+		id := slotData.ID // Will be 0 if the slot is blank
 
-			return
+		if slotData.ID == 0 { // If inserting
+			id, err = hs_db.InsertSlot(dbCtx, slotData, session.(auth.Session).UserID, hs_db.GetGameFromSession(session.(auth.Session)), domain)
+			if err != nil {
+				ctx.Error(err)
+				ctx.AbortWithStatus(500)
+				return
+			}
+			log.Debug().Uint64("levelID", id).Str("user", session.(auth.Session).Username).Msg("Published Level")
+
+		} else { // If updating
+			uploader, _ := hs_db.GetLevelOwner(dbCtx, id)
+			if uploader != session.(auth.Session).UserID {
+				ctx.String(http.StatusForbidden, "User does not own level")
+				ctx.Error(errors.New("user does not own level"))
+				return
+			}
+			err := hs_db.UpdateSlot(ctx, slotData)
+			if err != nil {
+				ctx.Error(err)
+				ctx.AbortWithStatus(500)
+				return
+			}
 		}
-		log.Debug().Uint64("levelID", id).Str("user", session.(auth.Session).Username).Msg("Published Level")
+
 		s, err := hs_db.GetSlot(dbCtx, id)
 		if err != nil {
 			ctx.Error(err)
@@ -85,9 +104,11 @@ func UnPublishHandler() gin.HandlerFunc {
 			return
 		}
 
-		uploader, err := hs_db.GetLevelOwner(dbCtx, id)
+		uploader, _ := hs_db.GetLevelOwner(dbCtx, id)
 		if uploader != session.(auth.Session).UserID {
 			ctx.String(http.StatusForbidden, "User does not own level")
+			ctx.Error(errors.New("User does not own level"))
+			return
 		}
 
 		err = hs_db.DeleteSlot(dbCtx, id)

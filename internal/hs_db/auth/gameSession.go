@@ -29,12 +29,6 @@ func NewSession(ctx context.Context, ticket types.Ticket, ip netip.Addr, game st
 	platform := common.PS3
 	gameType := common.LBP2
 
-	if g, exists := common.GameIDs[titleID]; exists {
-		gameType = g
-	} else {
-		return "", errors.New("invalid game")
-	}
-
 	if ticket.Footer.Signatory == types.RPCNSignatoryID {
 		platform = common.RPCS3
 	}
@@ -45,6 +39,12 @@ func NewSession(ctx context.Context, ticket types.Ticket, ip netip.Addr, game st
 	case "lbp-psp":
 		platform = common.PSP
 		gameType = common.LBPPSP
+	default:
+		if g, exists := common.GameIDs[titleID]; exists && game == "" {
+			gameType = g
+		} else {
+			return "", errors.New("invalid game")
+		}
 	}
 
 	session, err := hs_db.NewSession(ctx, ticket.Username, gameType, ip, platform, token, time.Now().Add(5*time.Hour))
@@ -67,6 +67,7 @@ func GetSession(ctx context.Context, token string) (session auth.Session, exists
 				log.Error().Err(err).Msg("Failed to remove expired session")
 			}
 		}
+		log.Debug().Msg("Using cached session")
 		return session, exists
 	}
 
@@ -81,7 +82,7 @@ func GetSession(ctx context.Context, token string) (session auth.Session, exists
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to remove expired session")
 		}
-		return auth.Session{}, false // The auth middleware should NOT continue if the session doesn't exist
+		return auth.Session{}, false // The auth middlewares should NOT continue if the session doesn't exist
 	}
 	return session, true
 }

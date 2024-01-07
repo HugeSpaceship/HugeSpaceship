@@ -5,7 +5,7 @@ import (
 	"HugeSpaceship/internal/config"
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/db/migration"
-	logger2 "HugeSpaceship/pkg/logger"
+	"HugeSpaceship/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"os"
@@ -18,7 +18,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to load config")
 	}
 
-	logger2.LoggingInit("apiserver", cfg)
+	logger.LoggingInit("api_server", cfg)
 
 	pool := db.Open(cfg)            // Open a connection to the DB
 	err = migration.MigrateDB(pool) // Migrate the DB to the latest schema
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	ctx := gin.New()
-	ctx.Use(logger2.LoggingMiddleware())
+	ctx.Use(logger.LoggingMiddleware())
 
 	// everything starts at /api
 	api := ctx.Group("/api")

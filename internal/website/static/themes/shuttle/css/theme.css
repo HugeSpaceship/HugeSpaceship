@@ -1,0 +1,70 @@
+@keyframes modal-opening {
+    0% {top: -20%; visibility: hidden;}
+    10% {top: -20%; visibility: visible;}
+    80% {top: 35%;}
+    100% {top: 30%; visibility: visible;}
+}
+
+@keyframes modal-closing {
+    0% {top: 30%; visibility: visible;}
+    100% {top: -20%; visibility: hidden;}
+}
+
+@keyframes modal-dangle {
+    0% {left: 49.6%;}
+    50% {left: 50.4%;}
+    0% {left: 49.6%;}
+}
+
+.login-background {
+    background-image: url("/static/themes/shuttle/img/login-background.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#container {
+    background-color: #000000;
+    width: 50%;
+    height: 50%;
+}
+
+#login-form {
+    font-family: sans-serif;
+    /*background-color: #466970;*/
+    border-radius: 20px;
+    position:fixed;
+    left: 50%;
+    margin-top: 20px;
+    transform: translate(-50%,-50%);
+    width: 400px;
+    height: 280px;
+    box-shadow: #303030 0 5px 7px;
+    visibility: hidden;
+
+}
+#login-form * {
+    padding-left: 10px;
+}
+
+.modal-text {
+    color: ghostwhite;
+}
+
+.modal-opening {
+
+    animation-name: modal-opening, modal-dangle;
+    animation-iteration-count: 1, infinite;
+    animation-duration: 0.2s, 60s;
+    animation-fill-mode: forwards, none;
+}
+
+.modal-closing {
+    animation-name: modal-closing;
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.close-button {
+    color: red;
+}

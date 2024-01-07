@@ -7,6 +7,7 @@ import (
 
 type Upload struct {
 	XMLName         xml.Name        `xml:"slot" `
+	ID              uint64          `xml:"id,omitempty"`
 	Type            string          `xml:"type,attr" `
 	Name            string          `xml:"name,omitempty"`
 	Description     string          `xml:"description,omitempty"`
