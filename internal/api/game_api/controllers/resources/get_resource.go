@@ -17,7 +17,7 @@ import (
 var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
 
 func getResourceFromCache(cfg *config.Config, hash string) string {
-	filePath := path.Join(cfg.ResourceServer.CacheLocation, nonAlphanumericRegex.ReplaceAllString(hash, ""))
+	filePath := path.Join(cfg.ResourceServer.CacheLocation, hash)
 	_, err := os.Stat(filePath)
 	if err != nil {
 		log.Debug().Str("hash", hash).Msg("Resource not in cache...")
@@ -38,11 +38,36 @@ func closeResource(resource io.ReadSeekCloser, tx pgx.Tx) {
 	}
 }
 
+func cacheResource(location string, resource io.ReadSeekCloser, hash string) {
+	_, err := resource.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to reset LOB read pointer")
+		return
+	}
+	filePath := path.Join(location, nonAlphanumericRegex.ReplaceAllString(hash, ""))
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644)
+	defer file.Close()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to open file path")
+		return
+	}
+	_, err = io.Copy(file, resource)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to write resource")
+	}
+}
+
 func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		hash := ctx.Param("hash")
+		if nonAlphanumericRegex.MatchString(hash) {
+			ctx.String(400, "Invalid resource hash")
+			return
+		}
+
 		if cfg.ResourceServer.CacheResources { // check for cache
 			ctx.File(getResourceFromCache(cfg, hash))
+			return
 		}
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
@@ -58,22 +83,7 @@ func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
 
 		// Caches resources by resetting the read pointer on the db LOB
 		if cfg.ResourceServer.CacheResources {
-			_, err := resource.Seek(0, io.SeekStart)
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to reset LOB read pointer")
-				return
-			}
-			filePath := path.Join(cfg.ResourceServer.CacheLocation, nonAlphanumericRegex.ReplaceAllString(hash, ""))
-			file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644)
-			defer file.Close()
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to open file path")
-				return
-			}
-			_, err = io.Copy(file, resource)
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to write resource")
-			}
+			cacheResource(cfg.ResourceServer.CacheLocation, resource, hash)
 		}
 	}
 }
