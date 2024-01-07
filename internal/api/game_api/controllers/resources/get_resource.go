@@ -16,15 +16,25 @@ import (
 
 var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
 
-func getResourceFromCache(cfg *config.Config, hash string) string {
+func getResourceFromCache(cfg *config.Config, dbCtx context.Context, hash string) (string, bool) {
+
 	filePath := path.Join(cfg.ResourceServer.CacheLocation, hash)
 	_, err := os.Stat(filePath)
 	if err != nil {
 		log.Debug().Str("hash", hash).Msg("Resource not in cache...")
-	} else {
-		log.Debug().Str("hash", hash).Msg("Serving resource from cache")
+		return "", false
 	}
-	return filePath
+
+	if exists, err := hs_db.ResourceExists(dbCtx, hash); err != nil || !exists {
+		log.Debug().Str("hash", hash).Msg("Resource exists in cache but is not in DB, deleting from cache")
+		err := os.Remove(path.Join(cfg.ResourceServer.CacheLocation, hash))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	log.Debug().Str("hash", hash).Msg("Serving resource from cache")
+	return filePath, true
 }
 
 func closeResource(resource io.ReadSeekCloser, tx pgx.Tx) {
@@ -65,12 +75,16 @@ func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		if cfg.ResourceServer.CacheResources { // check for cache
-			ctx.File(getResourceFromCache(cfg, hash))
-			return
-		}
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
+
+		if cfg.ResourceServer.CacheResources { // check for cache
+
+			if resourceFile, exists := getResourceFromCache(cfg, dbCtx, hash); exists {
+				ctx.File(resourceFile)
+			}
+			return
+		}
 
 		resource, tx, size, err := hs_db.GetResource(dbCtx, hash)
 		if err != nil {
