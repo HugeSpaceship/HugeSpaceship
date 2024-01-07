@@ -42,5 +42,5 @@ func Bootstrap(ctx *gin.Engine, cfg *config.Config) {
 	}
 
 	ctx.GET("/", pages.HomePage(info))
-	ctx.GET("/earth", pages.EarthPage(info))
+
 }
