@@ -120,3 +120,14 @@ func GetResource(ctx context.Context, hash string) (io.ReadSeekCloser, pgx.Tx, i
 
 	return lob, tx, size, nil
 }
+
+func CloseResource(resource io.ReadSeekCloser, tx pgx.Tx) {
+	err := resource.Close()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to close resource")
+	}
+	err = tx.Commit(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to commit")
+	}
+}

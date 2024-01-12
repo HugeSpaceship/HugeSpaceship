@@ -1,0 +1,47 @@
+html {
+    --text-colour-dark: hsl(204, 20%, 90%);
+    --text-colour-light: hsl(204, 20%, 0%);
+}
+
+html[theme-variant="avalon"] {
+    --primary-colour: hsl(210, 100%, 50%);
+    --accent-colour-1: hsl(210, 80%, 20%);
+    --background-colour-dark: hsl(210, 5%, 10%);
+    --secondary-background-dark: hsl(210, 5%, 15%);
+}
+
+html[theme-variant="negativity"] {
+    --primary-colour: hsl(270, 74%, 56%);
+    --accent-colour-1: hsl(270, 68%, 28%);
+
+}
+
+html[theme-variant="factory"] {
+    --primary-hue: 200;
+
+    --primary-colour: hsl(10, 100%, 50%);
+    --accent-colour-1: hsl(10, 80%, 20%);
+    --background-colour-dark: hsl(10, 5%, 10%);
+    --secondary-background-dark: hsl(10, 5%, 15%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-colour: var(--background-colour-dark);
+        --text-colour: var(--text-colour-dark);
+        --secondary-background: var(--secondary-background-dark);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --background-colour: hsl(var(--primary-hue), 10%, 90%);
+        --text-colour: var(--text-colour-light);
+        --secondary-background: var(--primary-colour);
+    }
+}
+
+body {
+    background-color: var(--background-colour);
+    color: var(--text-colour);
+}

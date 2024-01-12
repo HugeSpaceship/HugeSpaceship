@@ -36,7 +36,7 @@ var BuiltInThemes = []Theme{
 		Description: "The default HugeSpaceship theme",
 		Author:      "The HugeSpaceship contributors",
 		Path:        "shuttle",
-		Stylesheets: []string{"theme.css"},
+		Stylesheets: []string{"colours.css", "theme.css", "login-animation.css"},
 		BuiltIn:     true,
 	},
 	{

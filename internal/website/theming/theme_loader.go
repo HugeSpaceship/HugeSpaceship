@@ -34,6 +34,14 @@ type Themes []*Theme
 func LoadThemes(themesPath string, ctx *gin.Engine) (themes Themes, err error) {
 	themesDir, err := os.ReadDir(themesPath)
 
+	for i, _ := range BuiltInThemes {
+		tmpl, err := LoadBaseTemplates()
+		if err != nil {
+			panic(err)
+		}
+		BuiltInThemes[i].Template = tmpl
+	}
+
 	for _, themeDir := range themesDir {
 		if !themeDir.IsDir() { // TODO: add support for themesDir in zip files
 			continue

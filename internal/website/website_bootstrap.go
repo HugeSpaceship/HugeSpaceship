@@ -3,6 +3,7 @@ package website
 import (
 	"HugeSpaceship/internal/config"
 	"HugeSpaceship/internal/model/common"
+	"HugeSpaceship/internal/website/api"
 	"HugeSpaceship/internal/website/pages"
 	"HugeSpaceship/internal/website/theming"
 	"embed"
@@ -41,6 +42,11 @@ func Bootstrap(ctx *gin.Engine, cfg *config.Config) {
 		info.InstanceTheme, _ = themes.GetTheme("builtin.hugespaceship.shuttle")
 	}
 
+	// Pages
 	ctx.GET("/", pages.HomePage(info))
+
+	// API
+	ctx.GET("/api/v1/test", api.SlotAPI(info))
+	ctx.GET("/api/v1/image/:hash", api.ImageConverterHandler(cfg))
 
 }
