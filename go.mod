@@ -8,7 +8,7 @@ require (
 	github.com/georgysavva/scany/v2 v2.1.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.5.0
-	github.com/jackc/pgx/v5 v5.5.1
+	github.com/jackc/pgx/v5 v5.5.2
 	github.com/lukegb/dds v0.0.0-20190402175749-8b7170e64003
 	github.com/rs/zerolog v1.31.0
 	github.com/stretchr/testify v1.8.4
