@@ -55,8 +55,8 @@ func cacheResource(location string, resource io.ReadSeekCloser, hash string) {
 
 func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		hash := ctx.Param("hash")
-		if validation.IsHashValid(hash) {
+		ok, hash := validation.IsHashValid(ctx.Param("hash"))
+		if !ok {
 			ctx.String(400, "Invalid resource hash")
 			return
 		}
