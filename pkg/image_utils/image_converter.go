@@ -5,7 +5,8 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
-	_ "github.com/lukegb/dds"
+	"errors"
+	_ "github.com/hugespaceship/dds"
 	"github.com/rs/zerolog/log"
 	"image"
 	_ "image/jpeg"
@@ -48,13 +49,13 @@ func DecompressImage(closer io.ReadCloser) io.Reader {
 		}
 	}
 
-	writer := new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 	for i := uint16(0); i < chunks; i++ {
 		deflatedData := make([]byte, compressed[i])
-		_, err = reader.Read(deflatedData)
+		_, err = io.ReadFull(reader, deflatedData)
 
 		if compressed[i] == decompressed[i] {
-			writer.Write(deflatedData)
+			buf.Write(deflatedData)
 			continue
 		}
 
@@ -62,16 +63,20 @@ func DecompressImage(closer io.ReadCloser) io.Reader {
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to create zlib reader")
 		}
-		defer zlibReader.Close()
 		inflatedData := make([]byte, decompressed[i])
 		_, err = zlibReader.Read(inflatedData)
-		if err != nil {
+		if err != nil && !errors.Is(err, io.EOF) {
 			log.Error().Err(err).Msg("Failed to read compressed chunk")
 		}
 
-		writer.Write(inflatedData)
+		buf.Write(inflatedData)
+		err = zlibReader.Close()
+		if err != nil {
+			log.Error().Err(err).Msg("couldn't close zlibReader")
+		}
 	}
-	return bytes.NewReader(writer.Bytes())
+
+	return bytes.NewReader(buf.Bytes())
 }
 
 // IMGToPNG tries to convert any image to a PNG

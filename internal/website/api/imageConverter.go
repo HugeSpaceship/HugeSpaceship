@@ -10,7 +10,6 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"io"
 	"net/http"
 	"os"
 	"path"
@@ -37,30 +36,21 @@ func getImageFromCache(cfg *config.Config, dbCtx context.Context, hash string) (
 	return filePath, true
 }
 
-func cacheImage(location string, resource io.ReadSeeker, hash string) {
-	_, err := resource.Seek(0, io.SeekStart)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to reset LOB read pointer")
-		return
-	}
-	filePath := path.Join(location, hash+".png")
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644)
-	defer file.Close()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to open file path")
-		return
-	}
-	_, err = io.Copy(file, resource)
+func cacheImage(location string, resource []byte, hash string) {
+	filePath := path.Join(location, "png", hash+".png")
+
+	err := os.WriteFile(filePath, resource, 0644)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to write resource")
 	}
+
 }
 
 func ImageConverterHandler(cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		hash := ctx.Param("hash")
-		if validation.IsHashValid(hash) {
+		ok, hash := validation.IsHashValid(ctx.Param("hash"))
+		if !ok {
 			ctx.String(400, "Invalid resource hash")
 			return
 		}
@@ -68,19 +58,18 @@ func ImageConverterHandler(cfg *config.Config) gin.HandlerFunc {
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
 
-		if exists, err := hs_db.ResourceExists(dbCtx, hash); err != nil || !exists {
-			log.Debug().Str("hash", hash).Msg("Resource exists in cache but is not in DB, deleting from cache")
-			err := os.Remove(path.Join(cfg.ResourceServer.CacheLocation, hash))
-			if err != nil {
-				panic(err)
-			}
-		}
-
 		if cfg.ResourceServer.CacheResources { // check for cache
-
 			if resourceFile, exists := getImageFromCache(cfg, dbCtx, hash); exists {
-				ctx.File(resourceFile)
-				return
+				if exists, err := hs_db.ResourceExists(dbCtx, hash); err != nil || !exists {
+					log.Debug().Str("hash", hash).Msg("Resource exists in cache but is not in DB, deleting from cache")
+					err := os.Remove(path.Join(cfg.ResourceServer.CacheLocation, hash))
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					ctx.File(resourceFile)
+					return
+				}
 			}
 		}
 
@@ -111,7 +100,7 @@ func ImageConverterHandler(cfg *config.Config) gin.HandlerFunc {
 		ctx.DataFromReader(200, int64(buf.Len()), "image/png", imgReader, nil)
 
 		if cfg.ResourceServer.CacheResources {
-			cacheImage(cfg.ResourceServer.CacheLocation, resource, hash)
+			cacheImage(cfg.ResourceServer.CacheLocation, buf.Bytes(), hash)
 		}
 	}
 }

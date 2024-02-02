@@ -32,14 +32,18 @@ func (t Themes) GetTheme(id string) (*Theme, bool) {
 type Themes []*Theme
 
 func LoadThemes(themesPath string, ctx *gin.Engine) (themes Themes, err error) {
-	themesDir, err := os.ReadDir(themesPath)
-
-	for i, _ := range BuiltInThemes {
+	for i := range BuiltInThemes {
 		tmpl, err := LoadBaseTemplates()
 		if err != nil {
 			panic(err)
 		}
 		BuiltInThemes[i].Template = tmpl
+	}
+
+	themesDir, err := os.ReadDir(themesPath)
+	if err != nil {
+		log.Warn().Err(err).Msg("Could not read themes folder, not using external themes")
+		return nil, nil
 	}
 
 	for _, themeDir := range themesDir {
