@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.5.0
 	github.com/hugespaceship/dds v1.0.2
 	github.com/jackc/pgx/v5 v5.5.2
-	github.com/rs/zerolog v1.31.0
+	github.com/rs/zerolog v1.32.0
 	github.com/stretchr/testify v1.8.4
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.0.0
 
