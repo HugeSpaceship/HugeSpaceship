@@ -4,10 +4,11 @@ import (
 	"HugeSpaceship/internal/config"
 	"HugeSpaceship/internal/hs_db"
 	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/image_utils"
+	"HugeSpaceship/pkg/file_utils/lbp_image"
 	"HugeSpaceship/pkg/validation"
 	"bytes"
 	"context"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -83,12 +84,15 @@ func ImageConverterHandler(cfg *config.Config) gin.HandlerFunc {
 
 		buf := new(bytes.Buffer)
 
-		decompressed := image_utils.DecompressImage(resource)
-		if decompressed == nil {
+		decompressed, err := lbp_image.DecompressImage(resource)
+		if errors.Is(err, lbp_image.InvalidMagicNumber) {
 			ctx.String(http.StatusUnsupportedMediaType, "Not an image")
 			return
+		} else if err != nil {
+			ctx.String(http.StatusInternalServerError, "Failed to fetch image.")
 		}
-		err = image_utils.IMGToPNG(decompressed, buf)
+
+		err = lbp_image.IMGToPNG(decompressed, buf)
 		if err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatus(500)

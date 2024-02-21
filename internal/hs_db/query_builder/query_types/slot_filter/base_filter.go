@@ -7,7 +7,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"math"
 	"strconv"
@@ -58,9 +57,14 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain int, skip, take uint) (slot.P
 			query = strings.Replace(query, "?", "$"+strconv.Itoa(i), 1)
 		}
 	}
-	fmt.Println(query)
 
-	err := pgxscan.Select(context.Background(), tx, &slots.Slots, query, append(params, b.extraParams...)...)
+	if b.extraParams != nil {
+		params = append(params, b.extraParams)
+	}
+
+	rows, err := tx.Query(context.Background(), query, params...)
+	s, err := pgx.CollectRows[slot.SearchSlot](rows, pgx.RowToStructByNameLax[slot.SearchSlot])
+	slots.Slots = s
 
 	if err != nil {
 		return slot.PaginatedSlotList[slot.SearchSlot]{}, err

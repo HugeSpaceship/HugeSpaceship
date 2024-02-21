@@ -8,11 +8,11 @@ import (
 )
 
 type SearchSlot struct {
-	XMLName xml.Name `xml:"slot"`
-	Type    string   `xml:"type,attr" hs_db:"-"`
+	XMLName xml.Name `xml:"slot" db:"-"`
+	Type    string   `xml:"type,attr" db:"-"`
 
 	ID                  string          `xml:"id"`
-	NPHandle            npdata.NpHandle `xml:"npHandle"`
+	NPHandle            npdata.NpHandle `xml:"npHandle" db:"-"`
 	Uploader            uuid.UUID       `xml:"-" db:"uploader"`
 	SearchScore         float32         `xml:"searchScore"`
 	Location            common.Location `xml:"location"`

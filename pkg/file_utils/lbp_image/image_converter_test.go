@@ -1,4 +1,4 @@
-package image_utils
+package lbp_image
 
 import (
 	"bytes"
