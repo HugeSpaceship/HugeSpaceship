@@ -5,47 +5,58 @@ import (
 	"HugeSpaceship/internal/model/common"
 	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"HugeSpaceship/pkg/db"
+	"HugeSpaceship/pkg/utils"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"log/slog"
 	"mime"
+	"net/http"
 	"strconv"
 )
 
-func SlotAPI(info common.Info) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		accept := ctx.Request.Header.Get("Accept")
+func SlotAPI(info common.Info) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		accept := r.Header.Get("Accept")
 		contentType, _, err := mime.ParseMediaType(accept)
 		if err != nil {
-			ctx.String(400, "Bad Accept header value '%s'", accept)
-			ctx.Error(err)
+			utils.HttpLogf(w, 400, "Bad Accept header value '%s'", accept)
+			slog.Debug("Failed to parse media type", slog.Any("err", err))
 			return
 		}
 
-		slotID := ctx.Query("s")
+		slotID := r.URL.Query().Get("s")
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
 
 		levelID, err := strconv.ParseUint(slotID, 10, 64)
 		s, err := hs_db.GetSlot(dbCtx, levelID)
 		if err != nil {
-			ctx.String(500, "Failed to get slot")
-			ctx.Error(err)
+			utils.HttpLog(w, 500, "Failed to get slot")
+			slog.Error("failed to get slot", slog.String("id", slotID), slog.Any("err", err))
 			return
 		}
 
-		if ctx.Request.Header.Get("HX-Request") == "true" || contentType == "text/html" {
-			slotAPIHTML(ctx, info, s)
+		if r.Header.Get("HX-Request") == "true" || contentType == "text/html" {
+			slotAPIHTML(w, info, s)
 		} else {
-			slotAPIJson(ctx, s)
+			slotAPIJson(w, s)
 		}
 	}
 }
 
-func slotAPIJson(ctx *gin.Context, s slot.Slot) {
-	ctx.JSON(200, &s)
+func slotAPIJson(w http.ResponseWriter, s slot.Slot) {
+	jsonBytes, err := json.Marshal(&s)
+	if err != nil {
+		slog.Error("failed to marshal slot", slog.Any("err", err))
+	}
+	_, err = w.Write(jsonBytes)
+	if err != nil {
+		slog.Error("failed write to ResponseWriter")
+	}
 }
 
-func slotAPIHTML(ctx *gin.Context, info common.Info, s slot.Slot) {
-	err := info.InstanceTheme.Template.ExecuteTemplate(ctx.Writer, "slotCard.gohtml", gin.H{
+func slotAPIHTML(w http.ResponseWriter, info common.Info, s slot.Slot) {
+	err := info.InstanceTheme.Template.ExecuteTemplate(w, "slotCard.gohtml", gin.H{
 		"Slot": s,
 	})
 	if err != nil {

@@ -2,8 +2,9 @@ package theming
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
+	"net/http"
 	"os"
 	"path"
 )
@@ -31,7 +32,7 @@ func (t Themes) GetTheme(id string) (*Theme, bool) {
 
 type Themes []*Theme
 
-func LoadThemes(themesPath string, ctx *gin.Engine) (themes Themes, err error) {
+func LoadThemes(themesPath string, r chi.Router) (themes Themes, err error) {
 	for i := range BuiltInThemes {
 		tmpl, err := LoadBaseTemplates()
 		if err != nil {
@@ -64,7 +65,10 @@ func LoadThemes(themesPath string, ctx *gin.Engine) (themes Themes, err error) {
 			continue
 		}
 
-		ctx.Static("/theming/"+theme.ID, path.Clean(themesPath)+"/"+themeDir.Name())
+		r.Handle("/theming/"+theme.ID, http.FileServer(
+			http.Dir(path.Clean(themesPath)+"/"+themeDir.Name()),
+		))
+
 		theme.Path = themeDir.Name()
 		themeTempl, err := LoadTemplateOverrides(theme, themesPath)
 		if err == nil {

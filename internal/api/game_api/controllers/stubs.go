@@ -1,9 +1,11 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+)
 
-func StubEndpoint() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ctx.Status(200)
+func StubEndpoint() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
 	}
 }

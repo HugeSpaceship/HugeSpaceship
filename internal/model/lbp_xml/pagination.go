@@ -1,6 +1,10 @@
 package lbp_xml
 
-import "github.com/gin-gonic/gin"
+import (
+	"HugeSpaceship/pkg/utils"
+	"net/http"
+	"strconv"
+)
 
 type PaginationData struct {
 	Size   uint `form:"pageSize"`
@@ -9,9 +13,27 @@ type PaginationData struct {
 	Domain uint `form:"-"`
 }
 
-func GetPageinationData(ctx *gin.Context) (PaginationData, error) {
-	pageData := PaginationData{Domain: ctx.GetUint("domain")}
-	err := ctx.ShouldBindQuery(&pageData)
+func GetPaginationData(r *http.Request) (PaginationData, error) {
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
+	if err != nil {
+		return PaginationData{}, err
+	}
+	pageStart, err := strconv.Atoi(r.URL.Query().Get("pageStart"))
+	if err != nil {
+		return PaginationData{}, err
+	}
+	pageNumber, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		return PaginationData{}, err
+	}
+
+	pageData := PaginationData{
+		Domain: utils.GetContextValue[uint](r.Context(), "domain"),
+		Size:   uint(pageSize),
+		Start:  uint(pageStart),
+		Page:   uint(pageNumber),
+	}
+
 	if pageData.Page != 0 {
 		pageData.Size = 50
 		pageData.Start = 1 * pageData.Page

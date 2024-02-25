@@ -4,32 +4,39 @@ import (
 	"HugeSpaceship/internal/hs_db"
 	"HugeSpaceship/internal/model/lbp_xml"
 	"HugeSpaceship/pkg/db"
-	"github.com/gin-gonic/gin"
+	"HugeSpaceship/pkg/utils"
+	"encoding/xml"
+	"io"
 	"net/http"
 )
 
-func ShowNotUploadedHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func ShowNotUploadedHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
 
-		r := lbp_xml.Resources{}
-		err := ctx.BindXML(&r)
+		res := lbp_xml.Resources{}
+		xmlBytes, err := io.ReadAll(r.Body)
 		if err != nil {
-			ctx.Status(http.StatusBadRequest)
+			panic(err)
+		}
+		err = xml.Unmarshal(xmlBytes, &res)
+		if err != nil {
+			utils.HttpLog(w, http.StatusBadRequest, "Failed to unmarshal XML")
 			return
 		}
 
 		// This checks to see if the resources already exist in the DB
-		resourcesToUpload, err := hs_db.CheckResources(dbCtx, r.Resources)
+		resourcesToUpload, err := hs_db.CheckResources(dbCtx, res.Resources)
 		if err != nil {
-			ctx.Error(err)
-			ctx.Status(500)
+			utils.HttpLog(w, http.StatusInternalServerError, "Failed to check resources")
 			return
 		}
 
-		ctx.XML(200, lbp_xml.Resources{
-			Resources: resourcesToUpload,
-		})
+		err = utils.XMLMarshal(w, &resourcesToUpload)
+		if err != nil {
+			utils.HttpLog(w, http.StatusInternalServerError, "Failed to unmarshal XML")
+			return
+		}
 	}
 }

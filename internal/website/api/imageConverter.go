@@ -4,13 +4,15 @@ import (
 	"HugeSpaceship/internal/config"
 	"HugeSpaceship/internal/hs_db"
 	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/file_utils/lbp_image"
+	"HugeSpaceship/pkg/utils"
+	lbp_image2 "HugeSpaceship/pkg/utils/file_utils/lbp_image"
 	"HugeSpaceship/pkg/validation"
 	"bytes"
 	"context"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -47,12 +49,12 @@ func cacheImage(location string, resource []byte, hash string) {
 
 }
 
-func ImageConverterHandler(cfg *config.Config) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func ImageConverterHandler(cfg *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-		ok, hash := validation.IsHashValid(ctx.Param("hash"))
+		ok, hash := validation.IsHashValid(r.PathValue("hash"))
 		if !ok {
-			ctx.String(400, "Invalid resource hash")
+			utils.HttpLog(w, http.StatusBadRequest, "Invalid resource hash")
 			return
 		}
 
@@ -68,7 +70,10 @@ func ImageConverterHandler(cfg *config.Config) gin.HandlerFunc {
 						panic(err)
 					}
 				} else {
-					ctx.File(resourceFile)
+					err := utils.ServeFile(w, resourceFile)
+					if err != nil {
+						slog.Warn("Failed to read file from cache", slog.Any("err", err))
+					}
 					return
 				}
 			}
@@ -76,32 +81,34 @@ func ImageConverterHandler(cfg *config.Config) gin.HandlerFunc {
 
 		resource, tx, _, err := hs_db.GetResource(dbCtx, hash)
 		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(404)
+			utils.HttpLog(w, http.StatusNotFound, "Resource not found")
 			return
 		}
 		defer hs_db.CloseResource(resource, tx)
 
 		buf := new(bytes.Buffer)
 
-		decompressed, err := lbp_image.DecompressImage(resource)
-		if errors.Is(err, lbp_image.InvalidMagicNumber) {
-			ctx.String(http.StatusUnsupportedMediaType, "Not an image")
+		decompressed, err := lbp_image2.DecompressImage(resource)
+		if errors.Is(err, lbp_image2.InvalidMagicNumber) {
+			utils.HttpLog(w, http.StatusUnsupportedMediaType, "Not an image")
 			return
 		} else if err != nil {
-			ctx.String(http.StatusInternalServerError, "Failed to fetch image.")
+			utils.HttpLog(w, http.StatusInternalServerError, "Failed to fetch image.")
 		}
 
-		err = lbp_image.IMGToPNG(decompressed, buf)
+		err = lbp_image2.IMGToPNG(decompressed, buf)
 		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(500)
+			utils.HttpLog(w, http.StatusInternalServerError, "Failed to convert image")
 			return
 		}
 
 		imgReader := bytes.NewReader(buf.Bytes())
 
-		ctx.DataFromReader(200, int64(buf.Len()), "image/png", imgReader, nil)
+		w.Header().Set("Content-Type", "image/png")
+		_, err = io.Copy(w, imgReader)
+		if err != nil {
+			utils.HttpLog(w, http.StatusInternalServerError, "Failed to serve image")
+		}
 
 		if cfg.ResourceServer.CacheResources {
 			cacheImage(cfg.ResourceServer.CacheLocation, buf.Bytes(), hash)

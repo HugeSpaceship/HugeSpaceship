@@ -4,37 +4,45 @@ import (
 	"HugeSpaceship/internal/hs_db/auth"
 	"HugeSpaceship/internal/model/common"
 	"HugeSpaceship/pkg/db"
-	"github.com/gin-gonic/gin"
+	"HugeSpaceship/pkg/utils"
+	"context"
 	"net/http"
 )
 
-func TicketAuthMiddleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		token, err := ctx.Cookie("MM_AUTH")
-		if err != nil {
-			ctx.AbortWithStatus(http.StatusForbidden)
-			return
-		}
+func TicketAuthMiddleware() func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			token, err := r.Cookie("MM_AUTH")
+			if err != nil {
+				utils.HttpLog(w, http.StatusInternalServerError, "Failed to read cookie")
+				return
+			}
 
-		dbCtx := db.GetContext()
-		defer db.CloseContext(dbCtx)
-		session, exists := auth.GetSession(dbCtx, token)
+			dbCtx := db.GetContext()
+			defer db.CloseContext(dbCtx)
+			session, exists := auth.GetSession(dbCtx, token.Value)
 
-		if !exists {
-			ctx.AbortWithStatus(http.StatusForbidden)
-			return
-		}
+			if !exists {
+				utils.HttpLog(w, http.StatusForbidden, "User does not exist")
+				return
+			}
 
-		var domain uint
-		switch session.Platform {
-		case common.PS3, common.PS4, common.RPCS3:
-			domain = 0
-		case common.PSVita:
-			domain = 1
-		case common.PSP:
-			domain = 2
+			var domain uint
+			switch session.Platform {
+			case common.PS3, common.PS4, common.RPCS3:
+				domain = 0
+			case common.PSVita:
+				domain = 1
+			case common.PSP:
+				domain = 2
+			}
+
+			ctx := context.WithValue(context.Background(), "domain", domain)
+			ctx = context.WithValue(ctx, "session", session)
+			r.WithContext(ctx)
+
+			next.ServeHTTP(w, r)
 		}
-		ctx.Set("domain", domain)
-		ctx.Set("session", session)
+		return http.HandlerFunc(fn)
 	}
 }

@@ -1,7 +1,12 @@
 package middlewares
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+)
 
-func ServerHeaderMiddleware(c *gin.Context) {
-	c.Header("Server", "HugeSpaceship")
+func ServerHeaderMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Server", "HugeSpaceship")
+	}
+	return http.HandlerFunc(fn)
 }

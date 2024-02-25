@@ -12,63 +12,65 @@ import (
 	"HugeSpaceship/internal/api/game_api/controllers/users"
 	"HugeSpaceship/internal/api/game_api/middlewares"
 	"HugeSpaceship/internal/config"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 )
 
-func ResourceBootstrap(group *gin.RouterGroup, cfg *config.Config) {
-	group.GET("/r/:hash", resources.GetResourceHandler(cfg), middlewares.TicketAuthMiddleware())
+func ResourceBootstrap(group chi.Router, cfg *config.Config) {
+	group.With(middlewares.TicketAuthMiddleware()).Get("/r/{hash}", resources.GetResourceHandler(cfg))
 }
 
-func APIBootstrap(gameAPI *gin.RouterGroup, cfg *config.Config) {
-	gameAPI.Use(middlewares.PSPVersionMiddleware, middlewares.ServerHeaderMiddleware)
+func APIBootstrap(cfg *config.Config) func(r chi.Router) {
+	return func(r chi.Router) {
+		r.Use(middlewares.PSPVersionMiddleware, middlewares.ServerHeaderMiddleware)
 
-	gameAPI.POST("/login", auth.LoginHandler())
-	gameAPI.GET("/eula", middlewares.DigestMiddleware(cfg), controllers.EulaHandler())
+		r.Post("/login", auth.LoginHandler())
+		r.With(middlewares.DigestMiddleware(cfg)).Get("/eula", controllers.EulaHandler())
 
-	// LittleBigPlanet compatible API, required NpTicket auth
-	authGameAPI := gameAPI.Group("", middlewares.TicketAuthMiddleware())
-	authGameAPI.GET("/announce", controllers.AnnounceHandler())
-	authGameAPI.GET("/network_settings.nws", settings.NetSettingsHandler())
+		// LittleBigPlanet compatible API, required NpTicket auth
+		authGameAPI := r.With(middlewares.TicketAuthMiddleware())
+		authGameAPI.Get("/announce", controllers.AnnounceHandler())
+		authGameAPI.Get("/network_settings.nws", settings.NetSettingsHandler())
 
-	// LittleBigPlanet compatible API with digest calculation
-	digestRequiredAPI := authGameAPI.Group("", middlewares.DigestMiddleware(cfg))
-	digestRequiredAPI.GET("/user/:username", users.UserGetHandler())
-	digestRequiredAPI.POST("/match", match.MatchEndpoint())
-	digestRequiredAPI.POST("/npdata", settings.NpDataEndpoint())
-	digestRequiredAPI.GET("/notification", controllers.NotificationController()) // Stub
-	digestRequiredAPI.POST("/goodbye", auth.LogoutHandler())
-	digestRequiredAPI.GET("/news", controllers.NewsHandler())
-	digestRequiredAPI.GET("/news/:id", controllers.LBP2NewsHandler())
-	digestRequiredAPI.GET("/stream", controllers.StreamHandler())
+		// LittleBigPlanet compatible API with digest calculation
+		digestRequiredAPI := authGameAPI.With(middlewares.DigestMiddleware(cfg))
+		digestRequiredAPI.Get("/user/{username}", users.UserGetHandler())
+		digestRequiredAPI.Post("/match", match.MatchEndpoint())
+		digestRequiredAPI.Post("/npdata", settings.NpDataEndpoint())
+		digestRequiredAPI.Get("/notification", controllers.NotificationController()) // Stub
+		digestRequiredAPI.Post("/goodbye", auth.LogoutHandler())
+		digestRequiredAPI.Get("/news", controllers.NewsHandler())
+		digestRequiredAPI.Get("/news/{id}", controllers.LBP2NewsHandler())
+		digestRequiredAPI.Get("/stream", controllers.StreamHandler())
 
-	digestRequiredAPI.GET("/slots", slots.GetSlotsHandler())
-	digestRequiredAPI.GET("/slots/by", slots.GetSlotsByHandler())
+		digestRequiredAPI.Get("/slots", slots.GetSlotsHandler())
+		digestRequiredAPI.Get("/slots/by", slots.GetSlotsByHandler())
 
-	digestRequiredAPI.GET("/slots/lbp2luckydip", slots.LuckyDipHandler())
-	digestRequiredAPI.GET("/slots/thumbs", slots.HighestRatedLevelsHandler())
-	digestRequiredAPI.GET("/slots/lbp2cool", slots.HighestRatedLevelsHandler())
-	digestRequiredAPI.GET("/slots/cool", slots.HighestRatedLevelsHandler())
-	digestRequiredAPI.GET("/slots/highestRated", slots.HighestRatedLevelsHandler())
-	digestRequiredAPI.GET("/s/user/:id", slots.GetSlotHandler())
+		digestRequiredAPI.Get("/slots/lbp2luckydip", slots.LuckyDipHandler())
+		digestRequiredAPI.Get("/slots/thumbs", slots.HighestRatedLevelsHandler())
+		digestRequiredAPI.Get("/slots/lbp2cool", slots.HighestRatedLevelsHandler())
+		digestRequiredAPI.Get("/slots/cool", slots.HighestRatedLevelsHandler())
+		digestRequiredAPI.Get("/slots/highestRated", slots.HighestRatedLevelsHandler())
+		digestRequiredAPI.Get("/s/user/{id}", slots.GetSlotHandler())
 
-	digestRequiredAPI.POST("/scoreboard/:levelType/:levelID", slots.UploadScoreHandler())
+		digestRequiredAPI.Post("/scoreboard/{levelType}/{levelID}", slots.UploadScoreHandler())
 
-	digestRequiredAPI.POST("/startPublish", slots.StartPublishHandler())
-	digestRequiredAPI.POST("/publish", slots.PublishHandler())
-	digestRequiredAPI.POST("/unpublish/:id", slots.UnPublishHandler())
-	digestRequiredAPI.POST("/updateUser", users.UpdateUserHandler())
+		digestRequiredAPI.Post("/startPublish", slots.StartPublishHandler())
+		digestRequiredAPI.Post("/publish", slots.PublishHandler())
+		digestRequiredAPI.Post("/unpublish/{id}", slots.UnPublishHandler())
+		digestRequiredAPI.Post("/updateUser", users.UpdateUserHandler())
 
-	digestRequiredAPI.POST("/showModerated", moderation.ShowModeratedHandler())
-	digestRequiredAPI.POST("/filter", moderation.FilterHandler())
+		digestRequiredAPI.Post("/showModerated", moderation.ShowModeratedHandler())
+		digestRequiredAPI.Post("/filter", moderation.FilterHandler())
 
-	digestRequiredAPI.POST("/uploadPhoto", photos.UploadPhoto())
-	digestRequiredAPI.POST("/photos/by", photos.GetPhotosBy())
+		digestRequiredAPI.Post("/uploadPhoto", photos.UploadPhoto())
+		digestRequiredAPI.Post("/photos/by", photos.GetPhotosBy())
 
-	digestRequiredAPI.POST("/showNotUploaded", resources.ShowNotUploadedHandler())
-	digestRequiredAPI.POST("/filterResources", resources.ShowNotUploadedHandler())
-	digestRequiredAPI.POST("/upload/:hash", resources.UploadResources())
+		digestRequiredAPI.Post("/showNotUploaded", resources.ShowNotUploadedHandler())
+		digestRequiredAPI.Post("/filterResources", resources.ShowNotUploadedHandler())
+		digestRequiredAPI.Post("/upload/{hash}", resources.UploadResources())
 
-	//Stubby, mc stub face
-	digestRequiredAPI.GET("/promotions", controllers.StubEndpoint())
-	digestRequiredAPI.GET("/user/:username/playlists", controllers.StubEndpoint())
+		//Stubby, mc stub face
+		digestRequiredAPI.Get("/promotions", controllers.StubEndpoint())
+		digestRequiredAPI.Get("/user/{username}/playlists", controllers.StubEndpoint())
+	}
 }

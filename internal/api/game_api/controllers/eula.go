@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
@@ -11,15 +10,19 @@ You can obtain a copy of the licence at:
 http://www.apache.org/licenses/LICENSE-2.0
 `
 
-func EulaHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Data(http.StatusOK, "text/plain", []byte(eulaText))
+func EulaHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(200)
+		w.Write([]byte(eulaText))
 	}
 }
 
-func AnnounceHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func AnnounceHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: Make this configurable via the config file, or better yet integrate with the DB for a news list
-		c.String(http.StatusOK, "I love this lemon") // If it's an empty string then the client won't see it
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(200)
+		w.Write([]byte("")) // If it's an empty string then the client won't see it
 	}
 }

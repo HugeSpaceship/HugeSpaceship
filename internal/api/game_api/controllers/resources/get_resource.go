@@ -4,11 +4,13 @@ import (
 	"HugeSpaceship/internal/config"
 	"HugeSpaceship/internal/hs_db"
 	"HugeSpaceship/pkg/db"
+	"HugeSpaceship/pkg/utils"
 	"HugeSpaceship/pkg/validation"
 	"context"
-	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"io"
+	"log/slog"
+	"net/http"
 	"os"
 	"path"
 )
@@ -53,11 +55,11 @@ func cacheResource(location string, resource io.ReadSeekCloser, hash string) {
 	}
 }
 
-func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ok, hash := validation.IsHashValid(ctx.Param("hash"))
+func GetResourceHandler(cfg *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ok, hash := validation.IsHashValid(r.PathValue("hash"))
 		if !ok {
-			ctx.String(400, "Invalid resource hash")
+			utils.HttpLog(w, http.StatusBadRequest, "Invalid resource hash")
 			return
 		}
 
@@ -65,21 +67,28 @@ func GetResourceHandler(cfg *config.Config) gin.HandlerFunc {
 		defer db.CloseContext(dbCtx)
 
 		if cfg.ResourceServer.CacheResources { // check for cache
-
 			if resourceFile, exists := getResourceFromCache(cfg, dbCtx, hash); exists {
-				ctx.File(resourceFile)
+				r, err := os.Open(resourceFile)
+				if err != nil {
+					slog.Error("Failed to open resource from cache", slog.Any("err", err))
+				}
+				defer r.Close()
+				_, _ = io.Copy(w, r)
 				return
 			}
 		}
 
 		resource, tx, size, err := hs_db.GetResource(dbCtx, hash)
 		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(404)
+			utils.HttpLog(w, http.StatusNotFound, "Resource not found")
 			return
 		}
 		defer hs_db.CloseResource(resource, tx)
-		ctx.DataFromReader(200, size, "application/octet-stream", resource, nil)
+		w.Header().Set("Content-Type", "application/octet-stream")
+		_, err = io.CopyN(w, resource, size)
+		if err != nil {
+			slog.Error("Failed to copy resource", slog.Any("err", err))
+		}
 
 		// Caches resources by resetting the read pointer on the db LOB
 		if cfg.ResourceServer.CacheResources {
