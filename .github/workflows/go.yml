@@ -48,6 +48,6 @@ jobs:
         HS_DB_HOST: postgres
 
     - name: Test
-      run: cd HugeSpaceship && go test -v ./...
+      run: cd /__w/HugeSpaceship/HugeSpaceship && go test -v ./...
       env:
         HS_DB_HOST: postgres
