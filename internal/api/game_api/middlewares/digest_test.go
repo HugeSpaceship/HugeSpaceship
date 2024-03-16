@@ -24,13 +24,13 @@ var cfg = config.Config{
 	}{EnforceDigest: true, DigestKey: TestDigest, AlternateDigestKey: TestAltDigest},
 }
 
-// The digests that we'll expect from the test
-var expectedDigest = utils.CalculateDigest("/test", TestAuthCookie, TestDigest, []byte("Ok!"), false)
-var expectedAltDigest = utils.CalculateDigest("/test", TestAuthCookie, TestAltDigest, []byte("Ok!"), false)
+// The digests that we'll expect from the testdata
+var expectedDigest = utils.CalculateDigest("/testdata", TestAuthCookie, TestDigest, []byte("Ok!"), false)
+var expectedAltDigest = utils.CalculateDigest("/testdata", TestAuthCookie, TestAltDigest, []byte("Ok!"), false)
 
 func setupDigestTestRouter() *gin.Engine {
 	r := gin.Default()
-	r.GET("/test", DigestMiddleware(&cfg), func(ctx *gin.Context) {
+	r.GET("/testdata", DigestMiddleware(&cfg), func(ctx *gin.Context) {
 		ctx.String(200, "Ok!")
 	})
 	return r
@@ -49,7 +49,7 @@ func testPrimaryDigest(t *testing.T) {
 		Name:  "MM_AUTH",
 		Value: TestAuthCookie,
 	})
-	digest := utils.CalculateDigest("/test", TestAuthCookie, TestDigest, nil, false)
+	digest := utils.CalculateDigest("/testdata", TestAuthCookie, TestDigest, nil, false)
 	req.Header.Add(DigestHeaderA, digest)
 
 	r.ServeHTTP(w, req)
@@ -69,7 +69,7 @@ func testAlternateDigest(t *testing.T) {
 		Name:  "MM_AUTH",
 		Value: TestAuthCookie,
 	})
-	digest := utils.CalculateDigest("/test", TestAuthCookie, TestAltDigest, nil, false)
+	digest := utils.CalculateDigest("/testdata", TestAuthCookie, TestAltDigest, nil, false)
 	req.Header.Add(DigestHeaderA, digest)
 
 	r.ServeHTTP(w, req)

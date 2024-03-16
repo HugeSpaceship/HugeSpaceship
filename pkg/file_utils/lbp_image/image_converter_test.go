@@ -1,10 +1,10 @@
 package lbp_image
 
 import (
+	"HugeSpaceship/testdata"
 	"bytes"
 	"crypto/sha1"
 	"io"
-	"os"
 	"reflect"
 	"testing"
 )
@@ -14,11 +14,7 @@ var ddsSum = []byte{0x44, 0x32, 0xc6, 0xa6, 0xe1, 0x18, 0x06, 0x2b, 0x6b, 0xd0, 
 var ddsSize = int64(4736)
 
 func TestDecompressImage(t *testing.T) {
-	f, err := os.Open("../../../test/test.dds.compressed")
-	if err != nil {
-		t.Fatal(err)
-	}
-	decompressedImage, err := DecompressImage(f)
+	decompressedImage, err := DecompressImage(bytes.NewReader(testdata.TestDDSCompressed))
 	if err != nil {
 		t.Error(err)
 	}
@@ -46,7 +42,7 @@ func TestIMGToPNG(t *testing.T) {
 		wantW   string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// TODO: Add testdata cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

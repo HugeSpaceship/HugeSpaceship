@@ -1,16 +1,12 @@
 package npticket
 
 import (
-	"os"
+	"HugeSpaceship/testdata"
 	"testing"
 )
 
 func TestVerifyTicket(t *testing.T) {
-	data, err := os.ReadFile("../../test/example-psn-ticket")
-	if err != nil {
-		t.Error(err)
-	}
-	parser := NewParser(data)
+	parser := NewParser(testdata.ExamplePSNTicket)
 	ticket, err := parser.Parse()
 	if err != nil {
 		t.Error(err)
@@ -20,11 +16,7 @@ func TestVerifyTicket(t *testing.T) {
 		t.Error("Ticket is not valid")
 	}
 
-	data2, err := os.ReadFile("../../test/example-rpcn-ticket")
-	if err != nil {
-		t.Error(err)
-	}
-	parser2 := NewParser(data2)
+	parser2 := NewParser(testdata.ExampleRPCNTicket)
 	ticket2, err := parser2.Parse()
 	if err != nil {
 		t.Error(err)

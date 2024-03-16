@@ -46,7 +46,7 @@ func Bootstrap(ctx *gin.Engine, cfg *config.Config) {
 	ctx.GET("/", pages.HomePage(info))
 
 	// API
-	ctx.GET("/api/v1/test", api.SlotAPI(info))
+	ctx.GET("/api/v1/testdata", api.SlotAPI(info))
 	ctx.GET("/api/v1/image/:hash", api.ImageConverterHandler(cfg))
 
 }
