@@ -18,8 +18,8 @@ func NewsHandler() gin.HandlerFunc {
 					Title: "Test Category",
 					Items: []lbp_xml.NewsItem{
 						{
-							ID:      "test-item",
-							Subject: "This is a test news item",
+							ID:      "testdata-item",
+							Subject: "This is a testdata news item",
 							Content: lbp_xml.NewsItemContent{
 								Content: []lbp_xml.NewsFrame{
 									{
@@ -46,8 +46,8 @@ func NewsHandler() gin.HandlerFunc {
 					Title: "Other Category",
 					Items: []lbp_xml.NewsItem{
 						{
-							ID:      "test-item-2",
-							Subject: "This is a different test news item",
+							ID:      "testdata-item-2",
+							Subject: "This is a different testdata news item",
 							Content: lbp_xml.NewsItemContent{
 								Content: []lbp_xml.NewsFrame{
 									{
