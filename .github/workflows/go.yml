@@ -49,6 +49,6 @@ jobs:
         HS_DB_HOST: postgres
 
     - name: Test
-      run: go test ./...
+      run: pwd && go test ./...
       env:
         HS_DB_HOST: postgres
