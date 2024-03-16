@@ -11,7 +11,7 @@ require (
 	github.com/hugespaceship/dds v1.0.2
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/rs/zerolog v1.31.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.0.0
 
 )
