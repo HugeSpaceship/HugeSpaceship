@@ -12,7 +12,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: golang:latest
     services:
       # Label used to access the service container
       postgres:
@@ -49,6 +48,6 @@ jobs:
         HS_DB_HOST: postgres
 
     - name: Test
-      run: pwd && go test ./...
+      run: go test ./...
       env:
         HS_DB_HOST: postgres
