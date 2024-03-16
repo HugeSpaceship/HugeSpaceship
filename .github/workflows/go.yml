@@ -53,6 +53,8 @@ jobs:
   docker:
     name: Build container and push to registry
     if: github.ref == 'refs/heads/main'
+    needs:
+    - build
     permissions:
       packages: write
     runs-on: ubuntu-latest
