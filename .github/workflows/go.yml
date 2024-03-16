@@ -29,13 +29,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Fix repo dubious ownership
       run: /usr/bin/git config --system --add safe.directory /__w/HugeSpaceship/HugeSpaceship
 
     - name: Set up Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v5
       with:
         go-version: 1.21
 
@@ -48,6 +48,6 @@ jobs:
         HS_DB_HOST: postgres
 
     - name: Test
-      run: go test -v ./...
+      run: cd HugeSpaceship && go test -v ./...
       env:
         HS_DB_HOST: postgres
