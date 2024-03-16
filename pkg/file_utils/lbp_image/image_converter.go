@@ -19,6 +19,7 @@ var (
 	// Magic numbers
 	pngMagic  = []byte{0x89, 0x50, 0x4e, 0x47}
 	jpegMagic = []byte{0x4A, 0x46, 0x49, 0x46}
+	texMagic  = []byte("TEX ")
 )
 
 func decompressZlibData(reader io.Reader, len uint16) ([]byte, error) {
@@ -55,7 +56,7 @@ func DecompressImage(inReader io.Reader) (io.Reader, error) {
 		return reader, nil
 	}
 
-	if string(magic) != "TEX " {
+	if !bytes.HasPrefix(magic, texMagic) {
 		return nil, fmt.Errorf("%w (%X)", InvalidMagicNumber, magic)
 	}
 

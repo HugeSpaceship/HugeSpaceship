@@ -2,24 +2,37 @@ package lbp_image
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"io"
 	"os"
+	"reflect"
 	"testing"
 )
 
+// SHA1 Sum of the expected image
+var ddsSum = []byte{0x44, 0x32, 0xc6, 0xa6, 0xe1, 0x18, 0x06, 0x2b, 0x6b, 0xd0, 0xa0, 0xb8, 0x1e, 0xa4, 0xd7, 0xb8, 0x0f, 0xc1, 0xfe, 0x72}
+var ddsSize = int64(4736)
+
 func TestDecompressImage(t *testing.T) {
-	f, err := os.Open("../../test/b6d6869e139023340dc1f5225c1112e83acbbdca")
+	f, err := os.Open("../../../test/test.dds.compressed")
 	if err != nil {
 		t.Fatal(err)
 	}
-	decompressedImage := DecompressImage(f)
-	f2, err := os.OpenFile("../../test/test.png", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	decompressedImage, err := DecompressImage(f)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
-	_, err = io.Copy(f2, decompressedImage)
+	shaSum := sha1.New()
+	numCopied, err := io.Copy(shaSum, decompressedImage)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
+	}
+
+	if !reflect.DeepEqual(shaSum.Sum(nil), ddsSum) {
+		t.Error("sum does not match expected value")
+	}
+	if numCopied != ddsSize {
+		t.Error("image is not the expected size")
 	}
 }
 
