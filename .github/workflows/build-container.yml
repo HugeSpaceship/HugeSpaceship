@@ -7,7 +7,7 @@ on:
       - completed
 jobs:
   docker:
-    if: github.ref == 'refs/heads/master' &&
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
     runs-on: ubuntu-latest
