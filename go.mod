@@ -8,11 +8,11 @@ require (
 	github.com/georgysavva/scany/v2 v2.1.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-chi/chi/v5 v5.0.12
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/hugespaceship/dds v1.0.2
 	github.com/jackc/pgx/v5 v5.5.5
-	github.com/rs/zerolog v1.31.0
-	github.com/stretchr/testify v1.8.4
+	github.com/rs/zerolog v1.32.0
+	github.com/stretchr/testify v1.9.0
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.0.0
 
 )
