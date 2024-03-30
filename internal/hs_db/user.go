@@ -62,12 +62,12 @@ func NpHandleByUserID(ctx pgxscan.Querier, id uuid.UUID) (npdata.NpHandle, error
 	return npHandle, err
 }
 
-func GetUserByName(ctx context.Context, name string, game common.GameType) (lbp_xml.User, error) {
+func GetUserByName(ctx context.Context, name string, game common.GameType) (*lbp_xml.User, error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
-	var user lbp_xml.User
+	user := new(lbp_xml.User)
 	user.XMLName.Local = "user"
 
-	err := pgxscan.Get(ctx, conn, &user, "SELECT users.*, users.entitled_slots - COUNT(s) AS free_slots, COUNT(s) AS used_slots FROM users LEFT JOIN slots AS s ON s.uploader = users.id WHERE username = $1 GROUP BY users.id LIMIT 1;", name)
+	err := pgxscan.Get(ctx, conn, user, "SELECT users.*, users.entitled_slots - COUNT(s) AS free_slots, COUNT(s) AS used_slots FROM users LEFT JOIN slots AS s ON s.uploader = users.id WHERE username = $1 GROUP BY users.id LIMIT 1;", name)
 	user.Type = "user"
 	user.Game = "1"
 	user.NpHandle.Username = user.Username

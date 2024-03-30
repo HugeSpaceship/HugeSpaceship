@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
+	"net/http"
 	"strconv"
 )
 
@@ -50,7 +51,7 @@ func main() {
 
 	r.Group(website.Bootstrap(cfg))
 
-	err = ctx.Run("0.0.0.0:" + strconv.Itoa(cfg.HTTPPort))
+	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(cfg.HTTPPort), r)
 	if err != nil {
 		panic(err)
 	}
