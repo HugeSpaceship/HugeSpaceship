@@ -4,23 +4,22 @@ import (
 	db2 "HugeSpaceship/internal/hs_db"
 	"HugeSpaceship/internal/model/auth"
 	"HugeSpaceship/pkg/db"
-	"github.com/gin-gonic/gin"
+	"HugeSpaceship/pkg/utils"
 	"github.com/rs/zerolog/log"
+	"net/http"
 )
 
-func LogoutHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		session, _ := ctx.Get("session")
+func LogoutHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
 
-		err := db2.RemoveSession(dbCtx, session.(auth.Session).Token)
+		err := db2.RemoveSession(dbCtx, session.Token)
 		if err != nil {
-			er2 := ctx.Error(err)
-			if er2 != nil {
-				log.Error().Err(er2).Msg("Failed to push error to the errors stack")
-			}
+			utils.HttpLog(w, 500, "failed to log out")
+			log.Error().Err(err).Msg("Failed to push error to the errors stack")
 		}
 	}
 }

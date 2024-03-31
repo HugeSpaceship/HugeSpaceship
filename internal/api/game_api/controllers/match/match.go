@@ -1,11 +1,11 @@
 package match
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-func MatchEndpoint() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func MatchEndpoint() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }

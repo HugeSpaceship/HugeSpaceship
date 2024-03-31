@@ -6,6 +6,7 @@ import (
 	"HugeSpaceship/internal/model/lbp_xml"
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/npticket"
+	utils2 "HugeSpaceship/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
@@ -40,19 +41,19 @@ func LoginHandler() http.HandlerFunc {
 			game = "lbp-psp"
 		}
 
-		token, err := auth.NewSession(dbCtx, ticket, netip.MustParseAddr(r.RemoteAddr), game, c.Query("titleID"))
+		token, err := auth.NewSession(dbCtx, ticket, netip.MustParseAddr(r.RemoteAddr), game, r.URL.Query().Get("titleID"))
 		if err != nil {
-			c.AbortWithStatus(403)
+			utils2.HttpLog(w, http.StatusForbidden, "Failed to create session")
 			return
 		}
 
-		if c.GetHeader("X-exe-v") == "" { // if we're not on PSP
-			c.Render(200, utils.LBPXML{Data: &lbp_xml.LoginResult{
+		if r.Header.Get("X-exe-v") == "" { // if we're not on PSP
+			utils2.XMLMarshal(w, utils.LBPXML{Data: &lbp_xml.LoginResult{
 				AuthTicket: "MM_AUTH=" + token,
 				LBPEnvVer:  "HugeSpaceship",
 			}})
 		} else {
-			c.Render(200, utils.LBPXML{Data: &lbp_xml.PSPLoginResult{
+			utils2.XMLMarshal(w, utils.LBPXML{Data: &lbp_xml.PSPLoginResult{
 				AuthTicket: "MM_AUTH=" + token,
 			}})
 		}

@@ -4,14 +4,16 @@ import (
 	"HugeSpaceship/internal/model/lbp_xml"
 	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"HugeSpaceship/internal/model/lbp_xml/recent_activity"
+	"HugeSpaceship/pkg/utils"
 	"encoding/xml"
-	"github.com/gin-gonic/gin"
+	"log/slog"
+	"net/http"
 	"time"
 )
 
-func NewsHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ctx.XML(200, &lbp_xml.News{
+func NewsHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := utils.XMLMarshal(w, &lbp_xml.News{
 			Categories: []lbp_xml.SubCategory{
 				{
 					ID:    "1",
@@ -59,7 +61,7 @@ func NewsHandler() gin.HandlerFunc {
 												Username: "Zaprit",
 											},
 
-											Content: "FUCK\n",
+											Content: "Thingy\n",
 										},
 									},
 								},
@@ -70,12 +72,16 @@ func NewsHandler() gin.HandlerFunc {
 				},
 			},
 		})
+		if err != nil {
+			w.WriteHeader(500)
+			slog.Error("Failed to marshal XML")
+		}
 	}
 }
 
-func LBP2NewsHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ctx.XML(200, recent_activity.NewsItem{
+func LBP2NewsHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := utils.XMLMarshal(w, recent_activity.NewsItem{
 			XMLName:    xml.Name{Local: "news"},
 			ID:         1,
 			Title:      "Test Title",
@@ -86,5 +92,9 @@ func LBP2NewsHandler() gin.HandlerFunc {
 			Category:   "no_category",
 			Background: "",
 		})
+		if err != nil {
+			w.WriteHeader(500)
+			slog.Error("Failed to marshal XML")
+		}
 	}
 }

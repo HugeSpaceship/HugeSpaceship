@@ -5,22 +5,21 @@ import (
 	"HugeSpaceship/internal/model/auth"
 	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"HugeSpaceship/pkg/db"
-	"errors"
+	"HugeSpaceship/pkg/utils"
+	"log/slog"
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
 
-func StartPublishHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func StartPublishHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
-		s := slot.Slot{}
-		err := ctx.BindXML(&s)
+		s, err := utils.XMLUnmarshal[slot.Slot](r)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to parse xml body")
+			slog.Error("Failed to parse xml body", slog.Any("error", err))
 		}
 
 		// This checks to see if the resources already exist in the DB
@@ -36,86 +35,79 @@ func StartPublishHandler() gin.HandlerFunc {
 			}
 		}
 
-		ctx.XML(200, slot.StartPublishSlotResponse{
+		utils.XMLMarshal(w, slot.StartPublishSlotResponse{
 			Resource: resourcesToUpload,
 		})
 	}
 }
 
-func PublishHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func PublishHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
-		slotData := new(slot.Upload)
-		err := ctx.BindXML(slotData)
+		slotData, err := utils.XMLUnmarshal[slot.Upload](r)
 		if err != nil {
-			_ = ctx.Error(err)
-			ctx.AbortWithStatus(400)
+			utils.HttpLog(w, http.StatusBadRequest, "invalid request body")
+			return
 		}
-		domain := ctx.GetUint("domain")
-		session, _ := ctx.Get("session")
+		domain := utils.GetContextValue[uint](r.Context(), "domain")
+		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 
 		id := slotData.ID // Will be 0 if the slot is blank
 
 		if slotData.ID == 0 { // If inserting
-			id, err = hs_db.InsertSlot(dbCtx, slotData, session.(auth.Session).UserID, hs_db.GetGameFromSession(session.(auth.Session)), domain)
+			id, err := hs_db.InsertSlot(dbCtx, slotData, session.UserID, hs_db.GetGameFromSession(session), domain)
 			if err != nil {
-				ctx.Error(err)
-				ctx.AbortWithStatus(500)
+				utils.HttpLog(w, http.StatusInternalServerError, "failed to upload level")
 				return
 			}
-			log.Debug().Uint64("levelID", id).Str("user", session.(auth.Session).Username).Msg("Published Level")
+			slog.Debug("Published Level", slog.Uint64("levelID", id), slog.String("user", session.Username))
 
 		} else { // If updating
 			uploader, _ := hs_db.GetLevelOwner(dbCtx, id)
-			if uploader != session.(auth.Session).UserID {
-				ctx.String(http.StatusForbidden, "User does not own level")
-				ctx.Error(errors.New("user does not own level"))
+			if uploader != session.UserID {
+				utils.HttpLog(w, http.StatusForbidden, "permission denied")
 				return
 			}
-			err := hs_db.UpdateSlot(ctx, slotData)
+			err := hs_db.UpdateSlot(dbCtx, slotData)
 			if err != nil {
-				ctx.Error(err)
-				ctx.AbortWithStatus(500)
+				utils.HttpLog(w, http.StatusInternalServerError, "failed to update level")
 				return
 			}
 		}
 
 		s, err := hs_db.GetSlot(dbCtx, id)
 		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(500)
+			utils.HttpLog(w, http.StatusInternalServerError, "failed to get level")
 			return
 		}
-		ctx.XML(200, &s)
+
+		utils.XMLMarshal(w, &s)
 	}
 }
 
-func UnPublishHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func UnPublishHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
 
-		session, _ := ctx.Get("session")
+		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 
-		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+		id, err := strconv.ParseUint(r.PathValue("id"), 10, 64)
 		if err != nil {
-			ctx.String(400, "Invalid ID")
+			utils.HttpLog(w, http.StatusBadRequest, "invalid ID")
 			return
 		}
 
 		uploader, _ := hs_db.GetLevelOwner(dbCtx, id)
-		if uploader != session.(auth.Session).UserID {
-			ctx.String(http.StatusForbidden, "User does not own level")
-			ctx.Error(errors.New("User does not own level"))
+		if uploader != session.UserID {
+			utils.HttpLog(w, http.StatusForbidden, "permission denied")
 			return
 		}
 
 		err = hs_db.DeleteSlot(dbCtx, id)
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, "Failed to delete level")
+			utils.HttpLog(w, http.StatusInternalServerError, "failed to delete level")
 		}
-
-		ctx.Status(200)
 	}
 }

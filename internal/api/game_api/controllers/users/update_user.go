@@ -5,49 +5,37 @@ import (
 	"HugeSpaceship/internal/model/auth"
 	"HugeSpaceship/internal/model/lbp_xml"
 	"HugeSpaceship/pkg/db"
-	"encoding/xml"
-	"github.com/gin-gonic/gin"
+	"HugeSpaceship/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
-func UpdateUserHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		session, _ := ctx.Get("session")
+func UpdateUserHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 		dbCtx := db.GetContext()
 
-		userUpdate := lbp_xml.UpdateUser{}
-		planetUpdate := lbp_xml.PlanetUpdate{}
-
-		data, err := ctx.GetRawData()
+		userUpdate, err := utils.XMLUnmarshal[lbp_xml.UpdateUser](r)
 		if err != nil {
-			ctx.Status(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		err = xml.Unmarshal(data, &userUpdate)
-		if err != nil {
-			ctx.Status(http.StatusBadRequest)
-			return
-		}
-
-		er2 := xml.Unmarshal(data, &planetUpdate)
+		planetUpdate, er2 := utils.XMLUnmarshal[lbp_xml.PlanetUpdate](r)
 		if er2 != nil {
 			log.Debug().Err(er2).Msg("no bueno")
 		}
 		if planetUpdate.Planets != "" || planetUpdate.CCPlanet != "" {
-			err := hs_db.UpdatePlanet(dbCtx, session.(auth.Session).UserID, planetUpdate, session.(auth.Session).Game)
+			err := hs_db.UpdatePlanet(dbCtx, session.UserID, planetUpdate, session.Game)
 			if err != nil {
-				log.Error().Err(err).Msg("Failed to update user")
-				ctx.Status(http.StatusBadRequest)
+				utils.HttpLog(w, http.StatusBadRequest, "failed to update user")
 				return
 			}
 		}
 
-		err = hs_db.UpdateUser(dbCtx, session.(auth.Session).UserID, userUpdate)
+		err = hs_db.UpdateUser(dbCtx, session.UserID, userUpdate)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to update user")
-			ctx.Status(http.StatusBadRequest)
+			utils.HttpLog(w, http.StatusBadRequest, "failed to update user")
 			return
 		}
 	}

@@ -3,8 +3,9 @@ package middlewares
 import (
 	"HugeSpaceship/internal/api/game_api/utils"
 	"HugeSpaceship/internal/config"
+	utils2 "HugeSpaceship/pkg/utils"
 	"bytes"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -28,10 +29,11 @@ var cfg = config.Config{
 var expectedDigest = utils.CalculateDigest("/test", TestAuthCookie, TestDigest, []byte("Ok!"), false)
 var expectedAltDigest = utils.CalculateDigest("/test", TestAuthCookie, TestAltDigest, []byte("Ok!"), false)
 
-func setupDigestTestRouter() *gin.Engine {
-	r := gin.Default()
-	r.GET("/test", DigestMiddleware(&cfg), func(ctx *gin.Context) {
-		ctx.String(200, "Ok!")
+func setupDigestTestRouter() *chi.Mux {
+	r := chi.NewRouter()
+
+	r.With(DigestMiddleware(&cfg)).Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		utils2.HttpLog(w, http.StatusOK, "Ok!")
 	})
 	return r
 }

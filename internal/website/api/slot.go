@@ -7,7 +7,6 @@ import (
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/utils"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"log/slog"
 	"mime"
 	"net/http"
@@ -56,7 +55,7 @@ func slotAPIJson(w http.ResponseWriter, s slot.Slot) {
 }
 
 func slotAPIHTML(w http.ResponseWriter, info common.Info, s slot.Slot) {
-	err := info.InstanceTheme.Template.ExecuteTemplate(w, "slotCard.gohtml", gin.H{
+	err := info.InstanceTheme.Template.ExecuteTemplate(w, "slotCard.gohtml", utils.TmplMap{
 		"Slot": s,
 	})
 	if err != nil {

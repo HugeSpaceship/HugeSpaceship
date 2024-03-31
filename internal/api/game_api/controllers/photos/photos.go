@@ -4,42 +4,38 @@ import (
 	"HugeSpaceship/internal/hs_db"
 	"HugeSpaceship/internal/model/common"
 	"HugeSpaceship/pkg/db"
-	"github.com/gin-gonic/gin"
+	"HugeSpaceship/pkg/utils"
 	"net/http"
 	"strconv"
 )
 
-func GetPhotosBy() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func GetPhotosBy() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		dbCtx := db.GetContext()
 
-		user, err := hs_db.GetUserByName(dbCtx, ctx.Query("user"), common.LBP2)
+		user, err := hs_db.GetUserByName(dbCtx, r.URL.Query().Get("user"), common.LBP2)
 		if err != nil {
-			ctx.Error(err)
-			ctx.String(http.StatusBadRequest, "Invalid User")
+			utils.HttpLog(w, http.StatusBadRequest, "invalid User")
 		}
 
-		pageSize, err := strconv.ParseUint(ctx.Query("pageSize"), 10, 64)
+		pageSize, err := strconv.ParseUint(r.URL.Query().Get("pageSize"), 10, 64)
 		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(400)
+			utils.HttpLog(w, http.StatusBadRequest, "invalid pageSize")
 			return
 		}
-		pageStart, err := strconv.ParseUint(ctx.Query("pageStart"), 10, 64)
+		pageStart, err := strconv.ParseUint(r.URL.Query().Get("pageStart"), 10, 64)
 		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(400)
+			utils.HttpLog(w, http.StatusBadRequest, "invalid pageStart")
 			return
 		}
 
-		domain := ctx.GetUint("domain")
-		photos, err := hs_db.GetPhotos(ctx, user.ID, pageSize, pageStart, domain)
+		domain := utils.GetContextValue[uint](r.Context(), "domain")
+		photos, err := hs_db.GetPhotos(dbCtx, user.ID, pageSize, pageStart, domain)
 		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			utils.HttpLog(w, http.StatusInternalServerError, "failed to get photos")
 			return
 		}
 
-		ctx.XML(http.StatusOK, photos)
+		utils.XMLMarshal(w, photos)
 	}
 }

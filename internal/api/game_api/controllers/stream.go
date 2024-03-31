@@ -2,15 +2,16 @@ package controllers
 
 import (
 	"HugeSpaceship/internal/model/lbp_xml/recent_activity"
+	"HugeSpaceship/pkg/utils"
 	"encoding/xml"
-	"github.com/gin-gonic/gin"
+	"net/http"
 	"time"
 )
 
-func StreamHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func StreamHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		timestamp := time.Now().UTC().UnixMilli()
-		ctx.XML(200, recent_activity.Stream{
+		utils.XMLMarshal(w, &recent_activity.Stream{
 			StartTimestamp: timestamp - 50000,
 			EndTimestamp:   timestamp,
 			Groups: recent_activity.Groups{Groups: []recent_activity.Group{

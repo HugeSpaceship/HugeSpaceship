@@ -95,7 +95,7 @@ func GetUserByName(ctx context.Context, name string, game common.GameType) (*lbp
 	return user, err
 }
 
-func UpdatePlanet(ctx context.Context, id uuid.UUID, update lbp_xml.PlanetUpdate, game common.GameType) error {
+func UpdatePlanet(ctx context.Context, id uuid.UUID, update *lbp_xml.PlanetUpdate, game common.GameType) error {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	tx, err := conn.Begin(ctx)
 	if err != nil {
@@ -139,7 +139,7 @@ func UpdatePlanet(ctx context.Context, id uuid.UUID, update lbp_xml.PlanetUpdate
 	return tx.Commit(ctx)
 }
 
-func UpdateUser(ctx context.Context, id uuid.UUID, update lbp_xml.UpdateUser) error {
+func UpdateUser(ctx context.Context, id uuid.UUID, update *lbp_xml.UpdateUser) error {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 	tx, err := conn.Begin(ctx)
 	if err != nil {

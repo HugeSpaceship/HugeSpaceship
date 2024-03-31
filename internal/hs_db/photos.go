@@ -12,7 +12,7 @@ import (
 
 const photoInsertSQL = `INSERT INTO photos (domain, author, small, medium, large, plan, slotType, slotField) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id;`
 
-func InsertPhoto(ctx context.Context, photo photos.UploadPhoto, author uuid.UUID, domain uint) (id uint64, err error) {
+func InsertPhoto(ctx context.Context, photo *photos.UploadPhoto, author uuid.UUID, domain uint) (id uint64, err error) {
 	conn := ctx.Value("conn").(*pgxpool.Conn)
 
 	tx, err := conn.Begin(ctx)

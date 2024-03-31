@@ -5,39 +5,34 @@ import (
 	"HugeSpaceship/internal/model/auth"
 	"HugeSpaceship/internal/model/lbp_xml/photos"
 	"HugeSpaceship/pkg/db"
+	"HugeSpaceship/pkg/utils"
 	"encoding/xml"
-	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func UploadPhoto() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var photo = photos.UploadPhoto{}
-		err := ctx.BindXML(&photo)
+func UploadPhoto() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		photo, err := utils.XMLUnmarshal[photos.UploadPhoto](r)
 		if err != nil {
-			ctx.Error(err)
-			ctx.String(http.StatusBadRequest, "Bad Request")
+			utils.HttpLog(w, http.StatusBadRequest, "invalid XML")
 			return
 		}
 
-		domain := ctx.GetUint("domain")
-		session, _ := ctx.Get("session")
+		domain := utils.GetContextValue[uint](r.Context(), "domain")
+		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 
 		dbCtx := db.GetContext()
 		defer db.CloseContext(dbCtx)
 
-		photoID, err := db2.InsertPhoto(dbCtx, photo, session.(auth.Session).UserID, domain)
+		photoID, err := db2.InsertPhoto(dbCtx, photo, session.UserID, domain)
 		if err != nil {
-			ctx.Error(err)
-			ctx.String(http.StatusInternalServerError, "Failed to upload photo")
+			utils.HttpLog(w, http.StatusInternalServerError, "Failed to upload photo")
 			return
 		}
 
-		ctx.XML(200,
-			struct {
-				XMLName xml.Name `xml:"photo"`
-				ID      uint64   `xml:"id"`
-			}{ID: photoID},
-		)
+		utils.XMLMarshal(w, &struct {
+			XMLName xml.Name `xml:"photo"`
+			ID      uint64   `xml:"id"`
+		}{ID: photoID})
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 )
@@ -25,7 +26,7 @@ func HttpLogf(w http.ResponseWriter, status int, format string, a ...any) {
 }
 
 func GetContextValue[T any](ctx context.Context, key string) T {
-	return ctx.Value(key)
+	return ctx.Value(key).(T)
 }
 
 func XMLMarshal(w http.ResponseWriter, o any) error {
@@ -38,4 +39,14 @@ func XMLMarshal(w http.ResponseWriter, o any) error {
 		return err
 	}
 	return nil
+}
+
+func XMLUnmarshal[T any](r *http.Request) (*T, error) {
+	out := new(T)
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	err = xml.Unmarshal(data, out)
+	return out, err
 }

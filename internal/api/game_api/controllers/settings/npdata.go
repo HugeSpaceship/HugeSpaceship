@@ -1,11 +1,11 @@
 package settings
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-func NpDataEndpoint() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+func NpDataEndpoint() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		//TODO: Add NPData support for matching
 	}
 }

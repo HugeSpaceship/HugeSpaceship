@@ -1,10 +1,12 @@
 package moderation
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+)
 
-func ShowModeratedHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		//
-		ctx.Data(200, "text/xml", []byte("<resources/>"))
+func ShowModeratedHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/xml")
+		w.Write([]byte("<resources/>"))
 	}
 }

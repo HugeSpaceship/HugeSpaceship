@@ -2,13 +2,13 @@ package slots
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
+	"net/http"
 )
 
-func UploadScoreHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		data, err := io.ReadAll(ctx.Request.Body)
+func UploadScoreHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			panic(err)
 		}
