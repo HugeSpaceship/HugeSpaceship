@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/cristalhq/aconfig v0.18.5
 	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
-	github.com/georgysavva/scany/v2 v2.1.0
+	github.com/georgysavva/scany/v2 v2.1.2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
 	github.com/hugespaceship/dds v1.0.2
