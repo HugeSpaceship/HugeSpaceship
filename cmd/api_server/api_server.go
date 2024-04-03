@@ -6,14 +6,16 @@ package main
 */
 
 import (
-	"HugeSpaceship/internal/api/game_api"
 	"HugeSpaceship/internal/config"
+	"HugeSpaceship/internal/http/api/game_api"
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/db/migration"
 	"HugeSpaceship/pkg/logger"
 	_ "embed"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
+	"net/http"
 	"strconv"
 )
 
@@ -32,16 +34,17 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to migrate database")
 	}
 
-	// Init the web framework
-	ctx := gin.New()
-	ctx.Use(logger.LoggingMiddleware())
+	// Initialize chi router
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
 	// everything starts at /api
-	api := ctx.Group("/api/LBP_XML")
-	// LittleBigPlanet compatible API
-	game_api.APIBootstrap(api, cfg)
+	r.Route("/api/LBP_XML", func(r chi.Router) {
+		// LittleBigPlanet compatible API
+		game_api.APIBootstrap(r, cfg)
+	})
 
-	err = ctx.Run("0.0.0.0:" + strconv.Itoa(cfg.HTTPPort))
+	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(cfg.HTTPPort), r)
 	if err != nil {
 		panic(err)
 	}

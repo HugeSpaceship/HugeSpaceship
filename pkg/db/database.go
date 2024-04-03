@@ -3,27 +3,44 @@ package db
 import (
 	"HugeSpaceship/internal/config"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
+	"net/http"
+	"reflect"
+	"time"
 )
 
 var globalPool *pgxpool.Pool
 
-func GetContext() context.Context {
-	ctx := context.Background()
-	conn, err := globalPool.Acquire(ctx)
-	if err != nil {
-		return nil
-	}
-	return context.WithValue(ctx, "conn", conn)
+func Acquire() (*pgxpool.Conn, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return globalPool.Acquire(ctx)
 }
 
-func CloseContext(ctx context.Context) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	conn.Release()
+var poolConnType = reflect.TypeFor[*pgxpool.Conn]()
+var noConnectionError = errors.New("no connection")
+
+const ConnCtxKey = "db_conn"
+
+func GetConnection(ctx context.Context) (*pgxpool.Conn, error) {
+	conn := ctx.Value(ConnCtxKey)
+
+	connType := reflect.TypeOf(conn)
+
+	if !connType.ConvertibleTo(poolConnType) {
+		return nil, noConnectionError
+	}
+
+	return conn.(*pgxpool.Conn), nil
+}
+
+func GetRequestConnection(r *http.Request) (*pgxpool.Conn, error) {
+	return GetConnection(r.Context())
 }
 
 // Open initializes a connection to the database based on the fields in cfg.

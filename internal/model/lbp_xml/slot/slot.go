@@ -30,42 +30,42 @@ type StartPublishSlotResponse struct {
 }
 
 type Slot struct {
-	XMLName           xml.Name        `xml:"slot"`
-	Type              string          `xml:"type,attr"`
-	ID                uint64          `xml:"id"`
-	UploaderID        uuid.UUID       `xml:"-" db:"uploader"`
-	NpHandle          npdata.NpHandle `xml:"npHandle"`
-	Location          common.Location `xml:"location"`
-	LocationX         int32           `xml:"-" db:"location_x"`
-	LocationY         int32           `xml:"-" db:"location_y"`
-	Game              uint            `xml:"game"`
-	Name              string          `xml:"name,omitempty"`
-	Description       string          `xml:"description,omitempty"`
-	RootLevel         string          `xml:"rootLevel"`
-	Resources         []string        `xml:"resource"`
-	Icon              string          `xml:"icon"`
-	InitiallyLocked   bool            `xml:"initiallyLocked"`
-	IsSubLevel        bool            `xml:"isSubLevel" db:"sub_level"`
-	IsLBP1Only        bool            `xml:"isLBP1Only" db:"lbp1only"`
-	Background        string          `xml:"background"`
-	Shareable         uint            `xml:"shareable"`
-	MinPlayers        uint            `xml:"minPlayers"`
-	MaxPlayers        uint            `xml:"maxPlayers"`
-	HeartCount        uint64          `xml:"heartCount"`
-	ThumbsUp          uint64          `xml:"thumbsup" db:"thumbs_up_count"`
-	ThumbsDown        uint64          `xml:"thumbsdown" db:"thumbs_down_count"`
-	AverageRating     float32         `xml:"averageRating"`
-	PlayerCount       uint64          `xml:"playerCount"`
-	MatchingPlayers   uint64          `xml:"matchingPlayers"`
-	MMPick            bool            `xml:"mmpick"`
-	YourRating        int             `xml:"yourRating"`
-	YourDPadRating    int             `xml:"yourDPadRating"`
-	YourLBP1PlayCount uint64          `xml:"yourlbp1PlayCount"`
-	YourLBP2PlayCount uint64          `xml:"yourlbp2PlayCount"`
-	ReviewCount       uint64          `xml:"reviewCount"`
-	CommentCount      uint64          `xml:"commentCount"`
-	PhotoCount        uint64          `xml:"photoCount"`
-	AuthorPhotoCount  uint64          `xml:"authorPhotoCount"`
+	XMLName     xml.Name         `xml:"slot"`
+	Type        string           `xml:"type,attr"`
+	ID          uint64           `xml:"id"`
+	UploaderID  uuid.UUID        `xml:"-" db:"uploader"`
+	NpHandle    *npdata.NpHandle `xml:"npHandle"`
+	Location    common.Location  `xml:"location"`
+	LocationX   int32            `xml:"-" db:"location_x"`
+	LocationY   int32            `xml:"-" db:"location_y"`
+	Game        uint             `xml:"game"`
+	Name        string           `xml:"name,omitempty"`
+	Description string           `xml:"description,omitempty"`
+	RootLevel   string           `xml:"rootLevel"`
+	//Resources         []string        `xml:"resource"`
+	Icon              string  `xml:"icon"`
+	InitiallyLocked   bool    `xml:"initiallyLocked"`
+	IsSubLevel        bool    `xml:"isSubLevel" db:"sub_level"`
+	IsLBP1Only        bool    `xml:"isLBP1Only" db:"lbp1only"`
+	Background        string  `xml:"background"`
+	Shareable         uint    `xml:"shareable"`
+	MinPlayers        uint    `xml:"minPlayers"`
+	MaxPlayers        uint    `xml:"maxPlayers"`
+	HeartCount        uint64  `xml:"heartCount"`
+	ThumbsUp          uint64  `xml:"thumbsup" db:"thumbs_up_count"`
+	ThumbsDown        uint64  `xml:"thumbsdown" db:"thumbs_down_count"`
+	AverageRating     float32 `xml:"averageRating"`
+	PlayerCount       uint64  `xml:"playerCount"`
+	MatchingPlayers   uint64  `xml:"matchingPlayers"`
+	MMPick            bool    `xml:"mmpick"`
+	YourRating        int     `xml:"yourRating"`
+	YourDPadRating    int     `xml:"yourDPadRating"`
+	YourLBP1PlayCount uint64  `xml:"yourlbp1PlayCount"`
+	YourLBP2PlayCount uint64  `xml:"yourlbp2PlayCount"`
+	ReviewCount       uint64  `xml:"reviewCount"`
+	CommentCount      uint64  `xml:"commentCount"`
+	PhotoCount        uint64  `xml:"photoCount"`
+	AuthorPhotoCount  uint64  `xml:"authorPhotoCount"`
 
 	FirstPublishedXML string `xml:"firstPublished"` // These two are strings because otherwise it integer overflows
 	LastUpdatedXML    string `xml:"lastUpdated"`

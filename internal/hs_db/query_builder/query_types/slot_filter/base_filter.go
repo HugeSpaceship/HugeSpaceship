@@ -39,7 +39,7 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain int, skip, take uint) (slot.P
 	var whereString string
 	domainParam := false
 	if domain >= 0 {
-		whereString = "WHERE (domain = $1)"
+		whereString = "WHERE (domain = $1) AND (published)"
 		domainParam = true
 	}
 	if b.whereConditions != nil {
@@ -59,7 +59,7 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain int, skip, take uint) (slot.P
 	}
 
 	if b.extraParams != nil {
-		params = append(params, b.extraParams)
+		params = append(params, b.extraParams...)
 	}
 
 	rows, err := tx.Query(context.Background(), query, params...)
@@ -74,7 +74,7 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain int, skip, take uint) (slot.P
 		if s.Name == "" {
 			slots.Slots[i].Name = "Untitled Level"
 		}
-		slots.Slots[i].NPHandle, err = hs_db.NpHandleByUserID(tx, s.Uploader)
+		slots.Slots[i].NPHandle, err = hs_db.NpHandleByUserIDTx(tx, s.Uploader)
 		slots.Slots[i].Type = "user"
 		slots.Slots[i].Location = common.Location{
 			X: s.LocationX,

@@ -1,6 +1,8 @@
 package settings
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+)
 
 const networkSettingsTemplate = `
 ProbabilityOfPacketDelay        0.0
@@ -101,8 +103,9 @@ EnableDiveIn                    true
 EnableHackChecks                false
 `
 
-func NetSettingsHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ctx.Data(200, "text/plain", []byte(networkSettingsTemplate))
+func NetSettingsHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte(networkSettingsTemplate))
 	}
 }
