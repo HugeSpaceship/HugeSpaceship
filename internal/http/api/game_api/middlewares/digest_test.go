@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"HugeSpaceship/internal/api/game_api/utils"
 	"HugeSpaceship/internal/config"
+	"HugeSpaceship/internal/http/api/game_api/utils"
 	utils2 "HugeSpaceship/pkg/utils"
 	"bytes"
 	"github.com/go-chi/chi/v5"
