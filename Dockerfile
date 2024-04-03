@@ -6,9 +6,11 @@ WORKDIR /build
 
 RUN go mod download
 
-RUN CGO_ENABLED=0 go build -o hugespaceship ./cmd/monolith
-RUN CGO_ENABLED=0 go build -o api_server ./cmd/api_server
-RUN CGO_ENABLED=0 go build -o resource_server ./cmd/resource_server
+ENV GOCACHE=/root/.cache/go-build
+
+RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 go build -o hugespaceship ./cmd/monolith
+RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 go build -o api_server ./cmd/api_server
+RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=0 go build -o resource_server ./cmd/resource_server
 
 FROM scratch AS monolith
 COPY --from=build /build/hugespaceship /

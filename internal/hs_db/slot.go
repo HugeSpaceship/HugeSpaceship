@@ -4,7 +4,6 @@ import (
 	"HugeSpaceship/internal/model/common"
 	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"context"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,11 +21,10 @@ const insertSQL = `INSERT INTO slots (
                    min_players, max_players, move_required, domain, uploader, first_published, last_updated, game, published)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,true) RETURNING id;`
 
-func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, game uint, domain uint) (uint64, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	tx, err := conn.Begin(ctx)
+func InsertSlot(conn *pgxpool.Conn, slot *slot.Upload, uploader uuid.UUID, game uint, domain uint) (uint64, error) {
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		er2 := tx.Rollback(ctx)
+		er2 := tx.Rollback(context.Background())
 		if er2 != nil {
 			return 0, er2
 		}
@@ -34,12 +32,12 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, game
 	}
 
 	var id uint64
-	err = tx.QueryRow(ctx, insertSQL, slot.Name, slot.Description, slot.Icon, slot.RootLevel, slot.Location.X, slot.Location.Y,
+	err = tx.QueryRow(context.Background(), insertSQL, slot.Name, slot.Description, slot.Icon, slot.RootLevel, slot.Location.X, slot.Location.Y,
 		slot.InitiallyLocked, slot.IsSubLevel, slot.IsLBP1Only, slot.Shareable,
 		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, domain, uploader, time.Now(), time.Now(), game,
 	).Scan(&id)
 	if err != nil {
-		er2 := tx.Rollback(ctx)
+		er2 := tx.Rollback(context.Background())
 		if er2 != nil {
 			return 0, er2
 		}
@@ -47,13 +45,13 @@ func InsertSlot(ctx context.Context, slot *slot.Upload, uploader uuid.UUID, game
 	}
 
 	for _, res := range slot.Resources {
-		_, err := tx.Exec(ctx, "INSERT INTO slot_resources VALUES($1, $2)", id, res)
+		_, err := tx.Exec(context.Background(), "INSERT INTO slot_resources VALUES($1, $2)", id, res)
 		if err != nil {
 			log.Debug().Err(err).Str("hash", res).Msg("failed to insert slot resource")
 		}
 	}
 
-	err = tx.Commit(ctx)
+	err = tx.Commit(context.Background())
 	if err != nil {
 		return 0, err
 	}
@@ -69,7 +67,7 @@ SELECT
   COUNT(DISTINCT h.owner) AS heart_count,
   COUNT(DISTINCT tu.owner ) AS thumbs_up_count,
   COUNT(DISTINCT td.owner ) AS thumbs_down_count,
-  COUNT(DISTINCT p.owner) AS play_count
+  COUNT(DISTINCT p.main_player) AS play_count
 FROM 
   slots AS s
 LEFT JOIN 
@@ -79,22 +77,19 @@ LEFT JOIN
 LEFT JOIN
   thumbs AS td ON s.id = td.slot_id AND td.down
 LEFT JOIN
-  plays AS p ON s.id = p.slot_id
+  scoreboard AS p ON s.id = p.slot_id
 WHERE 
   (s.id = $1) AND s.published
 GROUP BY
   s.id;`
 
-func GetSlot(ctx context.Context, id uint64) (slot.Slot, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
+func GetSlot(conn *pgxpool.Conn, id uint64) (slot.Slot, error) {
 
-	var dbSlot slot.Slot
-
-	err := pgxscan.Get(ctx, conn, &dbSlot, getSlotXML, id)
+	rows, err := conn.Query(context.Background(), getSlotXML, id)
 	if err != nil {
 		return slot.Slot{}, err
 	}
-	err = pgxscan.Select(ctx, conn, &dbSlot.Resources, "SELECT resource_hash FROM slot_resources WHERE slot_id = $1 AND resource_hash != $2 LIMIT 1;", id, dbSlot.RootLevel)
+	dbSlot, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[slot.Slot])
 	if err != nil {
 		return slot.Slot{}, err
 	}
@@ -130,18 +125,19 @@ func GetTotalSlotsByDomain(conn pgx.Tx, domain uint) (uint64, error) {
 	return total, row.Scan(&total)
 }
 
-func GetLevelOwner(ctx context.Context, id uint64) (uploader uuid.UUID, err error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	row := conn.QueryRow(ctx, "SELECT uploader FROM slots WHERE id = $1;", id)
+func GetLevelOwner(conn *pgxpool.Conn, id uint64) (uploader uuid.UUID, err error) {
+
+	row := conn.QueryRow(context.Background(), "SELECT uploader FROM slots WHERE id = $1;", id)
 
 	err = row.Scan(&uploader)
 	return
 }
 
-func DeleteSlot(ctx context.Context, id uint64) (err error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	_, err = conn.Exec(ctx, "UPDATE slots SET published = false WHERE id = $1;", id)
+func DeleteSlot(conn *pgxpool.Conn, id uint64) (err error) {
+
+	_, err = conn.Exec(context.Background(), "UPDATE slots SET published = false WHERE id = $1;", id)
 	return
+
 }
 
 const updateSQL = `UPDATE slots SET name = $2, description = $3, 
@@ -152,22 +148,22 @@ const updateSQL = `UPDATE slots SET name = $2, description = $3,
 				WHERE id = $1;
 `
 
-func UpdateSlot(ctx context.Context, slot *slot.Upload) error {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	tx, err := conn.Begin(ctx)
+func UpdateSlot(conn *pgxpool.Conn, slot *slot.Upload) error {
+
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		er2 := tx.Rollback(ctx)
+		er2 := tx.Rollback(context.Background())
 		if er2 != nil {
 			return er2
 		}
 		return err
 	}
-	_, err = tx.Exec(ctx, updateSQL, slot.ID, slot.Name, slot.Description, slot.Icon, slot.RootLevel, slot.Location.X, slot.Location.Y,
+	_, err = tx.Exec(context.Background(), updateSQL, slot.ID, slot.Name, slot.Description, slot.Icon, slot.RootLevel, slot.Location.X, slot.Location.Y,
 		slot.InitiallyLocked, slot.IsSubLevel, slot.IsLBP1Only, slot.Shareable,
 		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, time.Now(),
 	)
 	if err != nil {
-		er2 := tx.Rollback(ctx)
+		er2 := tx.Rollback(context.Background())
 		if er2 != nil {
 			return er2
 		}
@@ -175,43 +171,15 @@ func UpdateSlot(ctx context.Context, slot *slot.Upload) error {
 	}
 
 	for _, res := range slot.Resources {
-		_, err := tx.Exec(ctx, "INSERT INTO slot_resources VALUES($1, $2)", slot.ID, res)
+		_, err := tx.Exec(context.Background(), "INSERT INTO slot_resources VALUES($1, $2)", slot.ID, res)
 		if err != nil {
 			log.Debug().Err(err).Str("hash", res).Msg("failed to insert slot resource")
 		}
 	}
 
-	err = tx.Commit(ctx)
+	err = tx.Commit(context.Background())
 	if err != nil {
 		return err
 	}
 	return err
-}
-
-const scoreSQL = `SELECT * FROM scoreboard WHERE slot_id = $1 ORDER BY score DESC, achieved_time;`
-
-func GetScores(ctx context.Context, slotID uint64, username string) (*slot.ScoreBoard, error) {
-	scoreboard := new(slot.ScoreBoard)
-	var record []*slot.Score
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	err := pgxscan.Select(ctx, conn, &record, scoreSQL, slotID)
-	if err != nil {
-		return nil, err
-	}
-
-	var yourScore *slot.Score
-	for i := range record {
-		record[i].Rank = uint64(i + 1)
-		if record[i].MainPlayer == username {
-			yourScore = record[i]
-		}
-	}
-
-	if yourScore != nil {
-		scoreboard.YourScore = yourScore.Score
-		scoreboard.YourRank = yourScore.Rank
-	}
-	scoreboard.TotalScores = uint64(len(record))
-
-	return scoreboard, nil
 }

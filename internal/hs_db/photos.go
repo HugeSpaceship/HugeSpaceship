@@ -4,8 +4,8 @@ import (
 	"HugeSpaceship/internal/model/common"
 	"HugeSpaceship/internal/model/lbp_xml/photos"
 	"context"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"strconv"
 )
@@ -40,7 +40,7 @@ func InsertPhoto(ctx context.Context, photo *photos.UploadPhoto, author uuid.UUI
 
 		if subject.NpHandle.Username != "" { // Get the userid if it is a valid user, i.e. not a local one
 			// the game is not currently required for photos
-			user, err := GetUserByName(ctx, subject.NpHandle.Username, common.LBP2)
+			user, err := GetUserByName(conn, subject.NpHandle.Username, common.LBP2)
 			if err == nil {
 				userID.Valid = true
 				userID.UUID = user.ID
@@ -65,11 +65,15 @@ func InsertPhoto(ctx context.Context, photo *photos.UploadPhoto, author uuid.UUI
 	return
 }
 
-func GetPhotos(ctx context.Context, by uuid.UUID, pageSize, pageStart uint64, domain uint) (photos photos.Photos, err error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
+func GetPhotos(conn *pgxpool.Conn, by uuid.UUID, pageSize, pageStart uint64, domain uint) (outPhotos photos.Photos, err error) {
 
-	err = pgxscan.Select(ctx, conn, &photos.Photos, "SELECT * FROM photos WHERE author = $1 AND domain = $2 LIMIT $3 OFFSET $4",
-		by, domain, pageSize, pageStart,
-	)
+	const photosSQL = "SELECT * FROM photos WHERE author = $1 AND domain = $2 LIMIT $3 OFFSET $4"
+
+	rows, err := conn.Query(context.Background(), photosSQL, by, domain, pageSize, pageStart)
+	if err != nil {
+		return
+	}
+	outPhotos.Photos, err = pgx.CollectRows(rows, pgx.RowToStructByName[photos.Photo])
+
 	return
 }

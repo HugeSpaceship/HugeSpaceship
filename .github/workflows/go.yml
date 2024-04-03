@@ -74,4 +74,6 @@ jobs:
           target: monolith
           provenance: true
           tags: ghcr.io/hugespaceship/hugespaceship:nightly
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 

@@ -4,19 +4,20 @@ import (
 	"HugeSpaceship/internal/model/common"
 	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"HugeSpaceship/internal/model/lbp_xml/slot"
+	"database/sql"
 	"encoding/xml"
 	"github.com/google/uuid"
 )
 
 type User struct {
-	XMLName    xml.Name
+	XMLName    xml.Name        `db:"-"`
 	ID         uuid.UUID       `xml:"-" db:"id"`
 	PSN_UID    string          `xml:"-" db:"psn_uid"`
 	RPCN_UID   string          `xml:"-" db:"rpcn_uid"`
 	Type       string          `xml:"type,attr"`
 	NpHandle   npdata.NpHandle `xml:"npHandle"`
 	Username   string          `xml:"-" db:"username"`
-	AvatarHash string          `xml:"-" db:"avatar_hash"`
+	AvatarHash sql.NullString  `xml:"-" db:"avatar_hash"`
 	Biography  string          `xml:"biography" db:"bio"`
 
 	Planets    string `xml:"planets"` // The resource of the planet for the correct game
@@ -60,6 +61,7 @@ type User struct {
 		LittleBigPlanet     bool `xml:"lbp1"`
 		LittleBigPlanet2    bool `xml:"lbp2"`
 		LittleBigPlanet3PS4 bool `xml:"lbp3ps4"`
+		LittleBigPlanet3PS3 bool `xml:"lbp3ps3"`
 	} `xml:"clientsConnected"`
 
 	BooHash string `xml:"boo2,omitempty" db:"boo_icon"`

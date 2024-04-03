@@ -6,8 +6,8 @@ package main
 */
 
 import (
-	"HugeSpaceship/internal/api/game_api"
 	"HugeSpaceship/internal/config"
+	"HugeSpaceship/internal/http/api/game_api"
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/db/migration"
 	"HugeSpaceship/pkg/logger"
@@ -41,7 +41,7 @@ func main() {
 	// everything starts at /api
 	r.Route("/api/LBP_XML", func(r chi.Router) {
 		// LittleBigPlanet compatible API
-		r.Group(game_api.APIBootstrap(cfg))
+		game_api.APIBootstrap(r, cfg)
 	})
 
 	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(cfg.HTTPPort), r)

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"HugeSpaceship/internal/api/game_api"
 	"HugeSpaceship/internal/config"
+	"HugeSpaceship/internal/http/api/game_api"
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/db/migration"
 	"HugeSpaceship/pkg/logger"

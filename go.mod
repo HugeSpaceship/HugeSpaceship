@@ -5,8 +5,8 @@ go 1.21
 require (
 	github.com/cristalhq/aconfig v0.18.5
 	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
-	github.com/georgysavva/scany/v2 v2.1.1
 	github.com/go-chi/chi/v5 v5.0.12
+	github.com/go-chi/render v1.0.3
 	github.com/google/uuid v1.6.0
 	github.com/hugespaceship/dds v1.0.2
 	github.com/jackc/pgx/v5 v5.5.5
@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect

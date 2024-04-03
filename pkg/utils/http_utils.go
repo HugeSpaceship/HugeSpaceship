@@ -30,6 +30,7 @@ func GetContextValue[T any](ctx context.Context, key string) T {
 }
 
 func XMLMarshal(w http.ResponseWriter, o any) error {
+	w.Header().Set("Content-Type", "text/xml")
 	slotBytes, err := xml.Marshal(o)
 	if err != nil {
 		return err

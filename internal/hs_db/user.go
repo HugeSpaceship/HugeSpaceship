@@ -6,8 +6,8 @@ import (
 	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"context"
 	"errors"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"strconv"
 	"strings"
@@ -47,31 +47,69 @@ func UserExists(ctx context.Context, username string) bool {
 	return rows > 0
 }
 
-func UserIDByName(ctx context.Context, name string) (uuid.UUID, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	var id uuid.UUID
+func UserIDByName(conn *pgxpool.Conn, name string) (uuid.UUID, error) {
 
-	err := pgxscan.Get(ctx, conn, &id, "SELECT id FROM users WHERE username = $1", name)
+	const idSQL = "SELECT id FROM users WHERE username = $1"
+	rows, err := conn.Query(context.Background(), idSQL, name)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	id, err := pgx.CollectExactlyOneRow(rows, pgx.RowTo[uuid.UUID])
+
 	return id, err
 }
 
-func NpHandleByUserID(ctx pgxscan.Querier, id uuid.UUID) (npdata.NpHandle, error) {
-	var npHandle npdata.NpHandle
+const nphandleSQL = "SELECT username, avatar_hash FROM users WHERE id = $1"
 
-	err := pgxscan.Get(context.Background(), ctx, &npHandle, "SELECT username, avatar_hash FROM users WHERE id = $1", id)
-	return npHandle, err
+func NpHandleByUserID(conn *pgxpool.Conn, id uuid.UUID) (*npdata.NpHandle, error) {
+
+	rows, err := conn.Query(context.Background(), nphandleSQL, id)
+	if err != nil {
+		return nil, err
+	}
+	npHandle, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[npdata.NpHandle])
+
+	return &npHandle, err
 }
 
-func GetUserByName(ctx context.Context, name string, game common.GameType) (*lbp_xml.User, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	user := new(lbp_xml.User)
+func NpHandleByUserIDTx(tx pgx.Tx, id uuid.UUID) (*npdata.NpHandle, error) {
+
+	rows, err := tx.Query(context.Background(), nphandleSQL, id)
+	if err != nil {
+		return nil, err
+	}
+	npHandle, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[npdata.NpHandle])
+
+	return &npHandle, err
+
+}
+
+func GetUserByName(conn *pgxpool.Conn, name string, game common.GameType) (*lbp_xml.User, error) {
+
+	const userSQL = `SELECT 
+    					users.*, 
+						users.entitled_slots - COUNT(s) AS free_slots, 
+						COUNT(s) AS used_slots 
+					 FROM users LEFT JOIN slots AS s ON s.uploader = users.id 
+					 WHERE username = $1 GROUP BY users.id LIMIT 1;
+	`
+
+	rows, err := conn.Query(context.Background(), userSQL, name)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[lbp_xml.User])
+	if err != nil {
+		return nil, err
+	}
 	user.XMLName.Local = "user"
 
-	err := pgxscan.Get(ctx, conn, user, "SELECT users.*, users.entitled_slots - COUNT(s) AS free_slots, COUNT(s) AS used_slots FROM users LEFT JOIN slots AS s ON s.uploader = users.id WHERE username = $1 GROUP BY users.id LIMIT 1;", name)
 	user.Type = "user"
 	user.Game = "1"
 	user.NpHandle.Username = user.Username
-	user.NpHandle.IconHash = user.AvatarHash
+	user.NpHandle.IconHash = user.AvatarHash.String
 	user.Lbp1UsedSlots = 0
 	user.Lbp2FreeSlots = user.FreeSlots
 	user.Lbp3FreeSlots = user.FreeSlots
@@ -92,33 +130,32 @@ func GetUserByName(ctx context.Context, name string, game common.GameType) (*lbp
 		user.Planets = user.LBPVPlanet
 	}
 
-	return user, err
+	return &user, err
 }
 
-func UpdatePlanet(ctx context.Context, id uuid.UUID, update *lbp_xml.PlanetUpdate, game common.GameType) error {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	tx, err := conn.Begin(ctx)
+func UpdatePlanet(conn *pgxpool.Conn, id uuid.UUID, update *lbp_xml.PlanetUpdate, game common.GameType) error {
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(context.Background())
 	if strings.TrimSpace(update.Planets) != "" {
 		if len(update.Planets) > 40 {
 			return invalidResourceError()
 		}
 		switch game {
 		case common.LBP2:
-			_, err := tx.Exec(ctx, "UPDATE users SET planet_lbp2 = $1, planet_lbp3 = $1 WHERE id = $2", update.Planets, id)
+			_, err := tx.Exec(context.Background(), "UPDATE users SET planet_lbp2 = $1, planet_lbp3 = $1 WHERE id = $2", update.Planets, id)
 			if err != nil {
 				return err
 			}
 		case common.LBP3:
-			_, err := tx.Exec(ctx, "UPDATE users SET planet_lbp3 = $1 WHERE id = $2", update.Planets, id)
+			_, err := tx.Exec(context.Background(), "UPDATE users SET planet_lbp3 = $1 WHERE id = $2", update.Planets, id)
 			if err != nil {
 				return err
 			}
 		case common.LBPV:
-			_, err := tx.Exec(ctx, "UPDATE users SET planet_lbp_vita = $1 WHERE id = $2", update.Planets, id)
+			_, err := tx.Exec(context.Background(), "UPDATE users SET planet_lbp_vita = $1 WHERE id = $2", update.Planets, id)
 			if err != nil {
 				return err
 			}
@@ -130,28 +167,27 @@ func UpdatePlanet(ctx context.Context, id uuid.UUID, update *lbp_xml.PlanetUpdat
 		if len(update.CCPlanet) > 40 {
 			return invalidResourceError()
 		}
-		_, err := tx.Exec(ctx, "UPDATE users SET planet_cc = $1 WHERE id = $2", update.CCPlanet, id)
+		_, err := tx.Exec(context.Background(), "UPDATE users SET planet_cc = $1 WHERE id = $2", update.CCPlanet, id)
 		if err != nil {
 			return err
 		}
 	}
 
-	return tx.Commit(ctx)
+	return tx.Commit(context.Background())
 }
 
-func UpdateUser(ctx context.Context, id uuid.UUID, update *lbp_xml.UpdateUser) error {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	tx, err := conn.Begin(ctx)
+func UpdateUser(conn *pgxpool.Conn, id uuid.UUID, update *lbp_xml.UpdateUser) error {
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(context.Background())
 
 	if strings.TrimSpace(update.Biography) != "" {
 		if len(update.Biography) > 512 {
 			return errors.New("biography too long")
 		}
-		_, err := tx.Exec(ctx, "UPDATE users SET bio = $1 WHERE id = $2", update.Biography, id)
+		_, err := tx.Exec(context.Background(), "UPDATE users SET bio = $1 WHERE id = $2", update.Biography, id)
 		if err != nil {
 			return err
 		}
@@ -161,7 +197,7 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update *lbp_xml.UpdateUser) e
 		if len(update.Icon) > 40 {
 			return invalidResourceError()
 		}
-		_, err := tx.Exec(ctx, "UPDATE users SET avatar_hash = $1 WHERE id = $2", update.Icon, id)
+		_, err := tx.Exec(context.Background(), "UPDATE users SET avatar_hash = $1 WHERE id = $2", update.Icon, id)
 		if err != nil {
 			return err
 		}
@@ -171,7 +207,7 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update *lbp_xml.UpdateUser) e
 		if len(update.BooHash) > 40 {
 			return invalidResourceError()
 		}
-		_, err := tx.Exec(ctx, "UPDATE users SET boo_icon = $1 WHERE id = $2", update.BooHash, id)
+		_, err := tx.Exec(context.Background(), "UPDATE users SET boo_icon = $1 WHERE id = $2", update.BooHash, id)
 		if err != nil {
 			return err
 		}
@@ -180,7 +216,7 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update *lbp_xml.UpdateUser) e
 		if len(update.MehHash) > 40 {
 			return invalidResourceError()
 		}
-		_, err := tx.Exec(ctx, "UPDATE users SET meh_icon = $1 WHERE id = $2", update.MehHash, id)
+		_, err := tx.Exec(context.Background(), "UPDATE users SET meh_icon = $1 WHERE id = $2", update.MehHash, id)
 		if err != nil {
 			return err
 		}
@@ -189,14 +225,14 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update *lbp_xml.UpdateUser) e
 		if len(update.YayHash) > 40 {
 			return invalidResourceError()
 		}
-		_, err := tx.Exec(ctx, "UPDATE users SET yay_icon = $1 WHERE id = $2", update.YayHash, id)
+		_, err := tx.Exec(context.Background(), "UPDATE users SET yay_icon = $1 WHERE id = $2", update.YayHash, id)
 		if err != nil {
 			return err
 		}
 	}
 
 	if update.Location != nil {
-		_, err := tx.Exec(ctx, "UPDATE users SET location_x = $1, location_y = $2 WHERE id = $3",
+		_, err := tx.Exec(context.Background(), "UPDATE users SET location_x = $1, location_y = $2 WHERE id = $3",
 			update.Location.X, update.Location.Y, id)
 		if err != nil {
 			return err
@@ -204,17 +240,17 @@ func UpdateUser(ctx context.Context, id uuid.UUID, update *lbp_xml.UpdateUser) e
 	}
 
 	for _, slot := range update.Slots.Slots {
-		if o, err := GetLevelOwner(ctx, slot.Id); err != nil || o != id {
+		if o, err := GetLevelOwner(conn, slot.Id); err != nil || o != id {
 			return errors.New("level not owned by user, or it does not exist")
 		}
 
-		_, err := tx.Exec(ctx, "UPDATE slots SET location_x = $1, location_y = $2 WHERE id = $3",
+		_, err := tx.Exec(context.Background(), "UPDATE slots SET location_x = $1, location_y = $2 WHERE id = $3",
 			slot.Location.X, slot.Location.Y, slot.Id)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = tx.Commit(ctx)
+	err = tx.Commit(context.Background())
 	return err
 }

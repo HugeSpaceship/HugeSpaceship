@@ -14,18 +14,30 @@ type PaginationData struct {
 }
 
 func GetPaginationData(r *http.Request) (PaginationData, error) {
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
+	page := r.URL.Query().Get("page")
+	var pageNumber int
+	var err error
+
+	var pageSize, pageStart int
+	if page != "" {
+		pageNumber, err = strconv.Atoi(page)
+		if err != nil {
+			return PaginationData{}, err
+		}
+		goto pastPageStart // If anyone want to rewrite this function to be less hellish that's just fine by me
+		// For now though we're using the goto
+	}
+
+	pageSize, err = strconv.Atoi(r.URL.Query().Get("pageSize"))
 	if err != nil {
 		return PaginationData{}, err
 	}
-	pageStart, err := strconv.Atoi(r.URL.Query().Get("pageStart"))
+	pageStart, err = strconv.Atoi(r.URL.Query().Get("pageStart"))
 	if err != nil {
 		return PaginationData{}, err
 	}
-	pageNumber, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		return PaginationData{}, err
-	}
+
+pastPageStart:
 
 	pageData := PaginationData{
 		Domain: utils.GetContextValue[uint](r.Context(), "domain"),

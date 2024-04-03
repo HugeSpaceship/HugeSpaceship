@@ -10,9 +10,8 @@ import (
 	"net/http"
 )
 
-func RunQuery(ctx context.Context, filter SearchFilter, data lbp_xml.PaginationData) (slot.PaginatedSlotList[slot.SearchSlot], error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	tx, err := conn.Begin(ctx)
+func RunQuery(conn *pgxpool.Conn, filter SearchFilter, data lbp_xml.PaginationData) (slot.PaginatedSlotList[slot.SearchSlot], error) {
+	tx, err := conn.Begin(context.Background())
 	defer tx.Rollback(context.Background())
 	if err != nil {
 		return slot.PaginatedSlotList[slot.SearchSlot]{}, err
@@ -20,9 +19,8 @@ func RunQuery(ctx context.Context, filter SearchFilter, data lbp_xml.PaginationD
 	return filter.RunQuery(tx, int(data.Domain), data.Start, data.Size)
 }
 
-func RunWebQuery(ctx context.Context, filter SearchFilter, start, pageSize uint) ([]slot.SearchSlot, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	tx, err := conn.Begin(ctx)
+func RunWebQuery(conn *pgxpool.Conn, filter SearchFilter, start, pageSize uint) ([]slot.SearchSlot, error) {
+	tx, err := conn.Begin(context.Background())
 	defer tx.Rollback(context.Background())
 	if err != nil {
 		return nil, err
@@ -31,14 +29,14 @@ func RunWebQuery(ctx context.Context, filter SearchFilter, start, pageSize uint)
 	return slots.Slots, err
 }
 
-func RenderQuery(ctx context.Context, w http.ResponseWriter, r *http.Request, filter SearchFilter) {
+func RenderQuery(conn *pgxpool.Conn, w http.ResponseWriter, r *http.Request, filter SearchFilter) {
 	pageData, err := lbp_xml.GetPaginationData(r)
 	if err != nil {
 		httpUtils.HttpLog(w, http.StatusBadRequest, "Invalid pagination data")
 		return
 	}
 
-	slots, err := RunQuery(ctx, filter, pageData)
+	slots, err := RunQuery(conn, filter, pageData)
 	if err != nil {
 		httpUtils.HttpLog(w, http.StatusInternalServerError, "Failed to fetch level")
 		return
