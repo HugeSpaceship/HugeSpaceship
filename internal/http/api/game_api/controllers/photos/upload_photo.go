@@ -21,10 +21,12 @@ func UploadPhoto() http.HandlerFunc {
 		domain := utils.GetContextValue[uint](r.Context(), "domain")
 		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 
-		dbCtx := db.GetContext()
-		defer db.CloseContext(dbCtx)
+		conn, err := db.GetRequestConnection(r)
+		if err != nil {
+			panic(err)
+		}
 
-		photoID, err := db2.InsertPhoto(dbCtx, photo, session.UserID, domain)
+		photoID, err := db2.InsertPhoto(conn, photo, session.UserID, domain)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to upload photo")
 			return

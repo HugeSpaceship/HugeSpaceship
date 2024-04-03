@@ -27,20 +27,19 @@ func GetGameFromSession(session auth.Session) uint {
 	}
 }
 
-func NewSession(ctx context.Context, username string, gameType common.GameType, ip netip.Addr, platform common.Platform, token string, expiry time.Time) (auth.Session, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	userID, err := GetUserID(ctx, username)
+func NewSession(conn *pgxpool.Conn, username string, gameType common.GameType, ip netip.Addr, platform common.Platform, token string, expiry time.Time) (auth.Session, error) {
+	userID, err := GetUserID(conn, username)
 	if err != nil {
 		return auth.Session{}, nil
 
 	}
-	n, err := PurgeSessions(ctx, userID, gameType, platform)
+	n, err := PurgeSessions(conn, userID, gameType, platform)
 	if err != nil {
 		return auth.Session{}, err
 	}
 	log.Debug().Int("clearedSessions", n).Str("user", username).Msg("Purged old sessions for user")
 
-	_, err = conn.Exec(ctx, CreateSQL, userID, ip, token, gameType, platform, expiry)
+	_, err = conn.Exec(context.Background(), CreateSQL, userID, ip, token, gameType, platform, expiry)
 	return auth.Session{
 		UserID:     userID.UUID,
 		Username:   username,
@@ -52,9 +51,8 @@ func NewSession(ctx context.Context, username string, gameType common.GameType, 
 	}, err
 }
 
-func GetUserID(ctx context.Context, username string) (uuid.NullUUID, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	row := conn.QueryRow(ctx, "SELECT id FROM users WHERE username = $1 LIMIT 1;", username) // there can be only one
+func GetUserID(conn *pgxpool.Conn, username string) (uuid.NullUUID, error) {
+	row := conn.QueryRow(context.Background(), "SELECT id FROM users WHERE username = $1 LIMIT 1;", username) // there can be only one
 
 	var id uuid.NullUUID
 	err := row.Scan(&id)
@@ -62,22 +60,19 @@ func GetUserID(ctx context.Context, username string) (uuid.NullUUID, error) {
 	return id, err
 }
 
-func GetSession(ctx context.Context, token string) (auth.Session, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
+func GetSession(conn *pgxpool.Conn, token string) (auth.Session, error) {
 	row := conn.QueryRow(context.Background(), "SELECT sessions.*, users.username FROM sessions INNER JOIN users ON users.id = sessions.userid WHERE token = $1;", token)
 	session := auth.Session{}
 	err := row.Scan(&session.UserID, &session.IP, &session.Token, &session.Game, &session.Platform, &session.ExpiryDate, &session.Username)
 	return session, err
 }
 
-func PurgeSessions(ctx context.Context, userID uuid.NullUUID, game common.GameType, platform common.Platform) (int, error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	rows, err := conn.Exec(ctx, "DELETE FROM sessions WHERE userid = $1 AND game = $2 AND platform = $3", userID, game, platform)
+func PurgeSessions(conn *pgxpool.Conn, userID uuid.NullUUID, game common.GameType, platform common.Platform) (int, error) {
+	rows, err := conn.Exec(context.Background(), "DELETE FROM sessions WHERE userid = $1 AND game = $2 AND platform = $3", userID, game, platform)
 	return int(rows.RowsAffected()), err
 }
 
-func RemoveSession(ctx context.Context, token string) error {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	_, err := conn.Exec(ctx, "DELETE FROM sessions WHERE token = $1;", token)
+func RemoveSession(conn *pgxpool.Conn, token string) error {
+	_, err := conn.Exec(context.Background(), "DELETE FROM sessions WHERE token = $1;", token)
 	return err
 }

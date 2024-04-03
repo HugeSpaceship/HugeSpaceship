@@ -19,23 +19,21 @@ func invalidResourceError() error {
 	return errors.New("invalid resource")
 }
 
-func CreateUser(ctx context.Context, username string, uid uint64) error {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
+func CreateUser(conn *pgxpool.Conn, username string, uid uint64) error {
 	id, err := uuid.NewUUID()
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.Exec(ctx, userCreateSQL, id, username, strconv.FormatUint(uid, 10), strconv.FormatUint(uid, 10))
+	_, err = conn.Exec(context.Background(), userCreateSQL, id, username, strconv.FormatUint(uid, 10), strconv.FormatUint(uid, 10))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func UserExists(ctx context.Context, username string) bool {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
-	row := conn.QueryRow(ctx, "SELECT COUNT(id) FROM users WHERE username = $1", username)
+func UserExists(conn *pgxpool.Conn, username string) bool {
+	row := conn.QueryRow(context.Background(), "SELECT COUNT(id) FROM users WHERE username = $1", username)
 
 	var rows int
 	err := row.Scan(&rows)

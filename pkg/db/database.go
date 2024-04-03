@@ -2,7 +2,6 @@ package db
 
 import (
 	"HugeSpaceship/internal/config"
-	"HugeSpaceship/pkg/utils"
 	"context"
 	"errors"
 	"fmt"
@@ -10,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
-	"log/slog"
 	"net/http"
 	"reflect"
 	"time"
@@ -43,23 +41,6 @@ func GetConnection(ctx context.Context) (*pgxpool.Conn, error) {
 
 func GetRequestConnection(r *http.Request) (*pgxpool.Conn, error) {
 	return GetConnection(r.Context())
-}
-
-func GetContext() context.Context {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	conn, err := globalPool.Acquire(ctx)
-	if err != nil {
-		slog.Error("Failed to acquire database connection", "error", err)
-		return nil
-	}
-	return context.WithValue(context.Background(), "conn", conn)
-}
-
-func CloseContext(ctx context.Context) {
-	conn := utils.GetContextValue[*pgxpool.Conn](ctx, "conn")
-	conn.Release()
 }
 
 // Open initializes a connection to the database based on the fields in cfg.

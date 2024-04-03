@@ -17,9 +17,11 @@ func TicketAuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		dbCtx := db.GetContext()
-		defer db.CloseContext(dbCtx)
-		session, exists := auth.GetSession(dbCtx, token.Value)
+		conn, err := db.GetRequestConnection(r)
+		if err != nil {
+			panic(err)
+		}
+		session, exists := auth.GetSession(conn, token.Value)
 
 		if !exists {
 			utils.HttpLog(w, http.StatusForbidden, "User does not exist")

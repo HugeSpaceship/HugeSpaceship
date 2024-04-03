@@ -12,10 +12,9 @@ import (
 
 const photoInsertSQL = `INSERT INTO photos (domain, author, small, medium, large, plan, slotType, slotField) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id;`
 
-func InsertPhoto(ctx context.Context, photo *photos.UploadPhoto, author uuid.UUID, domain uint) (id uint64, err error) {
-	conn := ctx.Value("conn").(*pgxpool.Conn)
+func InsertPhoto(conn *pgxpool.Conn, photo *photos.UploadPhoto, author uuid.UUID, domain uint) (id uint64, err error) {
 
-	tx, err := conn.Begin(ctx)
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return
 	}
@@ -28,10 +27,10 @@ func InsertPhoto(ctx context.Context, photo *photos.UploadPhoto, author uuid.UUI
 		slotField = photo.Slot.RootLevel
 	}
 
-	row := tx.QueryRow(ctx, photoInsertSQL, domain, author, photo.Small, photo.Medium, photo.Large, photo.Plan, photo.Slot.Type, slotField)
+	row := tx.QueryRow(context.Background(), photoInsertSQL, domain, author, photo.Small, photo.Medium, photo.Large, photo.Plan, photo.Slot.Type, slotField)
 	err = row.Scan(&id)
 	if err != nil {
-		tx.Rollback(ctx)
+		tx.Rollback(context.Background())
 		return
 	}
 
@@ -52,7 +51,7 @@ func InsertPhoto(ctx context.Context, photo *photos.UploadPhoto, author uuid.UUI
 			continue
 		}
 
-		_, err = tx.Exec(ctx, "INSERT INTO photo_subjects VALUES ($1,$2,$3,$4,$5,$6,$7);",
+		_, err = tx.Exec(context.Background(), "INSERT INTO photo_subjects VALUES ($1,$2,$3,$4,$5,$6,$7);",
 			id, userID, subject.DisplayName, x1, y1, x2, y2,
 		)
 		if err != nil {
@@ -60,7 +59,7 @@ func InsertPhoto(ctx context.Context, photo *photos.UploadPhoto, author uuid.UUI
 		}
 	}
 
-	err = tx.Commit(ctx)
+	err = tx.Commit(context.Background())
 
 	return
 }
