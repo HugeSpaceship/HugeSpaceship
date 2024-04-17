@@ -1,12 +1,10 @@
-package npticket
+package signing
 
 import (
 	"crypto/elliptic"
 	"math/big"
-	"sync"
 )
 
-var initOnce sync.Once
 var p192r1 *elliptic.CurveParams
 
 func initSECP192R1() {
@@ -19,7 +17,7 @@ func initSECP192R1() {
 	p192r1.BitSize = 192
 }
 
-func secp192r1() elliptic.Curve {
-	initOnce.Do(initAll)
+func P192() elliptic.Curve {
+	initonce.Do(initAll)
 	return p192r1
 }

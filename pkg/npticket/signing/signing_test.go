@@ -1,12 +1,13 @@
-package npticket
+package signing
 
 import (
+	"HugeSpaceship/pkg/npticket"
 	"HugeSpaceship/testdata"
 	"testing"
 )
 
 func TestVerifyTicket(t *testing.T) {
-	parser := NewParser(testdata.ExamplePSNTicket)
+	parser := npticket.NewParser(testdata.ExamplePSNTicket)
 	ticket, err := parser.Parse()
 	if err != nil {
 		t.Error(err)
@@ -16,7 +17,7 @@ func TestVerifyTicket(t *testing.T) {
 		t.Error("Ticket is not valid")
 	}
 
-	parser2 := NewParser(testdata.ExampleRPCNTicket)
+	parser2 := npticket.NewParser(testdata.ExampleRPCNTicket)
 	ticket2, err := parser2.Parse()
 	if err != nil {
 		t.Error(err)
@@ -25,5 +26,4 @@ func TestVerifyTicket(t *testing.T) {
 	if !VerifyTicket(ticket2) {
 		t.Error("Ticket is not valid")
 	}
-
 }
