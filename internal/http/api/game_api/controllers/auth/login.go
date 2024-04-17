@@ -5,6 +5,7 @@ import (
 	"HugeSpaceship/internal/model/lbp_xml"
 	"HugeSpaceship/pkg/db"
 	"HugeSpaceship/pkg/npticket"
+	"HugeSpaceship/pkg/npticket/signing"
 	utils2 "HugeSpaceship/pkg/utils"
 	"fmt"
 	"github.com/rs/zerolog/log"
@@ -26,7 +27,7 @@ func LoginHandler() http.HandlerFunc {
 
 		log.Debug().Str("userName", ticket.Username).Str("country", ticket.Country).Msg("User Connected")
 
-		if !npticket.VerifyTicket(ticket) {
+		if !signing.VerifyTicket(ticket) {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
