@@ -1,4 +1,4 @@
-module HugeSpaceship
+module github.com/HugeSpaceship/HugeSpaceship
 
 go 1.21
 
