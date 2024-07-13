@@ -73,7 +73,8 @@ jobs:
           push: true
           target: hugespaceship
           provenance: true
-          tags: ghcr.io/hugespaceship/hugespaceship:nightly
+          tags: ghcr.io/hugespaceship/hugespaceship:snapshot
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=Image built from the latest commit to main
 
