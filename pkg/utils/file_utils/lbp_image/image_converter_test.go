@@ -30,7 +30,7 @@ func TestDecompressImage(t *testing.T) {
 	}
 	shaSum := sha1.New()
 	f, _ := os.OpenFile("test.dds", os.O_WRONLY|os.O_CREATE, 0644)
-	numCopied, err := io.Copy(f, decompressedImage)
+	numCopied, err := io.Copy(f, io.TeeReader(decompressedImage, shaSum))
 	if err != nil {
 		t.Error(err)
 	}

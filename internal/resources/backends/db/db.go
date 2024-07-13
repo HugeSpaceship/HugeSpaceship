@@ -59,7 +59,7 @@ func (b Backend) InitConnection(config map[string]string, globalConfig *config.C
 		dbCfg.db = globalConfig.Database.Database
 	}
 
-	dbOpenStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?application_name=%s",
+	dbOpenStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?application_name=%s",
 		dbCfg.username,
 		dbCfg.password,
 		dbCfg.hostname,
