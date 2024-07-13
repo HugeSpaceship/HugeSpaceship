@@ -71,7 +71,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          target: monolith
+          target: hugespaceship
           provenance: true
           tags: ghcr.io/hugespaceship/hugespaceship:nightly
           cache-from: type=gha
