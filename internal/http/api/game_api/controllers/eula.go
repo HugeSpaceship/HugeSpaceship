@@ -5,7 +5,8 @@ import (
 )
 
 const eulaText = `
-WHAT'S UP FUCKERS, LBP3 SUCKS
+HugeSpaceship is licensed under the Apache License, Version 2.0
+A copy of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
 `
 
 func EulaHandler() http.HandlerFunc {
