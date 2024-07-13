@@ -1,4 +1,4 @@
-package lbp_image
+package image
 
 import (
 	"bytes"
@@ -29,12 +29,10 @@ func TestDecompressImage(t *testing.T) {
 		t.Error(err)
 	}
 	shaSum := sha1.New()
-	f, _ := os.OpenFile("test.dds", os.O_WRONLY|os.O_CREATE, 0644)
-	numCopied, err := io.Copy(f, io.TeeReader(decompressedImage, shaSum))
+	numCopied, err := io.Copy(shaSum, decompressedImage)
 	if err != nil {
 		t.Error(err)
 	}
-	f.Close()
 
 	if !reflect.DeepEqual(shaSum.Sum(nil), ddsSum) {
 		t.Error("sum does not match expected value")
@@ -59,7 +57,7 @@ func TestIMGToPNG(t *testing.T) {
 		{
 			name: "valid image",
 			args: args{
-				r: bytes.NewBuffer(mustBytes(os.ReadFile("../../../../testdata/image/test.dds"))),
+				r: bytes.NewBuffer(mustBytes(os.ReadFile("../../testdata/image/test.dds"))),
 			},
 			wantHash: "f058a07ad5c855c41261b301aa3235a68db3be1481c419f9a1b30ed441053d24",
 			wantErr:  false,

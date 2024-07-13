@@ -1,5 +1,0 @@
-package middlewares
-
-func DomainMiddleware() {
-
-}

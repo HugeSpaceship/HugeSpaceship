@@ -1,4 +1,6 @@
-package lbp_image
+// Package image is a decoder for LittleBigPlanet compressed image files, these can be PNGs, JPEGs or DDS files,
+// and they are always gzip compressed.
+package image
 
 import (
 	"bufio"
@@ -42,7 +44,7 @@ func decompressZlibData(reader io.Reader, len uint16) ([]byte, error) {
 }
 
 // DecompressImage implements the necessary decompression to read an LBP texture.
-// The code for this is shamelessly stolen from ProjectLighthouse, which in turn stole it from Toolbox
+// The code for this is shamelessly stolen from ProjectLighthouse, which in turn stole it from Toolkit
 // Original code is here: https://github.com/ennuo/toolkit/blob/d996ee4134740db0ee94e2cbf1e4edbd1b5ec798/src/main/java/ennuo/craftworld/utilities/Compressor.java#L40
 func DecompressImage(inReader io.Reader) (io.Reader, error) {
 	reader := bufio.NewReader(inReader)

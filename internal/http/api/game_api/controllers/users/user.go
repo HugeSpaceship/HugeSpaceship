@@ -3,7 +3,7 @@ package users
 import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"log/slog"
 	"net/http"
 	"strconv"

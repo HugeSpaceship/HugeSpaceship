@@ -10,6 +10,7 @@ type ResourceBackend interface {
 }
 
 type BackendConnection interface {
+	CanUpload() bool
 	GetResource(hash string) (io.ReadCloser, int64, error)
 	HasResource(hash string) (bool, error)
 	HasResources(hashes []string) ([]string, error)

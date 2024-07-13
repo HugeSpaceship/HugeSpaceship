@@ -6,7 +6,7 @@ import (
 	db2 "github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/photos"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"net/http"
 )
 

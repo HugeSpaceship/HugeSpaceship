@@ -3,7 +3,7 @@ package controllers
 import (
 	"encoding/xml"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/recent_activity"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"net/http"
 	"time"
 )

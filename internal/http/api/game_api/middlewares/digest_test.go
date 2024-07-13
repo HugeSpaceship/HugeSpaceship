@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/utils"
-	utils2 "github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	utils2 "github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"

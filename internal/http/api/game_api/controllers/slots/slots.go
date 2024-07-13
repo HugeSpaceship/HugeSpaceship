@@ -6,7 +6,7 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db/query_builder"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db/query_builder/query_types/slot_filter"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
-	httpUtils "github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	httpUtils "github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"log/slog"
 	"net/http"
 	"strconv"

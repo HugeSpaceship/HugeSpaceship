@@ -1,11 +1,16 @@
+// SPDX-License-Identifier: Apache-2.0
+
 package resources
 
 import (
 	"cmp"
+	"context"
 	"errors"
 	"fmt"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends"
+	"github.com/google/uuid"
 	"io"
 	"log/slog"
 	"slices"
@@ -82,4 +87,23 @@ func (r *ResourceManager) GetResource(hash string) (io.ReadCloser, int64, bool, 
 
 	reader, length, err := r.connections[backend].GetResource(hash)
 	return reader, length, true, err
+}
+
+func (r *ResourceManager) UploadResource(hash string, res io.Reader, length int64, user uuid.UUID) error {
+	for _, priority := range r.priorities {
+		if !r.connections[priority.name].CanUpload() {
+			continue
+		}
+		err := r.connections[priority.name].UploadResource(hash, res, length)
+
+		if err != nil {
+			slog.Error("failed to upload resource", slog.String("backend", priority.name), slog.String("hash", hash))
+			continue
+		}
+
+		db.GetConnection(context.Background())
+
+		return nil
+	}
+	return errors.New("failed to upload resource")
 }

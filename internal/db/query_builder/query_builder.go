@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
-	httpUtils "github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	httpUtils "github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
 )

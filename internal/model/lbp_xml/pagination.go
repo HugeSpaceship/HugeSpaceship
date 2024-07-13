@@ -1,7 +1,7 @@
 package lbp_xml
 
 import (
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"net/http"
 	"strconv"
 )

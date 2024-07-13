@@ -1,4 +1,4 @@
-package lbp_image
+package image
 
 import (
 	"errors"

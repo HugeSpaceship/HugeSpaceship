@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	digest "github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/utils"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"

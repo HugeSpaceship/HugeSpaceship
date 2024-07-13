@@ -5,7 +5,8 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db/migration"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/logger"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/logger"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/resources"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
@@ -29,6 +30,8 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to migrate database")
 	}
 
+	res := resources.NewResourceManager(cfg)
+
 	// Initialize chi router
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -36,7 +39,7 @@ func main() {
 	// everything starts at /api
 	r.Route("/api/LBP_XML", func(r chi.Router) {
 		// LittleBigPlanet compatible API
-		game_api.ResourceBootstrap(r, cfg)
+		game_api.ResourceBootstrap(r, cfg, res)
 	})
 
 	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(cfg.HTTPPort), r)

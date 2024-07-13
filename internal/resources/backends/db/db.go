@@ -58,6 +58,11 @@ func (b Backend) InitConnection(config map[string]string, globalConfig *config.C
 		dbCfg.password = globalConfig.Database.Password
 		dbCfg.db = globalConfig.Database.Database
 	}
+	canUpload := true
+	canUploadStr, exists := config["can_upload"]
+	if exists {
+		canUpload, err = strconv.ParseBool(canUploadStr)
+	}
 
 	dbOpenStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?application_name=%s",
 		dbCfg.username,
@@ -78,11 +83,16 @@ func (b Backend) InitConnection(config map[string]string, globalConfig *config.C
 		panic(err.Error())
 	}
 
-	return &BackendConnection{pool: pool}, nil
+	return &BackendConnection{pool: pool, canUpload: canUpload}, nil
 }
 
 type BackendConnection struct {
-	pool *pgxpool.Pool
+	pool      *pgxpool.Pool
+	canUpload bool
+}
+
+func (b *BackendConnection) CanUpload() bool {
+	return b.canUpload
 }
 
 func (b *BackendConnection) UploadResource(hash string, r io.Reader, length int64) error {

@@ -13,19 +13,18 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/users"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/middlewares"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/middleware"
-	resources2 "github.com/HugeSpaceship/HugeSpaceship/internal/resources"
+	resMan "github.com/HugeSpaceship/HugeSpaceship/internal/resources"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 )
 
-func ResourceBootstrap(group chi.Router, cfg *config.Config) {
-	resourceManager := resources2.NewResourceManager(cfg)
+func ResourceBootstrap(group chi.Router, cfg *config.Config, res *resMan.ResourceManager) {
 
-	group.With(middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(resourceManager))
+	group.With(middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(res))
 }
 
-func APIBootstrap(r chi.Router, cfg *config.Config) {
+func APIBootstrap(r chi.Router, cfg *config.Config, res *resMan.ResourceManager) {
 	r.Use(middlewares.PSPVersionMiddleware, middlewares.ServerHeaderMiddleware)
 
 	r.Use(chiMiddleware.RequestID)
@@ -43,7 +42,7 @@ func APIBootstrap(r chi.Router, cfg *config.Config) {
 	// LittleBigPlanet compatible API with digest calculation
 	digestRequiredAPI := authGameAPI.With(middlewares.DigestMiddleware(cfg))
 	digestRequiredAPI.Post("/match", match.MatchEndpoint())
-	digestRequiredAPI.Post("/upload/{hash}", resources.UploadResources())
+	digestRequiredAPI.Post("/upload/{hash}", resources.UploadResources(res))
 
 	// API with automatic content type
 	xmlAPI := digestRequiredAPI.With(render.SetContentType(render.ContentTypeXML))

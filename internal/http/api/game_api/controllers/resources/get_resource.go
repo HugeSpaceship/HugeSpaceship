@@ -2,7 +2,7 @@ package resources
 
 import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/HugeSpaceship/HugeSpaceship/pkg/validation"
 	"io"
 	"log/slog"
