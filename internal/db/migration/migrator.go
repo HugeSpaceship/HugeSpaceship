@@ -2,6 +2,9 @@ package migration
 
 import (
 	"context"
+	"errors"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 	"strconv"
@@ -58,8 +61,11 @@ func nextMigration(conn *pgxpool.Pool) (string, bool, error) {
 	migration := Migration{}
 	err := row.Scan(&migration.ID, &migration.Name, &migration.Succeeded)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return GetMigrationByNumber(0)
+		}
 		log.Error().Err(err).Msg("failed to scan migration row")
-		return GetMigrationByNumber(0)
+		return "", false, err
 	}
 
 	migrationNum, err := strconv.ParseInt(strings.Split(migration.Name, "_")[0], 10, 16)

@@ -1,25 +1,28 @@
 package game_api
 
 import (
-	"HugeSpaceship/internal/config"
-	"HugeSpaceship/internal/http/api/game_api/controllers"
-	"HugeSpaceship/internal/http/api/game_api/controllers/auth"
-	"HugeSpaceship/internal/http/api/game_api/controllers/match"
-	"HugeSpaceship/internal/http/api/game_api/controllers/moderation"
-	"HugeSpaceship/internal/http/api/game_api/controllers/photos"
-	"HugeSpaceship/internal/http/api/game_api/controllers/resources"
-	"HugeSpaceship/internal/http/api/game_api/controllers/settings"
-	"HugeSpaceship/internal/http/api/game_api/controllers/slots"
-	"HugeSpaceship/internal/http/api/game_api/controllers/users"
-	"HugeSpaceship/internal/http/api/game_api/middlewares"
-	"HugeSpaceship/internal/http/middleware"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/match"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/moderation"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/photos"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/resources"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/settings"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/slots"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/users"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/middlewares"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/middleware"
+	resources2 "github.com/HugeSpaceship/HugeSpaceship/internal/resources"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 )
 
 func ResourceBootstrap(group chi.Router, cfg *config.Config) {
-	group.With(middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(cfg))
+	resourceManager := resources2.NewResourceManager(cfg)
+
+	group.With(middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(resourceManager))
 }
 
 func APIBootstrap(r chi.Router, cfg *config.Config) {

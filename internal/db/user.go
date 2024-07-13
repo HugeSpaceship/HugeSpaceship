@@ -1,11 +1,11 @@
-package hs_db
+package db
 
 import (
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml"
-	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"context"
 	"errors"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/npdata"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -66,7 +66,7 @@ func NpHandleByUserID(conn *pgxpool.Conn, id uuid.UUID) (*npdata.NpHandle, error
 	if err != nil {
 		return nil, err
 	}
-	npHandle, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[npdata.NpHandle])
+	npHandle, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[npdata.NpHandle])
 
 	return &npHandle, err
 }
@@ -77,7 +77,7 @@ func NpHandleByUserIDTx(tx pgx.Tx, id uuid.UUID) (*npdata.NpHandle, error) {
 	if err != nil {
 		return nil, err
 	}
-	npHandle, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[npdata.NpHandle])
+	npHandle, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[npdata.NpHandle])
 
 	return &npHandle, err
 
@@ -98,7 +98,7 @@ func GetUserByName(conn *pgxpool.Conn, name string, game common.GameType) (*lbp_
 		return nil, err
 	}
 
-	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[lbp_xml.User])
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[lbp_xml.User])
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +119,7 @@ func GetUserByName(conn *pgxpool.Conn, name string, game common.GameType) (*lbp_
 		Y: user.LocationY,
 	}
 
+	// TODO: offload the processing of this to the DB
 	switch game {
 	case common.LBP2:
 		user.Planets = user.LBP2Planet

@@ -1,7 +1,7 @@
 package types
 
 import (
-	"HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 	"github.com/google/uuid"
 )
 

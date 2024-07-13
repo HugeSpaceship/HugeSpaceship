@@ -7,13 +7,12 @@ package main
 */
 
 import (
-	"HugeSpaceship/internal/config"
-	"HugeSpaceship/internal/http/api/game_api"
-	"HugeSpaceship/internal/http/website"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/db/migration"
-	"HugeSpaceship/pkg/logger"
 	_ "embed"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/migration"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
@@ -48,8 +47,6 @@ func main() {
 		// Resource server
 		game_api.ResourceBootstrap(r, cfg)
 	})
-
-	r.Group(website.Bootstrap(cfg))
 
 	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(cfg.HTTPPort), r)
 	if err != nil {

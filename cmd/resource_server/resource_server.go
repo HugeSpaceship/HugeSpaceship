@@ -1,11 +1,11 @@
 package main
 
 import (
-	"HugeSpaceship/internal/config"
-	"HugeSpaceship/internal/http/api/game_api"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/db/migration"
-	"HugeSpaceship/pkg/logger"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/migration"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"

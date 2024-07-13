@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	"net/http"
 	"strings"
 )

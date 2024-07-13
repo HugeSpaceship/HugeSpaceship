@@ -1,12 +1,11 @@
 package api
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml/slot"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
 	"encoding/json"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"log/slog"
 	"mime"
 	"net/http"
@@ -30,7 +29,7 @@ func SlotAPI(info common.Info) http.HandlerFunc {
 		}
 
 		levelID, err := strconv.ParseUint(slotID, 10, 64)
-		s, err := hs_db.GetSlot(conn, levelID)
+		s, err := db.GetSlot(conn, levelID)
 		if err != nil {
 			utils.HttpLog(w, 500, "Failed to get slot")
 			slog.Error("failed to get slot", slog.String("id", slotID), slog.Any("err", err))

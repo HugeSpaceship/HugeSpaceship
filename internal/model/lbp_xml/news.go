@@ -1,8 +1,8 @@
 package lbp_xml
 
 import (
-	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/npdata"
 )
 
 //<news>

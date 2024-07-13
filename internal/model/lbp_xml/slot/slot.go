@@ -1,9 +1,9 @@
 package slot
 
 import (
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/npdata"
 	"github.com/google/uuid"
 	"time"
 )
@@ -30,7 +30,7 @@ type StartPublishSlotResponse struct {
 }
 
 type Slot struct {
-	XMLName     xml.Name         `xml:"slot"`
+	XMLName     xml.Name         `xml:"slot" db:"-"`
 	Type        string           `xml:"type,attr"`
 	ID          uint64           `xml:"id"`
 	UploaderID  uuid.UUID        `xml:"-" db:"uploader"`
@@ -90,8 +90,8 @@ type Slot struct {
 }
 
 type SlotResource struct {
-	SlotID       int    `hs_db:"slot_id"`
-	ResourceHash string `hs_db:"resource_hash"`
+	SlotID       int    `db:"slot_id"`
+	ResourceHash string `db:"resource_hash"`
 }
 
 type UpdateUserSlot struct {

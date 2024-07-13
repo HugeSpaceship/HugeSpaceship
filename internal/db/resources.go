@@ -1,4 +1,4 @@
-package hs_db
+package db
 
 import (
 	"context"

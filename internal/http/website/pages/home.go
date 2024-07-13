@@ -1,11 +1,11 @@
 package pages
 
 import (
-	"HugeSpaceship/internal/hs_db/query_builder"
-	"HugeSpaceship/internal/hs_db/query_builder/query_types/slot_filter"
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/query_builder"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/query_builder/query_types/slot_filter"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"net/http"
 )
 

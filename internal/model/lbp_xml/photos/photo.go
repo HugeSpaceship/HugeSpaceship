@@ -1,8 +1,8 @@
 package photos
 
 import (
-	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/npdata"
 	"strconv"
 	"strings"
 )

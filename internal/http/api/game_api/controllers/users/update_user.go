@@ -1,11 +1,10 @@
 package users
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/auth"
-	"HugeSpaceship/internal/model/lbp_xml"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
@@ -30,14 +29,14 @@ func UpdateUserHandler() http.HandlerFunc {
 			log.Debug().Err(er2).Msg("no bueno")
 		}
 		if planetUpdate.Planets != "" || planetUpdate.CCPlanet != "" {
-			err := hs_db.UpdatePlanet(conn, session.UserID, planetUpdate, session.Game)
+			err := db.UpdatePlanet(conn, session.UserID, planetUpdate, session.Game)
 			if err != nil {
 				utils.HttpLog(w, http.StatusBadRequest, "failed to update user")
 				return
 			}
 		}
 
-		err = hs_db.UpdateUser(conn, session.UserID, userUpdate)
+		err = db.UpdateUser(conn, session.UserID, userUpdate)
 		if err != nil {
 			utils.HttpLog(w, http.StatusBadRequest, "failed to update user")
 			return

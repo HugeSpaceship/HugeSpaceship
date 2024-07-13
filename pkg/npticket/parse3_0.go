@@ -1,11 +1,11 @@
 package npticket
 
 import (
-	"HugeSpaceship/pkg/npticket/types"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/types"
 )
 
 func (parser TicketParser) parseVersion3Ticket() (types.Ticket, error) {

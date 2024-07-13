@@ -1,13 +1,13 @@
 package auth
 
 import (
-	"HugeSpaceship/internal/hs_db/auth"
-	"HugeSpaceship/internal/model/lbp_xml"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/npticket"
-	"HugeSpaceship/pkg/npticket/signing"
-	utils2 "HugeSpaceship/pkg/utils"
 	"fmt"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/signing"
+	utils2 "github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"io"
 	"log/slog"

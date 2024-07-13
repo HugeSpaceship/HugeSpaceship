@@ -1,10 +1,10 @@
 package matching
 
 import (
-	"HugeSpaceship/pkg/matching/types"
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/matching/types"
 	"github.com/rs/zerolog/log"
 	"net/netip"
 	"regexp"

@@ -1,7 +1,7 @@
 package theming
 
 import (
-	"HugeSpaceship/internal/http/website/partials"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/website/partials"
 	"html/template"
 	"path"
 )

@@ -3,6 +3,13 @@ package config
 import "github.com/cristalhq/aconfig"
 import "github.com/cristalhq/aconfig/aconfigyaml"
 
+type ResourceBackendConfig struct {
+	Name     string            `yaml:"name"`
+	Type     string            `yaml:"type"`
+	Priority uint              `yaml:"priority"`
+	Config   map[string]string `yaml:"config"`
+}
+
 // Config is the struct that contains all the global service config for the various components of the application
 type Config struct {
 	HTTPPort int `default:"8080" usage:"The listen port for the HTTP server" env:"HTTP_PORT"`
@@ -22,6 +29,7 @@ type Config struct {
 		Enabled        bool   `default:"true"`
 		CacheResources bool   `default:"false"`
 		CacheLocation  string `default:"./r"`
+		Backends       map[string]*ResourceBackendConfig
 	}
 	Website struct {
 		Enabled              bool   `default:"true"`

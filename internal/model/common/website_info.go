@@ -1,6 +1,6 @@
 package common
 
-import "HugeSpaceship/internal/http/website/theming"
+import "github.com/HugeSpaceship/HugeSpaceship/internal/http/website/theming"
 
 type Info struct {
 	InstanceName  string

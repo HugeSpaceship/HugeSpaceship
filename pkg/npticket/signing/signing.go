@@ -1,7 +1,6 @@
 package signing
 
 import (
-	"HugeSpaceship/pkg/npticket/types"
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -11,6 +10,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/types"
 	"log/slog"
 	"math/big"
 	"strconv"

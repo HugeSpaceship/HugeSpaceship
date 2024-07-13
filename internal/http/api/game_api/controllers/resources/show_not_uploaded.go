@@ -1,11 +1,10 @@
 package resources
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/lbp_xml"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"io"
 	"log/slog"
 	"net/http"
@@ -30,7 +29,7 @@ func ShowNotUploadedHandler() http.HandlerFunc {
 		}
 
 		// This checks to see if the resources already exist in the DB
-		resourcesToUpload, err := hs_db.CheckResources(conn, res.Resources)
+		resourcesToUpload, err := db.CheckResources(conn, res.Resources)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to check resources")
 			slog.Error("Failed to check resources", slog.Any("error", err))

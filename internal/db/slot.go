@@ -1,9 +1,9 @@
-package hs_db
+package db
 
 import (
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"context"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -60,7 +60,7 @@ func InsertSlot(conn *pgxpool.Conn, slot *slot.Upload, uploader uuid.UUID, game 
 
 const getSlotXML = `
 SELECT 
-  s.id, s.uploader, s.location_x, s.location_y, s.name, s.description, s.root_level, --FIXME: Add game to hs_db schema
+  s.id, s.uploader, s.location_x, s.location_y, s.name, s.description, s.root_level, --FIXME: Add game to db schema
   s.icon, s.initially_locked, s.sub_level, s.lbp1only, s.background, s.shareable, s.min_players, s.max_players,
   s.first_published, s.last_updated, s.game,
  
@@ -89,7 +89,7 @@ func GetSlot(conn *pgxpool.Conn, id uint64) (slot.Slot, error) {
 	if err != nil {
 		return slot.Slot{}, err
 	}
-	dbSlot, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[slot.Slot])
+	dbSlot, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[slot.Slot])
 	if err != nil {
 		return slot.Slot{}, err
 	}

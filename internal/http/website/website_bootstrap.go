@@ -1,13 +1,13 @@
 package website
 
 import (
-	"HugeSpaceship/internal/config"
-	"HugeSpaceship/internal/http/middleware"
-	"HugeSpaceship/internal/http/website/api"
-	"HugeSpaceship/internal/http/website/pages"
-	"HugeSpaceship/internal/http/website/theming"
-	"HugeSpaceship/internal/model/common"
 	"embed"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/middleware"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/website/api"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/website/pages"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/website/theming"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 	"github.com/go-chi/chi/v5"
 	"io/fs"
 	"net/http"

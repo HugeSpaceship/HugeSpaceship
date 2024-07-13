@@ -1,10 +1,9 @@
 package photos
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -17,7 +16,7 @@ func GetPhotosBy() http.HandlerFunc {
 			panic(err)
 		}
 
-		user, err := hs_db.GetUserByName(conn, r.URL.Query().Get("user"), common.LBP2)
+		user, err := db.GetUserByName(conn, r.URL.Query().Get("user"), common.LBP2)
 		if err != nil {
 			utils.HttpLog(w, http.StatusBadRequest, "invalid User")
 		}
@@ -34,7 +33,7 @@ func GetPhotosBy() http.HandlerFunc {
 		}
 
 		domain := utils.GetContextValue[uint](r.Context(), "domain")
-		photos, err := hs_db.GetPhotos(conn, user.ID, pageSize, pageStart, domain)
+		photos, err := db.GetPhotos(conn, user.ID, pageSize, pageStart, domain)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "failed to get photos")
 			return

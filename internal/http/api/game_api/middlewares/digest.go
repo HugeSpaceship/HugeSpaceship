@@ -1,11 +1,11 @@
 package middlewares
 
 import (
-	"HugeSpaceship/internal/config"
-	digest "HugeSpaceship/internal/http/api/game_api/utils"
-	"HugeSpaceship/pkg/utils"
 	"bytes"
 	"errors"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	digest "github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"

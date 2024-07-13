@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 	"net/netip"
 	"time"
 

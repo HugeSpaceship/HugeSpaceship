@@ -1,7 +1,7 @@
 package query_builder
 
 import (
-	"HugeSpaceship/internal/model/lbp_xml/slot"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
 	"github.com/jackc/pgx/v5"
 )
 

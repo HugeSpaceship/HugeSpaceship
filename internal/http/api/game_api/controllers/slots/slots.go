@@ -1,13 +1,12 @@
 package slots
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/hs_db/query_builder"
-	"HugeSpaceship/internal/hs_db/query_builder/query_types/slot_filter"
-	"HugeSpaceship/internal/model/lbp_xml"
-	"HugeSpaceship/pkg/db"
-	httpUtils "HugeSpaceship/pkg/utils"
 	"fmt"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/query_builder"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/query_builder/query_types/slot_filter"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
+	httpUtils "github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -26,7 +25,7 @@ func GetSlotsByHandler() http.HandlerFunc {
 
 		fmt.Println("Getting UserID for user " + r.URL.Query().Get("u"))
 
-		userID, err := hs_db.UserIDByName(conn, r.URL.Query().Get("u"))
+		userID, err := db.UserIDByName(conn, r.URL.Query().Get("u"))
 		pageData, err := lbp_xml.GetPaginationData(r)
 		if err != nil {
 			httpUtils.HttpLog(w, http.StatusBadRequest, invalidPaginationDataError)
@@ -79,7 +78,7 @@ func GetSlotHandler() http.HandlerFunc {
 			httpUtils.HttpLog(w, http.StatusNotFound, "Invalid level")
 		}
 
-		slot, err := hs_db.GetSlot(conn, uint64(levelID))
+		slot, err := db.GetSlot(conn, uint64(levelID))
 		if err != nil {
 			httpUtils.HttpLog(w, http.StatusNotFound, "Level not found")
 			return

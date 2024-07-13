@@ -1,10 +1,10 @@
 package middlewares
 
 import (
-	"HugeSpaceship/internal/config"
-	"HugeSpaceship/internal/http/api/game_api/utils"
-	utils2 "HugeSpaceship/pkg/utils"
 	"bytes"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/utils"
+	utils2 "github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"

@@ -1,11 +1,11 @@
 package middlewares
 
 import (
-	"HugeSpaceship/internal/hs_db/auth"
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
 	"context"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func TicketAuthMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		token, err := r.Cookie("MM_AUTH")
 		if err != nil {
-			utils.HttpLog(w, http.StatusInternalServerError, "Failed to read cookie")
+			utils.HttpLog(w, http.StatusUnauthorized, "Authentication token required")
 			return
 		}
 
@@ -24,7 +24,7 @@ func TicketAuthMiddleware(next http.Handler) http.Handler {
 		session, exists := auth.GetSession(conn, token.Value)
 
 		if !exists {
-			utils.HttpLog(w, http.StatusForbidden, "User does not exist")
+			utils.HttpLog(w, http.StatusForbidden, "Invalid user")
 			return
 		}
 

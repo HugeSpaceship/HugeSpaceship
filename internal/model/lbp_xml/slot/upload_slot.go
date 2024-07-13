@@ -1,8 +1,8 @@
 package slot
 
 import (
-	"HugeSpaceship/internal/model/common"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 )
 
 type Upload struct {

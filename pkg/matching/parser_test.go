@@ -1,7 +1,7 @@
 package matching
 
 import (
-	"HugeSpaceship/pkg/matching/types/commands"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/matching/types/commands"
 	"github.com/stretchr/testify/assert"
 	"net/netip"
 	"testing"

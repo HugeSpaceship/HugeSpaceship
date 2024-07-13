@@ -1,8 +1,8 @@
 package signing
 
 import (
-	"HugeSpaceship/pkg/npticket"
-	"HugeSpaceship/testdata"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket"
+	"github.com/HugeSpaceship/HugeSpaceship/testdata"
 	"testing"
 )
 

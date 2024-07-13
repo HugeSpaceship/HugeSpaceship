@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"os"

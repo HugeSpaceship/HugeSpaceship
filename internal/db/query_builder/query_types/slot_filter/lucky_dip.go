@@ -1,8 +1,8 @@
 package slot_filter
 
 import (
-	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"context"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
 	"github.com/jackc/pgx/v5"
 )
 

@@ -1,7 +1,7 @@
 package types
 
 import (
-	"HugeSpaceship/pkg/matching/types/commands"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/matching/types/commands"
 )
 
 type MatchCommand string

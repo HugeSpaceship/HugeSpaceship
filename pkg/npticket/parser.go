@@ -4,10 +4,10 @@
 package npticket
 
 import (
-	"HugeSpaceship/pkg/npticket/types"
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/types"
 	"io"
 	"strings"
 	"time"

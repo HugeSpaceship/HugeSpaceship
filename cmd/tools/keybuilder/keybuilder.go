@@ -3,11 +3,11 @@
 package main
 
 import (
-	"HugeSpaceship/pkg/npticket/signing"
-	"HugeSpaceship/pkg/npticket/types"
 	"crypto/ecdsa"
 	"flag"
 	"fmt"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/signing"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/types"
 	"log/slog"
 	"math/big"
 	"os"

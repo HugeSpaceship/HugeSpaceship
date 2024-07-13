@@ -1,9 +1,9 @@
-package hs_db
+package db
 
 import (
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml/photos"
 	"context"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/photos"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

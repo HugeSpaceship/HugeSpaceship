@@ -1,9 +1,9 @@
 package slot
 
 import (
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml/npdata"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/npdata"
 	"github.com/google/uuid"
 )
 

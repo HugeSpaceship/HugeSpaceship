@@ -1,11 +1,10 @@
 package slots
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/auth"
-	"HugeSpaceship/internal/model/lbp_xml/slot"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -29,7 +28,7 @@ func StartPublishHandler() http.HandlerFunc {
 
 		resourcesToUpload := make([]string, 0, len(s.Resources))
 		for i := range s.Resources {
-			exists, err := hs_db.ResourceExists(conn, s.Resources[i])
+			exists, err := db.ResourceExists(conn, s.Resources[i])
 			if err != nil {
 				log.Warn().Err(err).Msg("failed to check if resource exists, assuming it doesn't")
 			}
@@ -62,7 +61,7 @@ func PublishHandler() http.HandlerFunc {
 		id := slotData.ID // Will be 0 if the slot is blank
 
 		if slotData.ID == 0 { // If inserting
-			id, err := hs_db.InsertSlot(conn, slotData, session.UserID, hs_db.GetGameFromSession(session), domain)
+			id, err = db.InsertSlot(conn, slotData, session.UserID, db.GetGameFromSession(session), domain)
 			if err != nil {
 				utils.HttpLog(w, http.StatusInternalServerError, "failed to upload level")
 				slog.Error("Failed to upload level", slog.Any("error", err))
@@ -71,12 +70,12 @@ func PublishHandler() http.HandlerFunc {
 			slog.Debug("Published Level", slog.Uint64("levelID", id), slog.String("user", session.Username))
 
 		} else { // If updating
-			uploader, _ := hs_db.GetLevelOwner(conn, id)
+			uploader, _ := db.GetLevelOwner(conn, id)
 			if uploader != session.UserID {
 				utils.HttpLog(w, http.StatusForbidden, "permission denied")
 				return
 			}
-			err := hs_db.UpdateSlot(conn, slotData)
+			err := db.UpdateSlot(conn, slotData)
 			if err != nil {
 				utils.HttpLog(w, http.StatusInternalServerError, "failed to update level")
 				slog.Error("failed to update level", slog.Any("error", err))
@@ -84,10 +83,10 @@ func PublishHandler() http.HandlerFunc {
 			}
 		}
 
-		s, err := hs_db.GetSlot(conn, id)
+		s, err := db.GetSlot(conn, id)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "failed to get level")
-			slog.Error("failed to get level", slog.Any("error", err))
+			slog.Error("failed to get level", slog.Any("error", err), slog.Uint64("id", id))
 			return
 		}
 
@@ -110,13 +109,13 @@ func UnPublishHandler() http.HandlerFunc {
 			return
 		}
 
-		uploader, _ := hs_db.GetLevelOwner(conn, id)
+		uploader, _ := db.GetLevelOwner(conn, id)
 		if uploader != session.UserID {
 			utils.HttpLog(w, http.StatusForbidden, "permission denied")
 			return
 		}
 
-		err = hs_db.DeleteSlot(conn, id)
+		err = db.DeleteSlot(conn, id)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "failed to delete level")
 		}

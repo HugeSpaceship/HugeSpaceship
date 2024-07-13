@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"HugeSpaceship/internal/model/lbp_xml"
-	"HugeSpaceship/internal/model/lbp_xml/npdata"
-	"HugeSpaceship/internal/model/lbp_xml/recent_activity"
-	"HugeSpaceship/pkg/utils"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/npdata"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/recent_activity"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"log/slog"
 	"net/http"
 	"time"

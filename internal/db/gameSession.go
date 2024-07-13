@@ -1,9 +1,9 @@
-package hs_db
+package db
 
 import (
-	"HugeSpaceship/internal/model/auth"
-	"HugeSpaceship/internal/model/common"
 	"context"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/netip"
 	"time"

@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/auth"
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/pkg/npticket/types"
 	"errors"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/netip"
 	"time"
@@ -17,8 +17,8 @@ import (
 var sessionCache = make(map[string]auth.Session)
 
 func NewSession(conn *pgxpool.Conn, ticket types.Ticket, ip netip.Addr, game string, titleID string) (string, error) {
-	if !hs_db.UserExists(conn, ticket.Username) {
-		err := hs_db.CreateUser(conn, ticket.Username, ticket.UserID)
+	if !db.UserExists(conn, ticket.Username) {
+		err := db.CreateUser(conn, ticket.Username, ticket.UserID)
 		if err != nil {
 			return "", err
 		}
@@ -46,7 +46,7 @@ func NewSession(conn *pgxpool.Conn, ticket types.Ticket, ip netip.Addr, game str
 		}
 	}
 
-	session, err := hs_db.NewSession(conn, ticket.Username, gameType, ip, platform, token, time.Now().Add(5*time.Hour))
+	session, err := db.NewSession(conn, ticket.Username, gameType, ip, platform, token, time.Now().Add(5*time.Hour))
 	if err != nil {
 		return "", err
 	}
@@ -61,7 +61,7 @@ func GetSession(conn *pgxpool.Conn, token string) (session auth.Session, exists 
 	if session, exists := sessionCache[token]; exists {
 		if time.Now().After(session.ExpiryDate) {
 			delete(sessionCache, token)
-			err := hs_db.RemoveSession(conn, token)
+			err := db.RemoveSession(conn, token)
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to remove expired session")
 			}
@@ -70,14 +70,14 @@ func GetSession(conn *pgxpool.Conn, token string) (session auth.Session, exists 
 		return session, exists
 	}
 
-	session, err := hs_db.GetSession(conn, token)
+	session, err := db.GetSession(conn, token)
 
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to get session")
 		return session, false
 	}
 	if time.Now().After(session.ExpiryDate) { // If the session is expired
-		err := hs_db.RemoveSession(conn, token)
+		err := db.RemoveSession(conn, token)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to remove expired session")
 		}

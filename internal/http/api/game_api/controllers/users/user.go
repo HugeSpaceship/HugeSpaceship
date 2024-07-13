@@ -1,10 +1,9 @@
 package users
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/auth"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -20,7 +19,7 @@ func UserGetHandler() http.HandlerFunc {
 		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 
 		username := r.PathValue("username")
-		user, err := hs_db.GetUserByName(conn, username, session.Game)
+		user, err := db.GetUserByName(conn, username, session.Game)
 		if err != nil {
 			slog.Error("Failed to get user",
 				slog.String("username", username),

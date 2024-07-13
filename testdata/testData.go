@@ -3,11 +3,11 @@ package testdata
 
 import _ "embed"
 
-//go:embed test.dds.compressed
+//go:embed image/test.dds.compressed
 var TestDDSCompressed []byte
 
-//go:embed example-psn-ticket
+//go:embed npticket/example-psn-ticket
 var ExamplePSNTicket []byte
 
-//go:embed example-rpcn-ticket
+//go:embed npticket/example-rpcn-ticket
 var ExampleRPCNTicket []byte

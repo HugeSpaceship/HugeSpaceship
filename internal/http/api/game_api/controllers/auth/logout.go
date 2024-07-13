@@ -1,10 +1,10 @@
 package auth
 
 import (
-	db2 "HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/auth"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	db2 "github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )

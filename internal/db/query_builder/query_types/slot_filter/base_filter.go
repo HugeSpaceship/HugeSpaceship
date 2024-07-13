@@ -1,12 +1,12 @@
 package slot_filter
 
 import (
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"context"
 	_ "embed"
 	"fmt"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
 	"github.com/jackc/pgx/v5"
 	"math"
 	"strconv"
@@ -74,7 +74,7 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain int, skip, take uint) (slot.P
 		if s.Name == "" {
 			slots.Slots[i].Name = "Untitled Level"
 		}
-		slots.Slots[i].NPHandle, err = hs_db.NpHandleByUserIDTx(tx, s.Uploader)
+		slots.Slots[i].NPHandle, err = db.NpHandleByUserIDTx(tx, s.Uploader)
 		slots.Slots[i].Type = "user"
 		slots.Slots[i].Location = common.Location{
 			X: s.LocationX,
@@ -86,9 +86,9 @@ func (b baseSlotFilter) RunQuery(tx pgx.Tx, domain int, skip, take uint) (slot.P
 	}
 
 	if domain >= 0 {
-		slots.Total, err = hs_db.GetTotalSlotsByDomain(tx, uint(domain))
+		slots.Total, err = db.GetTotalSlotsByDomain(tx, uint(domain))
 	} else {
-		slots.Total, err = hs_db.GetTotalSlots(tx)
+		slots.Total, err = db.GetTotalSlots(tx)
 	}
 	slots.HintStart = uint64(math.Min(float64(skip+take), float64(slots.Total)))
 

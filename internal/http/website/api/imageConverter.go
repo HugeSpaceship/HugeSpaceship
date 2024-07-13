@@ -1,14 +1,13 @@
 package api
 
 import (
-	"HugeSpaceship/internal/config"
-	"HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
-	lbp_image2 "HugeSpaceship/pkg/utils/file_utils/lbp_image"
-	"HugeSpaceship/pkg/validation"
 	"bytes"
 	"errors"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	lbp_image2 "github.com/HugeSpaceship/HugeSpaceship/pkg/utils/file_utils/lbp_image"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/validation"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -27,7 +26,7 @@ func getImageFromCache(cfg *config.Config, conn *pgxpool.Conn, hash string) (str
 		return "", false
 	}
 
-	if exists, err := hs_db.ResourceExists(conn, hash); err != nil || !exists {
+	if exists, err := db.ResourceExists(conn, hash); err != nil || !exists {
 		log.Debug().Str("hash", hash).Msg("Resource exists in cache but is not in DB, deleting from cache")
 		err := os.Remove(path.Join(cfg.ResourceServer.CacheLocation, "png", hash+".png"))
 		if err != nil {
@@ -65,7 +64,7 @@ func ImageConverterHandler(cfg *config.Config) http.HandlerFunc {
 
 		if cfg.ResourceServer.CacheResources { // check for cache
 			if resourceFile, exists := getImageFromCache(cfg, conn, hash); exists {
-				if exists, err := hs_db.ResourceExists(conn, hash); err != nil || !exists {
+				if exists, err := db.ResourceExists(conn, hash); err != nil || !exists {
 					log.Debug().Str("hash", hash).Msg("Resource exists in cache but is not in DB, deleting from cache")
 					err := os.Remove(path.Join(cfg.ResourceServer.CacheLocation, hash))
 					if err != nil {
@@ -81,12 +80,12 @@ func ImageConverterHandler(cfg *config.Config) http.HandlerFunc {
 			}
 		}
 
-		resource, tx, _, err := hs_db.GetResource(conn, hash)
+		resource, tx, _, err := db.GetResource(conn, hash)
 		if err != nil {
 			utils.HttpLog(w, http.StatusNotFound, "Resource not found")
 			return
 		}
-		defer hs_db.CloseResource(resource, tx)
+		defer db.CloseResource(resource, tx)
 
 		buf := new(bytes.Buffer)
 

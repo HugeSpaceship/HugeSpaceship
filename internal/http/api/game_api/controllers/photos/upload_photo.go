@@ -1,12 +1,12 @@
 package photos
 
 import (
-	db2 "HugeSpaceship/internal/hs_db"
-	"HugeSpaceship/internal/model/auth"
-	"HugeSpaceship/internal/model/lbp_xml/photos"
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	db2 "github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/photos"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"net/http"
 )
 

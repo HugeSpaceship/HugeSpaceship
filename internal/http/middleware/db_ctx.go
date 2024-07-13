@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"HugeSpaceship/pkg/db"
-	"HugeSpaceship/pkg/utils"
 	"context"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
 	"log/slog"
 	"net/http"
 )

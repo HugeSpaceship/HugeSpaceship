@@ -104,6 +104,12 @@ func DecompressImage(inReader io.Reader) (io.Reader, error) {
 
 // IMGToPNG tries to convert any image to a PNG
 func IMGToPNG(r io.Reader, w io.Writer) error {
+	if r == nil {
+		return errors.New("nil reader")
+	}
+	if w == nil {
+		return errors.New("nil writer")
+	}
 	img, _, err := image.Decode(r)
 	if err != nil {
 		return err

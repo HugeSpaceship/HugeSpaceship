@@ -1,7 +1,7 @@
 package npticket
 
 import (
-	"HugeSpaceship/testdata"
+	"github.com/HugeSpaceship/HugeSpaceship/testdata"
 	"testing"
 )
 

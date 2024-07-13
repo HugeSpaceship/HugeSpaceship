@@ -1,9 +1,9 @@
 package recent_activity
 
 import (
-	"HugeSpaceship/internal/model/lbp_xml"
-	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
 )
 
 type Stream struct {

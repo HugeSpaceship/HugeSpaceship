@@ -1,11 +1,11 @@
 package lbp_xml
 
 import (
-	"HugeSpaceship/internal/model/common"
-	"HugeSpaceship/internal/model/lbp_xml/npdata"
-	"HugeSpaceship/internal/model/lbp_xml/slot"
 	"database/sql"
 	"encoding/xml"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/npdata"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
 	"github.com/google/uuid"
 )
 
@@ -14,13 +14,13 @@ type User struct {
 	ID         uuid.UUID       `xml:"-" db:"id"`
 	PSN_UID    string          `xml:"-" db:"psn_uid"`
 	RPCN_UID   string          `xml:"-" db:"rpcn_uid"`
-	Type       string          `xml:"type,attr"`
-	NpHandle   npdata.NpHandle `xml:"npHandle"`
+	Type       string          `xml:"type,attr" db:"-"`
+	NpHandle   npdata.NpHandle `xml:"npHandle" db:"-"`
 	Username   string          `xml:"-" db:"username"`
 	AvatarHash sql.NullString  `xml:"-" db:"avatar_hash"`
 	Biography  string          `xml:"biography" db:"bio"`
 
-	Planets    string `xml:"planets"` // The resource of the planet for the correct game
+	Planets    string `xml:"planets" db:"-"` // The resource of the planet for the correct game
 	LBP2Planet string `xml:"-" db:"planet_lbp2"`
 	LBP3Planet string `xml:"-" db:"planet_lbp3"`
 	LBPVPlanet string `xml:"-" db:"planet_lbp_vita"`
@@ -67,6 +67,9 @@ type User struct {
 	BooHash string `xml:"boo2,omitempty" db:"boo_icon"`
 	MehHash string `xml:"meh2,omitempty" db:"meh_icon"`
 	YayHash string `xml:"yay2,omitempty" db:"yay_icon"`
+
+	LevelVisibility   sql.NullString `xml:"-" db:"level_visibility"`
+	ProfileVisibility sql.NullString `xml:"-" db:"profile_visibility"`
 }
 type PlanetUpdate struct {
 	XMLName  xml.Name `xml:"user"`
