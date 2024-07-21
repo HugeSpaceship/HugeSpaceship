@@ -7,11 +7,9 @@ import (
 )
 
 func main() {
-	cfg, err := config.LoadConfig(false)
-	if err != nil {
-		panic(err)
-	}
-	logger.LoggingInit("dbmigrator", cfg)
+	v := config.LoadConfig(false)
 
-	db.Open(cfg)
+	logger.LoggingInit("dbmigrator", v)
+
+	db.Open(v)
 }

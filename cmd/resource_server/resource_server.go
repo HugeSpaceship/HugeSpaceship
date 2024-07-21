@@ -17,20 +17,17 @@ import (
 )
 
 func main() {
-	cfg, err := config.LoadConfig(false)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to load config")
-	}
+	v := config.LoadConfig(false)
 
-	logger.LoggingInit("api_server", cfg)
+	logger.LoggingInit("api_server", v)
 
-	pool := db.Open(cfg)            // Open a connection to the DB
-	err = migration.MigrateDB(pool) // Migrate the DB to the latest schema
+	pool := db.Open(v)               // Open a connection to the DB
+	err := migration.MigrateDB(pool) // Migrate the DB to the latest schema
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to migrate database")
 	}
 
-	res := resources.NewResourceManager(cfg)
+	res := resources.NewResourceManager(v)
 
 	// Initialize chi router
 	r := chi.NewRouter()
@@ -39,10 +36,10 @@ func main() {
 	// everything starts at /api
 	r.Route("/api/LBP_XML", func(r chi.Router) {
 		// LittleBigPlanet compatible API
-		game_api.ResourceBootstrap(r, cfg, res)
+		game_api.ResourceBootstrap(r, v, res)
 	})
 
-	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(cfg.HTTPPort), r)
+	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(v.GetInt("http.port")), r)
 	if err != nil {
 		panic(err)
 	}
