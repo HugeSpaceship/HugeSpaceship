@@ -13,5 +13,5 @@ func main() {
 	}
 	logger.LoggingInit("dbmigrator", cfg)
 
-	db.Open()
+	db.Open(cfg)
 }
