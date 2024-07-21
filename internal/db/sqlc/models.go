@@ -191,6 +191,49 @@ func (ns NullPrivacy) Value() (driver.Value, error) {
 	return string(ns.Privacy), nil
 }
 
+type ResourceBackends string
+
+const (
+	ResourceBackendsFile  ResourceBackends = "file"
+	ResourceBackendsPgLob ResourceBackends = "pg_lob"
+	ResourceBackendsS3    ResourceBackends = "s3"
+)
+
+func (e *ResourceBackends) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ResourceBackends(s)
+	case string:
+		*e = ResourceBackends(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ResourceBackends: %T", src)
+	}
+	return nil
+}
+
+type NullResourceBackends struct {
+	ResourceBackends ResourceBackends
+	Valid            bool // Valid is true if ResourceBackends is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullResourceBackends) Scan(value interface{}) error {
+	if value == nil {
+		ns.ResourceBackends, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ResourceBackends.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullResourceBackends) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ResourceBackends), nil
+}
+
 type ResourceType string
 
 const (
@@ -340,6 +383,11 @@ type Config struct {
 	Config  []byte
 }
 
+type File struct {
+	Hash string
+	File pgtype.Uint32
+}
+
 type Heart struct {
 	SlotID    pgtype.Int4
 	Owner     pgtype.UUID
@@ -369,12 +417,13 @@ type PhotoSubject struct {
 }
 
 type Resource struct {
-	Hash             string
-	Size             int64
-	File             pgtype.Uint32
-	Originaluploader pgtype.UUID
-	ResourceType     ResourceType
-	Created          pgtype.Timestamptz
+	Hash         string
+	Backend      ResourceBackends
+	ResourceType ResourceType
+	Size         pgtype.Int8
+	Created      pgtype.Timestamptz
+	Uploader     pgtype.UUID
+	BackendName  string
 }
 
 type Room struct {

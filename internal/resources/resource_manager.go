@@ -3,12 +3,14 @@
 package resources
 
 import (
+	"bytes"
 	"cmp"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db/sqlc"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends"
 	"github.com/google/uuid"
 	"io"
@@ -94,16 +96,40 @@ func (r *ResourceManager) UploadResource(hash string, res io.Reader, length int6
 		if !r.connections[priority.name].CanUpload() {
 			continue
 		}
-		err := r.connections[priority.name].UploadResource(hash, res, length)
+
+		buf := new(bytes.Buffer)
+		io.Copy(buf, res)
+		reader := bytes.NewReader(buf.Bytes())
+
+		err := r.connections[priority.name].UploadResource(hash, reader, length)
 
 		if err != nil {
 			slog.Error("failed to upload resource", slog.String("backend", priority.name), slog.String("hash", hash))
 			continue
 		}
 
-		db.GetConnection(context.Background())
+		conn, err := db.GetConnection(context.Background())
+		if err != nil {
+			return fmt.Errorf("failed to get connection: %w", err)
+		}
 
-		return nil
+		c := sqlc.New(conn)
+		reader.Seek(0, io.SeekStart)
+		magic := make([]byte, 4)
+		reader.Read(magic)
+
+		fmt.Println(string(magic))
+
+		err = c.InsertResource(context.Background(), sqlc.InsertResourceParams{
+			Uploader:    user,
+			Size:        length,
+			Type:        sqlc.ResourceTypeLVL,
+			Hash:        hash,
+			Backend:     sqlc.ResourceBackendsPgLob,
+			Backendname: "default",
+		})
+
+		return err
 	}
 	return errors.New("failed to upload resource")
 }

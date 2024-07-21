@@ -1,0 +1,1 @@
+ALTER TABLE resources ADD COLUMN backend_name text not null default 'default';

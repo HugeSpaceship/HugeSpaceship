@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const checkResources = `-- name: CheckResources :many
@@ -34,4 +36,37 @@ func (q *Queries) CheckResources(ctx context.Context, resources []string) ([]int
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertResource = `-- name: InsertResource :exec
+INSERT INTO resources (uploader,size,resource_type,hash,backend,backend_name,created) VALUES (
+    $1::uuid,
+    $2::bigint,
+    $3::resource_type,
+    $4::text,
+    $5::resource_backends,
+    $6::text,
+    NOW()
+)
+`
+
+type InsertResourceParams struct {
+	Uploader    uuid.UUID
+	Size        int64
+	Type        ResourceType
+	Hash        string
+	Backend     ResourceBackends
+	Backendname string
+}
+
+func (q *Queries) InsertResource(ctx context.Context, arg InsertResourceParams) error {
+	_, err := q.db.Exec(ctx, insertResource,
+		arg.Uploader,
+		arg.Size,
+		arg.Type,
+		arg.Hash,
+		arg.Backend,
+		arg.Backendname,
+	)
+	return err
 }
