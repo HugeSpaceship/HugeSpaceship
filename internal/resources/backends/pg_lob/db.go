@@ -1,4 +1,4 @@
-package db
+package pg_lob
 
 import (
 	"context"
@@ -14,7 +14,6 @@ import (
 )
 
 type Backend struct {
-	pool *pgxpool.Pool
 }
 
 type dbConfig struct {
@@ -40,7 +39,7 @@ func decodeConfig(config map[string]string) (out *dbConfig, err error) {
 		case "password":
 			out.password = v
 		default:
-			return nil, fmt.Errorf("unknown db config value %s", k)
+			return nil, fmt.Errorf("unknown pg_lob config value %s", k)
 		}
 	}
 	return out, nil

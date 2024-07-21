@@ -12,6 +12,7 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db/sqlc"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends/pg_lob"
 	"github.com/google/uuid"
 	"io"
 	"log/slog"
@@ -31,12 +32,16 @@ type connectionPriority struct {
 }
 
 func NewResourceManager(cfg *config.Config) *ResourceManager {
-	return &ResourceManager{
+	rm := ResourceManager{
 		backends:    map[string]backends.ResourceBackend{},
 		connections: map[string]backends.BackendConnection{},
 		priorities:  []connectionPriority{},
 		config:      cfg,
 	}
+
+	rm.RegisterBackend("pg_log", &pg_lob.Backend{})
+
+	return &rm
 }
 
 func (r *ResourceManager) RegisterBackend(name string, backend backends.ResourceBackend) {
@@ -63,6 +68,10 @@ func (r *ResourceManager) RegisterBackendConfig(cfg *config.ResourceBackendConfi
 }
 
 func (r *ResourceManager) HasResource(hash string) (bool, string, error) {
+	if len(r.connections) == 0 {
+		return false, "", errors.New("no resource backends have been configured")
+	}
+
 	var failError error
 	for _, priority := range r.priorities {
 		exists, err := r.connections[priority.name].HasResource(hash)
@@ -79,6 +88,10 @@ func (r *ResourceManager) HasResource(hash string) (bool, string, error) {
 }
 
 func (r *ResourceManager) GetResource(hash string) (io.ReadCloser, int64, bool, error) {
+	if len(r.connections) == 0 {
+		return nil, 0, false, errors.New("no resource backends have been configured")
+	}
+
 	exists, backend, err := r.HasResource(hash)
 	if err != nil && !exists {
 		return nil, 0, false, err
@@ -92,6 +105,10 @@ func (r *ResourceManager) GetResource(hash string) (io.ReadCloser, int64, bool, 
 }
 
 func (r *ResourceManager) UploadResource(hash string, res io.Reader, length int64, user uuid.UUID) error {
+	if len(r.connections) == 0 {
+		return errors.New("no resource backends have been configured")
+	}
+
 	for _, priority := range r.priorities {
 		if !r.connections[priority.name].CanUpload() {
 			continue
