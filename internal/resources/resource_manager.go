@@ -14,6 +14,7 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends/pg_lob"
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"io"
 	"log/slog"
 	"slices"
@@ -23,7 +24,7 @@ type ResourceManager struct {
 	priorities  []connectionPriority
 	backends    map[string]backends.ResourceBackend
 	connections map[string]backends.BackendConnection
-	config      *config.Config
+	v           *viper.Viper
 }
 
 type connectionPriority struct {
@@ -31,15 +32,15 @@ type connectionPriority struct {
 	priority uint
 }
 
-func NewResourceManager(cfg *config.Config) *ResourceManager {
+func NewResourceManager(v *viper.Viper) *ResourceManager {
 	rm := ResourceManager{
 		backends:    map[string]backends.ResourceBackend{},
 		connections: map[string]backends.BackendConnection{},
 		priorities:  []connectionPriority{},
-		config:      cfg,
+		v:           v,
 	}
 
-	rm.RegisterBackend("pg_log", &pg_lob.Backend{})
+	rm.RegisterBackend("pg_lob", &pg_lob.Backend{})
 
 	return &rm
 }
@@ -54,7 +55,7 @@ func (r *ResourceManager) RegisterBackendConfig(cfg *config.ResourceBackendConfi
 		return fmt.Errorf("unknown backend: %s", cfg.Type)
 	}
 
-	conn, err := backend.InitConnection(cfg.Config, r.config)
+	conn, err := backend.InitConnection(cfg.Config, r.v)
 	if err != nil {
 		return err
 	}
@@ -64,6 +65,28 @@ func (r *ResourceManager) RegisterBackendConfig(cfg *config.ResourceBackendConfi
 	slices.SortStableFunc(r.priorities, func(a, b connectionPriority) int {
 		return cmp.Compare(a.priority, b.priority)
 	})
+	return nil
+}
+
+func (r *ResourceManager) Start() error {
+	b := r.v.GetStringMap("resource-server.backends")
+	for name, backend := range b {
+		cfgMap := backend.(map[string]interface{})
+		priority := cfgMap["priority"].(int)
+		backendType := cfgMap["type"].(string)
+		delete(cfgMap, "priority")
+		delete(cfgMap, "type")
+		backendCfg := config.ResourceBackendConfig{
+			Name:     name,
+			Type:     backendType,
+			Priority: uint(priority),
+			Config:   cfgMap,
+		}
+		err := r.RegisterBackendConfig(&backendCfg)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

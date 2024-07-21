@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 	"net/http"
 	"reflect"
@@ -43,18 +43,23 @@ func GetRequestConnection(r *http.Request) (*pgxpool.Conn, error) {
 	return GetConnection(r.Context())
 }
 
-// Open initializes a connection to the database based on the fields in cfg.
-func Open(cfg *config.Config) *pgxpool.Pool {
-	dbOpenStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?application_name=%s",
-		cfg.Database.Username,
-		cfg.Database.Password,
-		cfg.Database.Host,
-		cfg.Database.Port,
-		cfg.Database.Database,
-		"HugeSpaceship+Dev", // because it's a URL it needs the spaces to be escaped with + signs
+func GetDSN(v *viper.Viper) string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?application_name=%s",
+		v.GetString("db.username"),
+		v.GetString("db.password"),
+		v.GetString("db.hostname"),
+		v.GetUint16("db.port"),
+		v.GetString("db.database"),
+		"HugeSpaceship+Dev", // because it's a URL it needs the spaces to be escaped with + signs TODO: make this name configurable
 	)
+}
 
-	dbCfg, err := pgxpool.ParseConfig(dbOpenStr) // We don't need to use the field parser because we already have all the fields
+// Open initializes a connection to the database based on the fields in cfg.
+func Open(v *viper.Viper) *pgxpool.Pool {
+
+	dbDSN := GetDSN(v)
+
+	dbCfg, err := pgxpool.ParseConfig(dbDSN) // We don't need to use the field parser because we already have all the fields
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to parse DB config, check the config file")
 	}

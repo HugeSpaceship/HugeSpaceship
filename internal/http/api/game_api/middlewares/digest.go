@@ -3,10 +3,10 @@ package middlewares
 import (
 	"bytes"
 	"errors"
-	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	digest "github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/utils"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	"io"
 	"net/http"
 	"strings"
@@ -26,42 +26,42 @@ type DeferredWriter struct {
 	clientDigest    string
 	path            string
 	alternateDigest bool
-	cfg             *config.Config
+	v               *viper.Viper
 }
 
 // Write expands on the normal ResponseWriter functionality by adding digest calculation to it
 func (w DeferredWriter) Write(data []byte) (int, error) {
-	digestKey := w.cfg.API.DigestKey
+	digestKey := viper.GetString("api.game.digest-key")
 	if w.alternateDigest {
-		digestKey = w.cfg.API.AlternateDigestKey
+		digestKey = viper.GetString("api.game.alt-digest-key")
 	}
 	w.Header().Add(DigestHeaderA, digest.CalculateDigest(w.path, w.authCookie, digestKey, data, false))
 	return w.ResponseWriter.Write(data)
 }
 
 // NewDeferredWriter is a utility function that creates a DeferredWriter.
-func NewDeferredWriter(writer http.ResponseWriter, path, clientDigest, authCookie string, alternateDigest bool, cfg *config.Config) DeferredWriter {
+func NewDeferredWriter(writer http.ResponseWriter, path, clientDigest, authCookie string, alternateDigest bool, v *viper.Viper) DeferredWriter {
 	return DeferredWriter{
 		ResponseWriter:  writer,
 		authCookie:      authCookie,
 		clientDigest:    clientDigest,
 		path:            path,
 		alternateDigest: alternateDigest,
-		cfg:             cfg,
+		v:               v,
 	}
 }
 
 // GetRequestDigest takes various parameters from the request and produces a digest.
-func GetRequestDigest(cfg *config.Config, path, digestHeader, cookie string, body []byte, excludeBody bool) (string, bool, error) {
-	d := digest.CalculateDigest(path, cookie, cfg.API.DigestKey, body, excludeBody)
+func GetRequestDigest(v *viper.Viper, path, digestHeader, cookie string, body []byte, excludeBody bool) (string, bool, error) {
+	d := digest.CalculateDigest(path, cookie, v.GetString("api.game.digest-key"), body, excludeBody)
 
 	alternateDigest := false
 
 	if d != digestHeader && digestHeader != "" {
-		d = digest.CalculateDigest(path, cookie, cfg.API.AlternateDigestKey, body, excludeBody)
+		d = digest.CalculateDigest(path, cookie, v.GetString("api.game.alt-digest-key"), body, excludeBody)
 		alternateDigest = true
 		if d != digestHeader {
-			if cfg.API.EnforceDigest {
+			if v.GetBool("api.game.enforce-digest") {
 				return "", alternateDigest, errors.New("invalid digest")
 			}
 		}
@@ -72,7 +72,7 @@ func GetRequestDigest(cfg *config.Config, path, digestHeader, cookie string, bod
 
 // DigestMiddleware calculates the digests that LBP 1 & 3 expect, this involves hashing several values from the request.
 // /upload is handled differently because of the file sizes involved, this is because normally the body is hashed.
-func DigestMiddleware(cfg *config.Config) func(next http.Handler) http.Handler {
+func DigestMiddleware(v *viper.Viper) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			digestHeader := DigestHeaderA
@@ -91,8 +91,8 @@ func DigestMiddleware(cfg *config.Config) func(next http.Handler) http.Handler {
 			}
 
 			// Get the digest of the request
-			d, altDigest, err := GetRequestDigest(cfg, r.URL.Path, r.Header.Get(digestHeader), cookie.Value, body, excludeBody)
-			if cfg.API.EnforceDigest && err != nil { // Digest failed to authenticated
+			d, altDigest, err := GetRequestDigest(v, r.URL.Path, r.Header.Get(digestHeader), cookie.Value, body, excludeBody)
+			if v.GetBool("api.game.enforce-digest") && err != nil { // Digest failed to authenticated
 				log.Info().Str("client", r.RemoteAddr).Msg("Failed to authenticate digest, aborting request")
 				utils.HttpLog(w, http.StatusForbidden, "Failed to authenticate digest.")
 			} else if err != nil {
@@ -101,7 +101,7 @@ func DigestMiddleware(cfg *config.Config) func(next http.Handler) http.Handler {
 
 			// Set up the writer that's used for digest verified requests
 			w.Header().Set(DigestHeaderB, d)
-			deferredWriter := NewDeferredWriter(w, r.URL.Path, d, cookie.Value, altDigest, cfg)
+			deferredWriter := NewDeferredWriter(w, r.URL.Path, d, cookie.Value, altDigest, v)
 
 			if !excludeBody { // Re-add the request body in case anything downstream needs to use it
 				r.Body = io.NopCloser(bytes.NewReader(body))

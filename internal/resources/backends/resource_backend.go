@@ -1,12 +1,12 @@
 package backends
 
 import (
-	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/spf13/viper"
 	"io"
 )
 
 type ResourceBackend interface {
-	InitConnection(config map[string]string, globalConfig *config.Config) (BackendConnection, error)
+	InitConnection(config map[string]interface{}, viper *viper.Viper) (BackendConnection, error)
 }
 
 type BackendConnection interface {

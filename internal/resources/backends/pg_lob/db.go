@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/spf13/viper"
 	"io"
 	"log/slog"
 	"strconv"
@@ -24,20 +25,20 @@ type dbConfig struct {
 	password string
 }
 
-func decodeConfig(config map[string]string) (out *dbConfig, err error) {
+func decodeConfig(config map[string]interface{}) (out *dbConfig, err error) {
 	out = &dbConfig{}
 	for k, v := range config {
 		switch k {
 		case "db":
-			out.db = v
+			out.db = v.(string)
 		case "port":
-			out.port = v
+			out.port = v.(string)
 		case "host":
-			out.hostname = v
+			out.hostname = v.(string)
 		case "username":
-			out.username = v
+			out.username = v.(string)
 		case "password":
-			out.password = v
+			out.password = v.(string)
 		default:
 			return nil, fmt.Errorf("unknown pg_lob config value %s", k)
 		}
@@ -45,22 +46,16 @@ func decodeConfig(config map[string]string) (out *dbConfig, err error) {
 	return out, nil
 }
 
-func (b Backend) InitConnection(config map[string]string, globalConfig *config.Config) (backends.BackendConnection, error) {
+func (b Backend) InitConnection(config map[string]interface{}, v *viper.Viper) (backends.BackendConnection, error) {
 	dbCfg, err := decodeConfig(config)
 	if err != nil {
 		return nil, err
 	}
-	if dbCfg.hostname == "" {
-		dbCfg.hostname = globalConfig.Database.Host
-		dbCfg.port = strconv.Itoa(int(globalConfig.Database.Port))
-		dbCfg.username = globalConfig.Database.Username
-		dbCfg.password = globalConfig.Database.Password
-		dbCfg.db = globalConfig.Database.Database
-	}
+
 	canUpload := true
 	canUploadStr, exists := config["can_upload"]
 	if exists {
-		canUpload, err = strconv.ParseBool(canUploadStr)
+		canUpload, err = strconv.ParseBool(canUploadStr.(string))
 	}
 
 	dbOpenStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?application_name=%s",
@@ -71,6 +66,10 @@ func (b Backend) InitConnection(config map[string]string, globalConfig *config.C
 		dbCfg.db,
 		"HugeSpaceship+Dev+DB+Storage+Backend", // because it's a URL it needs the spaces to be escaped with + signs
 	)
+
+	if dbCfg.hostname == "" {
+		dbOpenStr = db.GetDSN(v)
+	}
 
 	pgCfg, err := pgxpool.ParseConfig(dbOpenStr) // We don't need to use the field parser because we already have all the fields
 	if err != nil {

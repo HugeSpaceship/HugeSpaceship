@@ -1,13 +1,16 @@
 package config
 
-import "github.com/cristalhq/aconfig"
-import "github.com/cristalhq/aconfig/aconfigyaml"
+import (
+	"fmt"
+	"github.com/spf13/viper"
+	"strings"
+)
 
 type ResourceBackendConfig struct {
-	Name     string            `yaml:"name"`
-	Type     string            `yaml:"type"`
-	Priority uint              `yaml:"priority"`
-	Config   map[string]string `yaml:"config"`
+	Name     string                 `yaml:"name"`
+	Type     string                 `yaml:"type"`
+	Priority uint                   `yaml:"priority"`
+	Config   map[string]interface{} `yaml:"config"`
 }
 
 // Config is the struct that contains all the global service config for the various components of the application
@@ -47,18 +50,37 @@ type Config struct {
 }
 
 // LoadConfig loads the configuration from various locations and returns a pointer to a Config struct
-func LoadConfig(skipEnv bool) (cfg *Config, err error) {
-	cfg = &Config{}
-	loader := aconfig.LoaderFor(cfg, aconfig.Config{
-		SkipFlags: true,
-		SkipEnv:   skipEnv,
-		EnvPrefix: "HS",
-		Files:     []string{"/etc/hugespaceship/config.yml", "hugespaceship.yml"},
-		FileDecoders: map[string]aconfig.FileDecoder{
-			".yml": aconfigyaml.New(),
-		},
-	})
+func LoadConfig(skipEnv bool) (v *viper.Viper) {
 
-	err = loader.Load()
-	return cfg, err
+	v = viper.New()
+
+	v.SetConfigName("hugespaceship")
+	v.SetConfigType("yaml")
+	v.AddConfigPath(".")
+	v.AddConfigPath("/etc/hugespaceship")
+	err := v.ReadInConfig() // Find and read the config file
+	if err != nil {         // Handle errors reading the config file
+		panic(fmt.Errorf("fatal error config file: %w", err))
+	}
+
+	v.SetEnvPrefix("hs")
+
+	if !skipEnv {
+		v.SetEnvKeyReplacer(strings.NewReplacer("_", "-"))
+		v.AutomaticEnv()
+	}
+
+	//cfg = &Config{}
+	//loader := aconfig.LoaderFor(cfg, aconfig.Config{
+	//	SkipFlags: true,
+	//	SkipEnv:   skipEnv,
+	//	EnvPrefix: "HS",
+	//	Files:     []string{"/etc/hugespaceship/config.yml", "hugespaceship.yml"},
+	//	FileDecoders: map[string]aconfig.FileDecoder{
+	//		".yml": aconfigyaml.New(),
+	//	},
+	//})
+	//
+	//err = loader.Load()
+	return v
 }
