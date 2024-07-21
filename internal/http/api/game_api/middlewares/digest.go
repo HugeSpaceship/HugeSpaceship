@@ -31,9 +31,9 @@ type DeferredWriter struct {
 
 // Write expands on the normal ResponseWriter functionality by adding digest calculation to it
 func (w DeferredWriter) Write(data []byte) (int, error) {
-	digestKey := viper.GetString("api.game.digest-key")
+	digestKey := w.v.GetString("api.game.digest-key")
 	if w.alternateDigest {
-		digestKey = viper.GetString("api.game.alt-digest-key")
+		digestKey = w.v.GetString("api.game.alt-digest-key")
 	}
 	w.Header().Add(DigestHeaderA, digest.CalculateDigest(w.path, w.authCookie, digestKey, data, false))
 	return w.ResponseWriter.Write(data)

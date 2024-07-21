@@ -6,6 +6,7 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/utils"
 	utils2 "github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/go-chi/chi/v5"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -32,7 +33,11 @@ var expectedAltDigest = utils.CalculateDigest("/test", TestAuthCookie, TestAltDi
 func setupDigestTestRouter() *chi.Mux {
 	r := chi.NewRouter()
 
-	r.With(DigestMiddleware(&cfg)).Get("/test", func(w http.ResponseWriter, r *http.Request) {
+	v := viper.New()
+	v.Set("api.game.digest-key", TestDigest)
+	v.Set("api.game.alt-digest-key", TestAltDigest)
+
+	r.With(DigestMiddleware(v)).Get("/test", func(w http.ResponseWriter, r *http.Request) {
 		utils2.HttpLog(w, http.StatusOK, "Ok!")
 	})
 	return r
