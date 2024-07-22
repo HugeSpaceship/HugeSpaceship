@@ -1,8 +1,10 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/spf13/viper"
+	"log/slog"
 	"strings"
 )
 
@@ -60,7 +62,13 @@ func LoadConfig(skipEnv bool) (v *viper.Viper) {
 	v.AddConfigPath("/etc/hugespaceship")
 	err := v.ReadInConfig() // Find and read the config file
 	if err != nil {         // Handle errors reading the config file
-		panic(fmt.Errorf("fatal error config file: %w", err))
+		if errors.Is(err, viper.ConfigFileNotFoundError{}) {
+			// Config file not found; ignore error if desired
+			slog.Debug("No config file found")
+		} else {
+			// Config file was found but another error was produced
+			panic(fmt.Errorf("fatal error config file: %w", err))
+		}
 	}
 
 	v.SetEnvPrefix("hs")
