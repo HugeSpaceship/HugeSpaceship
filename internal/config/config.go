@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"log/slog"
-	"strings"
 )
 
 type ResourceBackendConfig struct {
@@ -73,7 +72,7 @@ func LoadConfig(skipEnv bool) (v *viper.Viper) {
 	v.SetEnvPrefix("hs")
 
 	if !skipEnv {
-		v.SetEnvKeyReplacer(strings.NewReplacer("_", "-"))
+		//v.SetEnvKeyReplacer(strings.NewReplacer("_", "-"))
 		v.AutomaticEnv()
 	}
 
