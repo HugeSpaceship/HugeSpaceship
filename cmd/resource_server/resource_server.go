@@ -27,7 +27,7 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to migrate database")
 	}
 
-	res := resources.NewResourceManager(v)
+	res := resources.NewResourceManager(v, pool)
 
 	// Initialize chi router
 	r := chi.NewRouter()
