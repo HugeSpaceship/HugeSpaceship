@@ -134,7 +134,7 @@ func (b *BackendConnection) UploadResource(hash string, r io.Reader, length int6
 
 	// Save object id to resource_files table
 	lob.Close()
-	_, err = tx.Exec(context.Background(), "INSERT INTO resource_files (size,file,hash) VALUES ($1, $2, $3)", written, oid, hash)
+	_, err = tx.Exec(context.Background(), "INSERT INTO files (file,hash) VALUES ($1, $2)", oid, hash)
 	if err != nil {
 		er2 := lobs.Unlink(context.Background(), oid)
 		if er2 != nil {
@@ -154,7 +154,7 @@ func (b *BackendConnection) GetResource(hash string) (io.ReadCloser, int64, erro
 		return nil, 0, err
 	}
 
-	row := tx.QueryRow(context.Background(), "SELECT file, size FROM resource_files WHERE hash = $1", hash)
+	row := tx.QueryRow(context.Background(), "SELECT file FROM files WHERE hash = $1", hash)
 	var oid uint32
 	var size int64
 	err = row.Scan(&oid, &size)
@@ -181,7 +181,7 @@ func (b *BackendConnection) HasResource(hash string) (bool, error) {
 	}
 	defer conn.Release()
 
-	row := conn.QueryRow(context.Background(), "SELECT count(1) FROM resource_files WHERE hash = $1", hash)
+	row := conn.QueryRow(context.Background(), "SELECT count(1) FROM files WHERE hash = $1", hash)
 	var count uint64
 	err = row.Scan(&count)
 
@@ -191,7 +191,7 @@ func (b *BackendConnection) HasResource(hash string) (bool, error) {
 const resourceCheckQuery = `
 SELECT l.hash
 from UNNEST($1) as l(hash)
-LEFT JOIN resource_files r on l.hash = r.hash
+LEFT JOIN files r on l.hash = r.hash
 WHERE r.hash is null;
 `
 
@@ -220,7 +220,7 @@ func (b *BackendConnection) DeleteResource(hash string) error {
 	}
 	defer tx.Rollback(context.Background())
 
-	row := tx.QueryRow(context.Background(), "SELECT file FROM resource_files WHERE hash = $1", hash)
+	row := tx.QueryRow(context.Background(), "SELECT file FROM files WHERE hash = $1", hash)
 	var oid uint32
 	err = row.Scan(&oid)
 	if err != nil {
@@ -233,7 +233,7 @@ func (b *BackendConnection) DeleteResource(hash string) error {
 		return err
 	}
 
-	_, err = tx.Exec(context.Background(), `DELETE FROM resource_files WHERE hash = $1`, hash)
+	_, err = tx.Exec(context.Background(), `DELETE FROM files WHERE hash = $1`, hash)
 	_ = tx.Commit(context.Background())
 	return err
 }

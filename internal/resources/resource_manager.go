@@ -9,11 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
-	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db/sqlc"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends/pg_lob"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/viper"
 	"io"
 	"log/slog"
@@ -25,6 +25,7 @@ type ResourceManager struct {
 	backends    map[string]backends.ResourceBackend
 	connections map[string]backends.BackendConnection
 	v           *viper.Viper
+	sql         *sqlc.Queries
 }
 
 type connectionPriority struct {
@@ -32,12 +33,13 @@ type connectionPriority struct {
 	priority uint
 }
 
-func NewResourceManager(v *viper.Viper) *ResourceManager {
+func NewResourceManager(v *viper.Viper, pool *pgxpool.Pool) *ResourceManager {
 	rm := ResourceManager{
 		backends:    map[string]backends.ResourceBackend{},
 		connections: map[string]backends.BackendConnection{},
 		priorities:  []connectionPriority{},
 		v:           v,
+		sql:         sqlc.New(pool),
 	}
 
 	rm.RegisterBackend("pg_lob", &pg_lob.Backend{})
@@ -99,7 +101,7 @@ func (r *ResourceManager) HasResource(hash string) (bool, string, error) {
 	for _, priority := range r.priorities {
 		exists, err := r.connections[priority.name].HasResource(hash)
 		if err != nil {
-			slog.Error("failed to check resource", slog.String("backend", priority.name), slog.String("hash", hash))
+			slog.Error("failed to check resource", slog.String("backend", priority.name), slog.String("hash", hash), slog.Any("error", err))
 			failError = errors.Join(failError, err)
 			continue
 		}
@@ -148,19 +150,13 @@ func (r *ResourceManager) UploadResource(hash string, res io.Reader, length int6
 			continue
 		}
 
-		conn, err := db.GetConnection(context.Background())
-		if err != nil {
-			return fmt.Errorf("failed to get connection: %w", err)
-		}
-
-		c := sqlc.New(conn)
 		reader.Seek(0, io.SeekStart)
 		magic := make([]byte, 4)
 		reader.Read(magic)
 
 		fmt.Println(string(magic))
 
-		err = c.InsertResource(context.Background(), sqlc.InsertResourceParams{
+		err = r.sql.InsertResource(context.Background(), sqlc.InsertResourceParams{
 			Uploader:    user,
 			Size:        length,
 			Type:        sqlc.ResourceTypeLVL,

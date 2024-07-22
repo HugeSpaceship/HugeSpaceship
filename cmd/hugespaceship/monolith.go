@@ -35,7 +35,7 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to migrate database")
 	}
 
-	res := resources.NewResourceManager(v)
+	res := resources.NewResourceManager(v, pool)
 	err = res.Start()
 	if err != nil {
 		slog.Error("Failed to start resource manager", slog.Any("err", err))
@@ -56,6 +56,7 @@ func main() {
 
 	r.Route("/api", web_api.APIBootstrap(v, res))
 
+	slog.Info("Server started", "port", strconv.Itoa(v.GetInt("http.port")))
 	err = http.ListenAndServe("0.0.0.0:"+strconv.Itoa(v.GetInt("http.port")), r)
 	if err != nil {
 		panic(err)
