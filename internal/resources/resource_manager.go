@@ -154,7 +154,7 @@ func (r *ResourceManager) UploadResource(hash string, res io.Reader, length int6
 		magic := make([]byte, 4)
 		reader.Read(magic)
 
-		fmt.Println(string(magic))
+		slog.Debug("Resource Magic number", "magic", string(magic))
 
 		err = r.sql.InsertResource(context.Background(), sqlc.InsertResourceParams{
 			Uploader:    user,

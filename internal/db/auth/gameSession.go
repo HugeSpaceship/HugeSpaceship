@@ -1,13 +1,14 @@
 package auth
 
 import (
-	"errors"
+	"fmt"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/netip"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -39,10 +40,15 @@ func NewSession(conn *pgxpool.Conn, ticket types.Ticket, ip netip.Addr, game str
 		platform = common.PSP
 		gameType = common.LBPPSP
 	default:
+		if titleID == "" {
+			trim := strings.Split(ticket.TitleID, "-")[1]
+			titleID = strings.Split(trim, "_")[0]
+		}
+
 		if g, exists := common.GameIDs[titleID]; exists && game == "" {
 			gameType = g
 		} else {
-			return "", errors.New("invalid game")
+			return "", fmt.Errorf("invalid game %s", titleID)
 		}
 	}
 

@@ -44,11 +44,11 @@ func GetRequestConnection(r *http.Request) (*pgxpool.Conn, error) {
 }
 
 func GetDSN(v *viper.Viper) string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?application_name=%s",
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?application_name=%s",
 		v.GetString("db.username"),
 		v.GetString("db.password"),
 		v.GetString("db.hostname"),
-		v.GetUint16("db.port"),
+		v.GetString("db.port"),
 		v.GetString("db.database"),
 		"HugeSpaceship+Dev", // because it's a URL it needs the spaces to be escaped with + signs TODO: make this name configurable
 	)

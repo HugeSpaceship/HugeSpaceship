@@ -3,8 +3,6 @@ module github.com/HugeSpaceship/HugeSpaceship
 go 1.21
 
 require (
-	github.com/cristalhq/aconfig v0.18.5
-	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/render v1.0.3
 	github.com/golang-migrate/migrate/v4 v4.17.1

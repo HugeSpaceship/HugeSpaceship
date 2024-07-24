@@ -29,6 +29,7 @@ func LoginHandler() http.HandlerFunc {
 
 		if !signing.VerifyTicket(ticket) {
 			w.WriteHeader(http.StatusForbidden)
+			slog.Debug("Rejecting npticket, as it is invalid")
 			return
 		}
 
@@ -47,6 +48,7 @@ func LoginHandler() http.HandlerFunc {
 		token, err := auth.NewSession(conn, ticket, netip.MustParseAddr(strings.Split(r.RemoteAddr, ":")[0]), game, r.URL.Query().Get("titleID"))
 		if err != nil {
 			utils2.HttpLog(w, http.StatusForbidden, "Failed to create session")
+			slog.Error("Failed to create session", "error", err)
 			return
 		}
 

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"errors"
 	"github.com/spf13/viper"
 	"log/slog"
 )
@@ -54,39 +54,23 @@ func LoadConfig(skipEnv bool) (v *viper.Viper) {
 
 	v = viper.New()
 
-	v.SetConfigName("hugespaceship")
-	v.SetConfigType("yaml")
+	v.SetConfigName("hugespaceship.yaml")
 	v.AddConfigPath(".")
 	v.AddConfigPath("/etc/hugespaceship")
 	err := v.ReadInConfig() // Find and read the config file
 	if err != nil {         // Handle errors reading the config file
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		var configFileNotFoundError viper.ConfigFileNotFoundError
+		if errors.As(err, &configFileNotFoundError) {
 			// Config file not found; ignore error if desired
 			slog.Debug("No config file found")
-		} else {
-			// Config file was found but another error was produced
-			panic(fmt.Errorf("fatal error config file: %w", err))
 		}
 	}
 
 	v.SetEnvPrefix("hs")
 
 	if !skipEnv {
-		//v.SetEnvKeyReplacer(strings.NewReplacer("_", "-"))
 		v.AutomaticEnv()
 	}
 
-	//cfg = &Config{}
-	//loader := aconfig.LoaderFor(cfg, aconfig.Config{
-	//	SkipFlags: true,
-	//	SkipEnv:   skipEnv,
-	//	EnvPrefix: "HS",
-	//	Files:     []string{"/etc/hugespaceship/config.yml", "hugespaceship.yml"},
-	//	FileDecoders: map[string]aconfig.FileDecoder{
-	//		".yml": aconfigyaml.New(),
-	//	},
-	//})
-	//
-	//err = loader.Load()
 	return v
 }
