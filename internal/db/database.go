@@ -30,6 +30,10 @@ const ConnCtxKey = "db_conn"
 func GetConnection(ctx context.Context) (*pgxpool.Conn, error) {
 	conn := ctx.Value(ConnCtxKey)
 
+	if conn == nil {
+		return nil, noConnectionError
+	}
+
 	connType := reflect.TypeOf(conn)
 
 	if !connType.ConvertibleTo(poolConnType) {

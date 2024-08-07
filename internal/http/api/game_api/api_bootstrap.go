@@ -21,7 +21,7 @@ import (
 
 func ResourceBootstrap(group chi.Router, v *viper.Viper, res *resMan.ResourceManager) {
 
-	group.With(middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(res))
+	group.With(middleware.DBCtxMiddleware, middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(res))
 }
 
 func APIBootstrap(r chi.Router, v *viper.Viper, res *resMan.ResourceManager) {
