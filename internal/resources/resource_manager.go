@@ -73,6 +73,7 @@ func (r *ResourceManager) RegisterBackendConfig(cfg *config.ResourceBackendConfi
 func (r *ResourceManager) Start() error {
 	b := r.v.GetStringMap("resource-server.backends")
 	for name, backend := range b {
+
 		cfgMap := backend.(map[string]interface{})
 		priority := cfgMap["priority"].(int)
 		backendType := cfgMap["type"].(string)
@@ -84,6 +85,7 @@ func (r *ResourceManager) Start() error {
 			Priority: uint(priority),
 			Config:   cfgMap,
 		}
+		slog.Debug("Registering backend connection", slog.String("name", name), slog.String("type", backendType), slog.Int("priority", priority))
 		err := r.RegisterBackendConfig(&backendCfg)
 		if err != nil {
 			return err
