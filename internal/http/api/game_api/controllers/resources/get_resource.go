@@ -21,6 +21,8 @@ func GetResourceHandler(res *resources.ResourceManager) http.HandlerFunc {
 		resReader, length, exists, err := res.GetResource(hash)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to get resource")
+			slog.Error("Failed to open resource", slog.Any("err", err.Error()))
+			return
 		}
 		if !exists {
 			utils.HttpLog(w, http.StatusNotFound, "Resource not found")
