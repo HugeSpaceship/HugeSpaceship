@@ -4,12 +4,20 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/logger"
+	"log/slog"
 )
 
 func main() {
-	v := config.LoadConfig(false)
+	cfg, err := config.LoadConfig(false)
+	if err != nil {
+		slog.Error("Failed to load config", err)
+		panic(err)
+	}
 
-	logger.LoggingInit("dbmigrator", v)
+	err = logger.LoggingInit(cfg)
+	if err != nil {
+		slog.Error("Failed to initialize logger", "error", err)
+	}
 
-	db.Open(v)
+	_ = db.Open(cfg)
 }
