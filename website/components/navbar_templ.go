@@ -29,7 +29,7 @@ func NavBar(admin, loggedIn bool, username string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav><a href=\"/\">HS</a><ul><li>Users</li><li>Levels</li><li>Photos</li></ul></nav>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav><a href=\"/\">HS</a> <menu><li>Users</li><li>Levels</li><li>Photos</li><li></li></menu></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
