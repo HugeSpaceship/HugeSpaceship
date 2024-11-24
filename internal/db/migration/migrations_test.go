@@ -3,6 +3,7 @@ package migration
 import (
 	_ "embed"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -10,13 +11,15 @@ import (
 var testMigration string
 
 func TestGetMigration(t *testing.T) {
-	migration, exists, err := GetMigration("000_Initial_Migration.sql")
+	migration, name, exists, err := GetMigration("000_Initial_Migration.sql")
 	if !exists {
 		t.Error("Migration not found")
 	}
 	if err != nil {
 		t.Error(err)
 	}
+
+	assert.Equal(t, name, "000_Initial_Migration")
 
 	expectedMigration := fmt.Sprintf(migrationTemplate, "000_Initial_Migration", testMigration, "000_Initial_Migration")
 

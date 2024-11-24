@@ -10,7 +10,7 @@ import (
 func main() {
 	cfg, err := config.LoadConfig(false)
 	if err != nil {
-		slog.Error("Failed to load config", err)
+		slog.Error("Failed to load config", "error", err)
 		panic(err)
 	}
 
