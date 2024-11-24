@@ -15,7 +15,7 @@ func UploadResources(res *resources.ResourceManager) http.HandlerFunc {
 		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 		hash := r.PathValue("hash")
 
-		exists, _, err := res.HasResource(hash)
+		exists, err := res.HasResource(hash)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to check if resource exists")
 			return

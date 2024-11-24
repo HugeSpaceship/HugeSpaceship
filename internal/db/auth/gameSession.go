@@ -7,12 +7,12 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 	"github.com/HugeSpaceship/HugeSpaceship/pkg/npticket/types"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log/slog"
 	"net/netip"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 )
 
 var sessionCache = make(map[string]auth.Session)
@@ -69,23 +69,23 @@ func GetSession(conn *pgxpool.Conn, token string) (session auth.Session, exists 
 			delete(sessionCache, token)
 			err := db.RemoveSession(conn, token)
 			if err != nil {
-				log.Error().Err(err).Msg("Failed to remove expired session")
+				slog.Error("Failed to remove expired session", "error", err)
 			}
 		}
-		log.Debug().Msg("Using cached session")
+		slog.Debug("Using cached session")
 		return session, exists
 	}
 
 	session, err := db.GetSession(conn, token)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("failed to get session")
+		slog.Debug("Failed to get session", "error", err)
 		return session, false
 	}
 	if time.Now().After(session.ExpiryDate) { // If the session is expired
 		err := db.RemoveSession(conn, token)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to remove expired session")
+			slog.Error("Failed to remove expired session", "error", err)
 		}
 		return auth.Session{}, false // The auth middlewares should NOT continue if the session doesn't exist
 	}

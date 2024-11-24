@@ -138,13 +138,12 @@ func (parser TicketParser) Parse() (types.Ticket, error) {
 		return types.Ticket{}, err
 	}
 	_, _ = parser.ReadSectionHeader()
-	if header.MajorVersion == 2 && header.MinorVersion == 1 {
-		ticket, err = parser.parseVersion2Ticket()
-		if err != nil {
-			return types.Ticket{}, err
-		}
-	} else if header.MajorVersion == 3 && header.MinorVersion == 0 {
-		ticket, err = parser.parseVersion3Ticket()
+
+	switch header.GetVersion() {
+	case "2.1":
+		return parser.parseVersion2Ticket()
+	case "3.0":
+		return parser.parseVersion3Ticket()
 		if err != nil {
 			return types.Ticket{}, err
 		}

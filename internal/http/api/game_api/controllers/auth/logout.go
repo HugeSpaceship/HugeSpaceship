@@ -5,7 +5,7 @@ import (
 	db2 "github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func LogoutHandler() http.HandlerFunc {
 		err = db2.RemoveSession(conn, session.Token)
 		if err != nil {
 			utils.HttpLog(w, 500, "failed to log out")
-			log.Error().Err(err).Msg("Failed to push error to the errors stack")
+			slog.Error("failed to log out", "error", err, "userID", session.UserID)
 		}
 	}
 }

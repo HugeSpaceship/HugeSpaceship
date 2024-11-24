@@ -1,76 +1,85 @@
 package config
 
 import (
-	"errors"
-	"github.com/spf13/viper"
-	"log/slog"
+	"github.com/cristalhq/aconfig"
+	"github.com/cristalhq/aconfig/aconfigyaml"
+	"os"
 )
-
-type ResourceBackendConfig struct {
-	Name     string                 `yaml:"name"`
-	Type     string                 `yaml:"type"`
-	Priority uint                   `yaml:"priority"`
-	Config   map[string]interface{} `yaml:"config"`
-}
 
 // Config is the struct that contains all the global service config for the various components of the application
 type Config struct {
-	HTTPPort int `default:"8080" usage:"The listen port for the HTTP server" env:"HTTP_PORT"`
-	Database struct {
+	ListenAddr string `default:"0.0.0.0:10060" usage:"The listen address for the HTTP server" env:"LISTEN_ADDR"`
+	Database   struct {
 		Host     string `required:"true"`
 		Port     uint16 `required:"true"`
 		Username string `required:"true"`
 		Password string `required:"true"`
 		Database string `required:"true" usage:"The Database to use"`
 	} `usage:"Config for a postgresql database" env:"DB"`
-	API struct {
-		EnforceDigest      bool `default:"false"`
-		DigestKey          string
-		AlternateDigestKey string
-	}
+	GameAPI struct {
+		EnforceDigest      bool   `default:"false"`
+		DigestKey          string `env:"DIGEST_KEY"`
+		AlternateDigestKey string `env:"ALTERNATE_DIGEST_KEY"`
+	} `usage:"Config for the game api" env:"GAME_API"`
 	ResourceServer struct {
-		Enabled        bool   `default:"true"`
+		Backend string
+
+		// S3/Object store connection info
+		Endpoint        string
+		BucketName      string
+		Region          string
+		AccessKeyID     string
+		AccessKeySecret string
+
+		// File store info
+		ResourcePath string
+
 		CacheResources bool   `default:"false"`
 		CacheLocation  string `default:"./r"`
-		Backends       map[string]*ResourceBackendConfig
 	}
 	Website struct {
 		Enabled              bool   `default:"true"`
 		UseEmbeddedResources bool   `default:"true"`
 		WebRoot              string `env:"WEBROOT"`
-		ThemePath            string
-		DefaultTheme         string
-		AllowUserThemes      bool
 	}
 	Log struct {
-		Debug       bool   `default:"false"` // Debug controls the web server debug
-		FileLogging bool   `default:"true"`
+		LogFile     string `default:""`
 		Level       string `default:"info"`
+		JSONLogging bool   `default:"false"`
+		DebugInfo   bool   `default:"false"`
 	}
 }
 
+var CfgPriority = []string{
+	"/usr/share/hugespaceship/config.yaml",
+	"/usr/local/share/hugespaceship/config.yaml",
+	"/etc/hugespaceship/config.yaml",
+	"./config.yaml",
+}
+
 // LoadConfig loads the configuration from various locations and returns a pointer to a Config struct
-func LoadConfig(skipEnv bool) (v *viper.Viper) {
+func LoadConfig(skipEnv bool) (*Config, error) {
 
-	v = viper.New()
+	cfg := Config{}
 
-	v.SetConfigName("hugespaceship.yaml")
-	v.AddConfigPath(".")
-	v.AddConfigPath("/etc/hugespaceship")
-	err := v.ReadInConfig() // Find and read the config file
-	if err != nil {         // Handle errors reading the config file
-		var configFileNotFoundError viper.ConfigFileNotFoundError
-		if errors.As(err, &configFileNotFoundError) {
-			// Config file not found; ignore error if desired
-			slog.Debug("No config file found")
-		}
+	loader := aconfig.LoaderFor(&cfg, aconfig.Config{
+		SkipEnv:   skipEnv,
+		EnvPrefix: "HS",
+
+		Files: CfgPriority,
+		FileDecoders: map[string]aconfig.FileDecoder{
+			".yaml": aconfigyaml.New(),
+		},
+	})
+
+	flag := loader.Flags()
+
+	err := flag.Parse(os.Args[1:])
+	if err != nil {
+		return nil, err
 	}
 
-	v.SetEnvPrefix("hs")
+	err = loader.Load()
 
-	if !skipEnv {
-		v.AutomaticEnv()
-	}
-
-	return v
+	return &cfg, err
 }

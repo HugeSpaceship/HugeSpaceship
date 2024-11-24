@@ -5,7 +5,7 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 	"net/http"
 )
 
@@ -26,7 +26,9 @@ func UpdateUserHandler() http.HandlerFunc {
 
 		planetUpdate, er2 := utils.XMLUnmarshal[lbp_xml.PlanetUpdate](r)
 		if er2 != nil {
-			log.Debug().Err(er2).Msg("no bueno")
+			slog.Debug("Failed to unmarshal planet update XML")
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 		if planetUpdate.Planets != "" || planetUpdate.CCPlanet != "" {
 			err := db.UpdatePlanet(conn, session.UserID, planetUpdate, session.Game)

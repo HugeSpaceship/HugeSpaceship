@@ -3,8 +3,8 @@ package utils
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"github.com/rs/zerolog/log"
 	"io"
+	"log/slog"
 )
 
 func CalculateDigest(path, authCookie, digestKey string, body []byte, excludeBody bool) string {
@@ -15,15 +15,15 @@ func CalculateDigest(path, authCookie, digestKey string, body []byte, excludeBod
 	}
 
 	if _, err := io.WriteString(sum, authCookie); err != nil {
-		log.Debug().Err(err).Msg("Failed to write auth cookie")
+		slog.Debug("Failed to write auth cookie", "error", err)
 	}
 
 	if _, err := io.WriteString(sum, path); err != nil {
-		log.Debug().Err(err).Msg("Failed to write path")
+		slog.Debug("Failed to write path", "error", err)
 	}
 
 	if _, err := io.WriteString(sum, digestKey); err != nil {
-		log.Debug().Err(err).Msg("Failed to write digest key")
+		slog.Debug("Failed to write digest key", "error", err)
 	}
 
 	return hex.EncodeToString(sum.Sum(nil))

@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/HugeSpaceship/HugeSpaceship/pkg/matching/types"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 	"net/netip"
 	"regexp"
 	"strconv"
@@ -19,7 +19,7 @@ var HexLocationRegex = regexp.MustCompile("0x[a-fA-F0-9]{7,8}")
 func hexToDec(in []byte) []byte {
 	parseInt, err := strconv.ParseUint(string(in), 0, 32)
 	if err != nil {
-		log.Debug().Bytes("in", in).Err(err).Msg("Failed to parse int")
+		slog.Debug("Failed to parse int", "in", in, "err", err)
 	}
 	return []byte(strconv.FormatUint(parseInt, 10))
 }

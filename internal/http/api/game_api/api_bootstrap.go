@@ -1,6 +1,7 @@
 package game_api
 
 import (
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/controllers/match"
@@ -16,35 +17,35 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/spf13/viper"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func ResourceBootstrap(group chi.Router, v *viper.Viper, res *resMan.ResourceManager) {
+func ResourceBootstrap(group chi.Router, res *resMan.ResourceManager, pool *pgxpool.Pool) {
 
-	group.With(middleware.DBCtxMiddleware, middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(res))
+	group.With(middleware.DBCtxMiddleware(pool), middlewares.TicketAuthMiddleware).Get("/r/{hash}", resources.GetResourceHandler(res))
 }
 
-func APIBootstrap(r chi.Router, v *viper.Viper, res *resMan.ResourceManager) {
+func APIBootstrap(r chi.Router, cfg *config.Config, res *resMan.ResourceManager, pool *pgxpool.Pool) {
 	r.Use(middlewares.PSPVersionMiddleware, middlewares.ServerHeaderMiddleware)
 
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.NoCache)
 
-	r.With(middleware.DBCtxMiddleware).Post("/login", auth.LoginHandler())
+	r.With(middleware.DBCtxMiddleware(pool)).Post("/login", auth.LoginHandler())
 	r.Get("/eula", controllers.EulaHandler())
 
-	// LittleBigPlanet compatible API, required NpTicket auth
-	authGameAPI := r.With(middleware.DBCtxMiddleware, middlewares.TicketAuthMiddleware)
-	authGameAPI.With(middleware.DBCtxMiddleware).Get("/announce", controllers.AnnounceHandler())
+	// LittleBigPlanet compatible GameAPI, required NpTicket auth
+	authGameAPI := r.With(middleware.DBCtxMiddleware(pool), middlewares.TicketAuthMiddleware)
+	authGameAPI.With(middleware.DBCtxMiddleware(pool)).Get("/announce", controllers.AnnounceHandler())
 	authGameAPI.Get("/network_settings.nws", settings.NetSettingsHandler())
 
-	// LittleBigPlanet compatible API with digest calculation
-	digestRequiredAPI := authGameAPI.With(middlewares.DigestMiddleware(v))
+	// LittleBigPlanet compatible GameAPI with digest calculation
+	digestRequiredAPI := authGameAPI.With(middlewares.DigestMiddleware(cfg))
 	digestRequiredAPI.Post("/match", match.MatchEndpoint())
 	digestRequiredAPI.Post("/upload/{hash}", resources.UploadResources(res))
 
-	// API with automatic content type
+	// GameAPI with automatic content type
 	xmlAPI := digestRequiredAPI.With(render.SetContentType(render.ContentTypeXML))
 	xmlAPI.Get("/user/{username}", users.UserGetHandler())
 
@@ -70,7 +71,7 @@ func APIBootstrap(r chi.Router, v *viper.Viper, res *resMan.ResourceManager) {
 
 	xmlAPI.Post("/scoreboard/{levelType}/{levelID}", slots.UploadScoreHandler())
 
-	xmlAPI.Post("/startPublish", slots.StartPublishHandler())
+	xmlAPI.Post("/startPublish", slots.StartPublishHandler(res))
 	xmlAPI.Post("/publish", slots.PublishHandler())
 	xmlAPI.Post("/unpublish/{id}", slots.UnPublishHandler())
 	xmlAPI.Post("/updateUser", users.UpdateUserHandler())
@@ -81,10 +82,10 @@ func APIBootstrap(r chi.Router, v *viper.Viper, res *resMan.ResourceManager) {
 	xmlAPI.Post("/uploadPhoto", photos.UploadPhoto())
 	xmlAPI.Post("/photos/by", photos.GetPhotosBy())
 
-	xmlAPI.Post("/showNotUploaded", resources.ShowNotUploadedHandler())
-	xmlAPI.Post("/filterResources", resources.ShowNotUploadedHandler())
+	xmlAPI.Post("/showNotUploaded", resources.ShowNotUploadedHandler(res))
+	xmlAPI.Post("/filterResources", resources.ShowNotUploadedHandler(res))
 
-	//Stubby, mc stub face
+	// FIXME: Stubbed APIs
 	xmlAPI.Get("/promotions", controllers.StubEndpoint())
 	xmlAPI.Get("/user/{username}/playlists", controllers.StubEndpoint())
 

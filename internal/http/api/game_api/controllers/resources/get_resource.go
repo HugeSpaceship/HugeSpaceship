@@ -1,7 +1,9 @@
 package resources
 
 import (
+	"errors"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/resources/backends"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/HugeSpaceship/HugeSpaceship/pkg/validation"
 	"io"
@@ -18,14 +20,15 @@ func GetResourceHandler(res *resources.ResourceManager) http.HandlerFunc {
 			return
 		}
 
-		resReader, length, exists, err := res.GetResource(hash)
+		resReader, length, err := res.GetResource(hash)
 		if err != nil {
+			if errors.Is(err, backends.ResourceNotFound) {
+				utils.HttpLog(w, http.StatusNotFound, "Resource not found")
+				return
+			}
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to get resource")
 			slog.Error("Failed to open resource", slog.Any("err", err.Error()))
 			return
-		}
-		if !exists {
-			utils.HttpLog(w, http.StatusNotFound, "Resource not found")
 		}
 		defer resReader.Close()
 

@@ -11,6 +11,7 @@ import (
 func StreamHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		timestamp := time.Now().UTC().UnixMilli()
+
 		utils.XMLMarshal(w, &recent_activity.Stream{
 			StartTimestamp: timestamp - 50000,
 			EndTimestamp:   timestamp,

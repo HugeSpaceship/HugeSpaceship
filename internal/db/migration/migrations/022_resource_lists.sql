@@ -1,4 +1,4 @@
-CREATE TYPE resource_override AS ENUM (
+CREATE TYPE override_type AS ENUM (
     'ALLOW',
     'DENY',
     'EXTERNAL'
@@ -6,6 +6,6 @@ CREATE TYPE resource_override AS ENUM (
 
 CREATE TABLE resource_overrides (
     hash text not null,
-    override resource_override not null,
+    override override_type not null,
     reason text
 );

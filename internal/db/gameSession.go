@@ -5,11 +5,11 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/common"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log/slog"
 	"net/netip"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 )
 
 const CreateSQL = `INSERT INTO sessions (userId, ip, token, game, platform, expiry) VALUES ($1,$2,$3,$4,$5,$6);`
@@ -37,7 +37,7 @@ func NewSession(conn *pgxpool.Conn, username string, gameType common.GameType, i
 	if err != nil {
 		return auth.Session{}, err
 	}
-	log.Debug().Int("clearedSessions", n).Str("user", username).Msg("Purged old sessions for user")
+	slog.Debug("Purged old sessions for user", "user", username, "userID", userID, "sessionsCleared", n)
 
 	_, err = conn.Exec(context.Background(), CreateSQL, userID, ip, token, gameType, platform, expiry)
 	return auth.Session{

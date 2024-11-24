@@ -7,7 +7,7 @@ An experimental LittleBigPlanet server focused on customizability and performanc
 ## Status
 Currently, the game server is in a mostly functional state for level uploads, etc. Matchmaking is unimplemented and so is Recent Activity
 
-The website is currently under development, and this will require a decent API.
+The website is currently under development, and this will require a decent GameAPI.
 
 Authentication is currently a free-for-all as there's no rate limiting or whitelisting or api auth besides NPTickets and session tokens
 

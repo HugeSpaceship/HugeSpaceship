@@ -11,3 +11,6 @@ var ExamplePSNTicket []byte
 
 //go:embed npticket/example-rpcn-ticket
 var ExampleRPCNTicket []byte
+
+//go:embed npticket/ezonpticket.bin
+var Wack []byte

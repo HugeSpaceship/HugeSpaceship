@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -24,12 +24,9 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,t
 func InsertSlot(conn *pgxpool.Conn, slot *slot.Upload, uploader uuid.UUID, game uint, domain uint) (uint64, error) {
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		er2 := tx.Rollback(context.Background())
-		if er2 != nil {
-			return 0, er2
-		}
 		return 0, err
 	}
+	defer tx.Rollback(context.Background())
 
 	var id uint64
 	err = tx.QueryRow(context.Background(), insertSQL, slot.Name, slot.Description, slot.Icon, slot.RootLevel, slot.Location.X, slot.Location.Y,
@@ -37,17 +34,13 @@ func InsertSlot(conn *pgxpool.Conn, slot *slot.Upload, uploader uuid.UUID, game 
 		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, domain, uploader, time.Now(), time.Now(), game,
 	).Scan(&id)
 	if err != nil {
-		er2 := tx.Rollback(context.Background())
-		if er2 != nil {
-			return 0, er2
-		}
 		return 0, err
 	}
 
 	for _, res := range slot.Resources {
 		_, err := tx.Exec(context.Background(), "INSERT INTO slot_resources VALUES($1, $2)", id, res)
 		if err != nil {
-			log.Debug().Err(err).Str("hash", res).Msg("failed to insert slot resource")
+			return 0, err
 		}
 	}
 
@@ -126,7 +119,6 @@ func GetTotalSlotsByDomain(conn pgx.Tx, domain uint) (uint64, error) {
 }
 
 func GetLevelOwner(conn *pgxpool.Conn, id uint64) (uploader uuid.UUID, err error) {
-
 	row := conn.QueryRow(context.Background(), "SELECT uploader FROM slots WHERE id = $1;", id)
 
 	err = row.Scan(&uploader)
@@ -134,10 +126,8 @@ func GetLevelOwner(conn *pgxpool.Conn, id uint64) (uploader uuid.UUID, err error
 }
 
 func DeleteSlot(conn *pgxpool.Conn, id uint64) (err error) {
-
 	_, err = conn.Exec(context.Background(), "UPDATE slots SET published = false WHERE id = $1;", id)
 	return
-
 }
 
 const updateSQL = `UPDATE slots SET name = $2, description = $3, 
@@ -152,28 +142,22 @@ func UpdateSlot(conn *pgxpool.Conn, slot *slot.Upload) error {
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		er2 := tx.Rollback(context.Background())
-		if er2 != nil {
-			return er2
-		}
 		return err
 	}
+	defer tx.Rollback(context.Background())
+
 	_, err = tx.Exec(context.Background(), updateSQL, slot.ID, slot.Name, slot.Description, slot.Icon, slot.RootLevel, slot.Location.X, slot.Location.Y,
 		slot.InitiallyLocked, slot.IsSubLevel, slot.IsLBP1Only, slot.Shareable,
 		slot.Background, slot.LevelType, slot.MinPlayers, slot.MaxPlayers, slot.MoveRequired, time.Now(),
 	)
 	if err != nil {
-		er2 := tx.Rollback(context.Background())
-		if er2 != nil {
-			return er2
-		}
 		return err
 	}
 
 	for _, res := range slot.Resources {
 		_, err := tx.Exec(context.Background(), "INSERT INTO slot_resources VALUES($1, $2)", slot.ID, res)
 		if err != nil {
-			log.Debug().Err(err).Str("hash", res).Msg("failed to insert slot resource")
+			slog.Debug("Failed to insert slot resource", "resource", res, "error", err)
 		}
 	}
 

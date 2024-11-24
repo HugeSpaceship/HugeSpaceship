@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 type TicketDataHeader struct {
 	Type   DataType
 	Length uint16
@@ -16,4 +18,8 @@ type TicketHeader struct {
 
 	Padding      [5]byte // Find out what this is, it may be important
 	TicketLength uint8
+}
+
+func (h TicketHeader) GetVersion() string {
+	return fmt.Sprintf("%d.%d", h.MajorVersion, h.MinorVersion)
 }

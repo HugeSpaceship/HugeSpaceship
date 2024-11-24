@@ -1,0 +1,15 @@
+package main
+
+import "github.com/HugeSpaceship/HugeSpaceship/website/components"
+
+templ baseTemplate(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>{ title }</title>
+		</head>
+		<body>
+			@components.NavBar(false, false, "")
+		</body>
+	</html>
+}

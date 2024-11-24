@@ -1,33 +1,64 @@
 package logger
 
 import (
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
+	"errors"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/config"
+	"io"
+	"log/slog"
 	"os"
 )
 
-func LoggingInit(service string, v *viper.Viper) {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+var defaultLevel = slog.LevelInfo
 
-	if v.GetBool("log.debug") {
-		log.Logger = log.With().Caller().Logger().Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	} else {
-		v.SetDefault("log.level", "info")
-		level, err := zerolog.ParseLevel(v.GetString("log.level"))
-		if err != nil {
-			panic(err)
-		}
-		logger := log.Level(level).With()
-		if service != "" {
-			logger = logger.Str("service", service)
-		}
-
-		if v.GetBool("log.log-to-file") {
-			file, _ := os.OpenFile("./hs-"+service+".log", os.O_CREATE|os.O_WRONLY, 0644)
-			log.Logger = logger.Logger().Output(file)
-		} else {
-			log.Logger = logger.Logger()
-		}
+func LoggingInit(cfg *config.Config) error {
+	level := defaultLevel
+	switch cfg.Log.Level {
+	case "debug":
+		level = slog.LevelDebug
+	case "info":
+		level = slog.LevelInfo
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	default:
+		return errors.New("invalid log level")
 	}
+
+	slog.SetLogLoggerLevel(level)
+
+	var logger *slog.Logger
+
+	var writers = []io.Writer{os.Stdout}
+
+	if cfg.Log.LogFile != "" {
+		logFile, err := os.OpenFile(cfg.Log.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+
+		writers = append(writers, logFile)
+	}
+
+	if cfg.Log.JSONLogging {
+		jsonHandler := slog.NewJSONHandler(io.MultiWriter(writers...), &slog.HandlerOptions{
+			AddSource:   cfg.Log.DebugInfo,
+			Level:       level,
+			ReplaceAttr: nil,
+		})
+
+		logger = slog.New(jsonHandler)
+
+	} else {
+		textHandler := slog.NewTextHandler(io.MultiWriter(writers...), &slog.HandlerOptions{
+			AddSource:   cfg.Log.DebugInfo,
+			Level:       level,
+			ReplaceAttr: nil,
+		})
+
+		logger = slog.New(textHandler)
+	}
+
+	slog.SetDefault(logger)
+	return nil
 }

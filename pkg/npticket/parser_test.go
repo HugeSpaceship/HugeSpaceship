@@ -6,7 +6,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	parser := NewParser(testdata.ExamplePSNTicket)
+	parser := NewParser(testdata.Wack)
 
 	ticket, err := parser.Parse()
 	if err != nil {

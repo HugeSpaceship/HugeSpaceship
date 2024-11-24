@@ -54,13 +54,18 @@ type NewsItemContent struct {
 }
 
 type NewsFrame struct {
-	XMLName xml.Name      `xml:"frame"`
-	Width   string        `xml:"width,attr"`
-	Title   string        `xml:"title"`
-	Item    NewsFrameItem `xml:"item"`
+	XMLName xml.Name        `xml:"frame"`
+	Width   string          `xml:"width,attr"`
+	Title   string          `xml:"title"`
+	Item    []NewsFrameItem `xml:"item"`
 }
 type NewsFrameItem struct {
-	Width    string          `xml:"width,attr"`
-	NpHandle npdata.NpHandle `xml:"npHandle"`
-	Content  string          `xml:"content"`
+	Width    string             `xml:"width,attr"`
+	NpHandle *npdata.NpHandle   `xml:"npHandle,omitempty"`
+	Slot     *NewsFrameItemSlot `xml:"slot,omitempty"`
+	Content  string             `xml:"content"`
+}
+type NewsFrameItemSlot struct {
+	Type string `xml:"type,attr"`
+	ID   uint64 `xml:"id"`
 }

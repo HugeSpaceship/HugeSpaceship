@@ -1,4 +1,5 @@
 // Key builder is a tool for creating PEM NpTicket keys
+// This is an alternative to using the raw ECDSA curves that is more user-friendly
 
 package main
 

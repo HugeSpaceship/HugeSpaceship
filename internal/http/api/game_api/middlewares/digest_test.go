@@ -6,7 +6,6 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/http/api/game_api/utils"
 	utils2 "github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"github.com/go-chi/chi/v5"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -19,10 +18,10 @@ const TestAltDigest = "5678"
 const TestAuthCookie = "0123456789"
 
 var cfg = config.Config{
-	API: struct {
-		EnforceDigest      bool `default:"false"`
-		DigestKey          string
-		AlternateDigestKey string
+	GameAPI: struct {
+		EnforceDigest      bool   `default:"false"`
+		DigestKey          string `env:"DIGEST_KEY"`
+		AlternateDigestKey string `env:"ALTERNATE_DIGEST_KEY"`
 	}{EnforceDigest: true, DigestKey: TestDigest, AlternateDigestKey: TestAltDigest},
 }
 
@@ -33,11 +32,7 @@ var expectedAltDigest = utils.CalculateDigest("/test", TestAuthCookie, TestAltDi
 func setupDigestTestRouter() *chi.Mux {
 	r := chi.NewRouter()
 
-	v := viper.New()
-	v.Set("api.game.digest-key", TestDigest)
-	v.Set("api.game.alt-digest-key", TestAltDigest)
-
-	r.With(DigestMiddleware(v)).Get("/test", func(w http.ResponseWriter, r *http.Request) {
+	r.With(DigestMiddleware(&cfg)).Get("/test", func(w http.ResponseWriter, r *http.Request) {
 		utils2.HttpLog(w, http.StatusOK, "Ok!")
 	})
 	return r

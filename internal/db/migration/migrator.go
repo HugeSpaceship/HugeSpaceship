@@ -6,7 +6,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -29,33 +29,37 @@ COMMIT;
 // MigrateDB migrates the Database using the migrations that get embedded
 func MigrateDB(connection *pgxpool.Pool) error {
 	startTime := time.Now()
-	log.Info().Msg("Starting DB migration")
+	slog.Info("Starting database migration")
 
 	_, err := connection.Exec(context.Background(), migrationTableCreateSQL)
 	if err != nil {
 		return err
 	}
 
+	count := 0
 	for { // While there are more migrations
-		sql, hasNext, err := nextMigration(connection)
+		sql, migrationName, hasNext, err := nextMigration(connection)
 		if !hasNext {
 			break
 		}
 		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to migrate DB")
+			slog.Error("Failed to get migration", "error", err)
 		}
+		slog.Debug("Starting migration", "migration", migrationName)
 		if _, err = connection.Exec(context.Background(), sql); err != nil { // Do the migration
-			log.Fatal().Err(err).Str("migration", sql).Msg("Failed to migrate DB")
+			slog.Error("Failed to migrate DB", "migration", migrationName, "error", err)
 			return err // If something explodes, bail
 		}
+		slog.Debug("Migration finished", "migration", migrationName)
+		count++
 	}
 
-	log.Info().Int("migrationMs", int(time.Since(startTime).Milliseconds())).Msg("Migration Complete")
+	slog.Info("Finished database migration", "milliseconds", time.Since(startTime).Milliseconds(), "migrationCount", count)
 
 	return nil
 }
 
-func nextMigration(conn *pgxpool.Pool) (string, bool, error) {
+func nextMigration(conn *pgxpool.Pool) (string, string, bool, error) {
 	row := conn.QueryRow(context.Background(), "SELECT * FROM migrations ORDER BY id DESC LIMIT 1")
 
 	migration := Migration{}
@@ -64,8 +68,7 @@ func nextMigration(conn *pgxpool.Pool) (string, bool, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return GetMigrationByNumber(0)
 		}
-		log.Error().Err(err).Msg("failed to scan migration row")
-		return "", false, err
+		return "", "", false, err
 	}
 
 	migrationNum, err := strconv.ParseInt(strings.Split(migration.Name, "_")[0], 10, 16)

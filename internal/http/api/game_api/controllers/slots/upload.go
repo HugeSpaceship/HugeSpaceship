@@ -4,21 +4,15 @@ import (
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
+	"github.com/HugeSpaceship/HugeSpaceship/internal/resources"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
 	"log/slog"
 	"net/http"
 	"strconv"
-
-	"github.com/rs/zerolog/log"
 )
 
-func StartPublishHandler() http.HandlerFunc {
+func StartPublishHandler(res *resources.ResourceManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		conn, err := db.GetRequestConnection(r)
-		if err != nil {
-			panic(err)
-		}
-
 		s, err := utils.XMLUnmarshal[slot.Upload](r)
 		if err != nil {
 			slog.Error("Failed to parse xml body", slog.Any("error", err))
@@ -26,15 +20,9 @@ func StartPublishHandler() http.HandlerFunc {
 
 		// This checks to see if the resources already exist in the DB
 
-		resourcesToUpload := make([]string, 0, len(s.Resources))
-		for i := range s.Resources {
-			exists, err := db.ResourceExists(conn, s.Resources[i])
-			if err != nil {
-				log.Warn().Err(err).Msg("failed to check if resource exists, assuming it doesn't")
-			}
-			if !exists {
-				resourcesToUpload = append(resourcesToUpload, s.Resources[i])
-			}
+		resourcesToUpload, err := res.HasResources(s.Resources)
+		if err != nil {
+			slog.Error("failed to check resources", "error", err)
 		}
 
 		utils.XMLMarshal(w, slot.StartPublishSlotResponse{

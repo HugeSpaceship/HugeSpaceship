@@ -27,13 +27,13 @@ func ListMigrations() []string {
 	return migrationNames
 }
 
-func GetMigrationByNumber(number int) (string, bool, error) {
+func GetMigrationByNumber(number int) (string, string, bool, error) {
 	for _, file := range ListMigrations() {
 		if strings.HasPrefix(file, fmt.Sprintf("%03d", number)) {
 			return GetMigration(file)
 		}
 	}
-	return "", false, errors.New("no migrations found for id " + strconv.Itoa(number))
+	return "", "", false, errors.New("no migrations found for id " + strconv.Itoa(number))
 }
 
 const migrationTemplate = `
@@ -50,13 +50,13 @@ WHERE migration = '%s';
 COMMIT;
 `
 
-func GetMigration(name string) (string, bool, error) {
+func GetMigration(name string) (string, string, bool, error) {
 	migration, err := migrations.ReadFile("migrations/" + name)
 	if err != nil {
-		return "", true, err
+		return "", "", true, err
 	}
 
 	migrationName := strings.Split(name, ".")[0]
 
-	return fmt.Sprintf(migrationTemplate, migrationName, string(migration), migrationName), true, nil
+	return fmt.Sprintf(migrationTemplate, migrationName, string(migration), migrationName), migrationName, true, nil
 }
