@@ -123,7 +123,7 @@ func (b *PgLOBBackend) HasResource(hash string) (bool, error) {
 
 const resourceCheckQuery = `
 SELECT l.hash
-from UNNEST($1) as l(hash)
+from UNNEST($1::text[]) as l(hash)
 LEFT JOIN files r on l.hash = r.hash
 WHERE r.hash is null;
 `
