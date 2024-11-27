@@ -86,6 +86,7 @@ func APIBootstrap(r chi.Router, cfg *config.Config, res *resMan.ResourceManager,
 	xmlAPI.Post("/filterResources", resources.ShowNotUploadedHandler(res))
 
 	// FIXME: Stubbed APIs
+	// These need to be implemented at some point
 	xmlAPI.Get("/promotions", controllers.StubEndpoint())
 	xmlAPI.Get("/user/{username}/playlists", controllers.StubEndpoint())
 
