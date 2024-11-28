@@ -20,13 +20,14 @@ func UpdateUserHandler() http.HandlerFunc {
 
 		userUpdate, err := utils.XMLUnmarshal[lbp_xml.UpdateUser](r)
 		if err != nil {
+			slog.Error("Failed to unmarshal XML", "err", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		planetUpdate, er2 := utils.XMLUnmarshal[lbp_xml.PlanetUpdate](r)
 		if er2 != nil {
-			slog.Debug("Failed to unmarshal planet update XML")
+			slog.Debug("Failed to unmarshal planet update XML", "err", er2)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
