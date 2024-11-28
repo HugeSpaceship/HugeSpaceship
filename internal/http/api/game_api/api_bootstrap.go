@@ -56,16 +56,13 @@ func APIBootstrap(r chi.Router, cfg *config.Config, res *resMan.ResourceManager,
 	xmlAPI.Get("/news/{id}", controllers.LBP2NewsHandler())
 	xmlAPI.Get("/stream", controllers.StreamHandler())
 
-	xmlAPI.Route("/slots", func(r chi.Router) {
-		xmlAPI.Get("/slots", slots.GetSlotsHandler())
-		xmlAPI.Get("/slots/by", slots.GetSlotsByHandler())
-
-		xmlAPI.Get("/slots/lbp2luckydip", slots.LuckyDipHandler())
-		xmlAPI.Get("/slots/thumbs", slots.HighestRatedLevelsHandler())
-		xmlAPI.Get("/slots/lbp2cool", slots.HighestRatedLevelsHandler())
-		xmlAPI.Get("/slots/cool", slots.HighestRatedLevelsHandler())
-		xmlAPI.Get("/slots/highestRated", slots.HighestRatedLevelsHandler())
-	})
+	xmlAPI.Get("/slots", slots.GetSlotsHandler())
+	xmlAPI.Get("/slots/by", slots.GetSlotsByHandler())
+	xmlAPI.Get("/slots/lbp2luckydip", slots.LuckyDipHandler())
+	xmlAPI.Get("/slots/thumbs", slots.HighestRatedLevelsHandler())
+	xmlAPI.Get("/slots/lbp2cool", slots.HighestRatedLevelsHandler())
+	xmlAPI.Get("/slots/cool", slots.HighestRatedLevelsHandler())
+	xmlAPI.Get("/slots/highestRated", slots.HighestRatedLevelsHandler())
 
 	xmlAPI.Get("/s/user/{id}", slots.GetSlotHandler())
 
