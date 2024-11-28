@@ -9,7 +9,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"strconv"
 )
 
 func GetResourceHandler(res *resources.ResourceManager) http.HandlerFunc {
@@ -20,7 +19,7 @@ func GetResourceHandler(res *resources.ResourceManager) http.HandlerFunc {
 			return
 		}
 
-		resReader, length, err := res.GetResource(hash)
+		resReader, err := res.GetResource(hash)
 		if err != nil {
 			if errors.Is(err, backends.ResourceNotFound) {
 				utils.HttpLog(w, http.StatusNotFound, "Resource not found")
@@ -33,7 +32,6 @@ func GetResourceHandler(res *resources.ResourceManager) http.HandlerFunc {
 		defer resReader.Close()
 
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Header().Set("Content-Length", strconv.FormatInt(length, 10))
 		_, err = io.Copy(w, resReader)
 		if err != nil {
 			slog.Error("Failed to write resource")

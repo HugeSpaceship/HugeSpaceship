@@ -19,3 +19,6 @@ SELECT EXISTS (
 
 -- name: DeleteResource :exec
 DELETE FROM resources WHERE hash = sqlc.arg(hash)::text;
+
+-- name: GetResource :one
+SELECT * FROM resources WHERE hash = sqlc.arg(hash)::text LIMIT 1;

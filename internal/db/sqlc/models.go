@@ -461,12 +461,10 @@ type PhotoSubject struct {
 
 type Resource struct {
 	Hash         string
-	Backend      ResourceBackends
 	ResourceType ResourceType
 	Size         pgtype.Int8
 	Created      pgtype.Timestamptz
 	Uploader     pgtype.UUID
-	BackendName  string
 }
 
 type ResourceOverride struct {

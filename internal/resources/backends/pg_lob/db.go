@@ -73,33 +73,33 @@ func (b *PgLOBBackend) UploadResource(hash string, r io.Reader, length int64) er
 	return nil
 }
 
-func (b *PgLOBBackend) GetResource(hash string) (io.ReadCloser, int64, error) {
+func (b *PgLOBBackend) GetResource(hash string) (io.ReadCloser, error) {
 	tx, err := b.pool.Begin(context.Background())
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	row := tx.QueryRow(context.Background(), "SELECT file FROM files WHERE hash = $1", hash)
 	var oid uint32
-	var size int64
-	err = row.Scan(&oid, &size)
+	err = row.Scan(&oid)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, 0, backends.ResourceNotFound
+			return nil, backends.ResourceNotFound
 		}
-		return nil, 0, err
+		return nil, err
 	}
 
 	lobs := tx.LargeObjects()
 	lob, err := lobs.Open(context.Background(), oid, pgx.LargeObjectModeRead)
 	if err != nil {
 		tx.Rollback(context.Background())
-		return nil, 0, err
+		return nil, err
 	}
 
+	// Pass TX in lobCloser to be closed separately, as a closed TX can't be used for LOB IO
 	return &LobCloser{
 		tx, lob,
-	}, size, nil
+	}, nil
 }
 
 func (b *PgLOBBackend) HasResource(hash string) (bool, error) {

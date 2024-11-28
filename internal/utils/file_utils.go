@@ -1,15 +1,19 @@
 package utils
 
 import (
+	"bufio"
 	"io"
-	"os"
 )
 
-func ServeFile(w io.Writer, path string) error {
-	f, err := os.Open(path)
+func GetResourceType(r io.Reader) (io.Reader, FileType, error) {
+	br := bufio.NewReader(r)
+	magic, err := br.Peek(3)
 	if err != nil {
-		return err
+		return br, Unknown, err
 	}
-	_, err = io.Copy(w, f)
-	return err
+
+	ft := Unknown
+	err = ft.Scan(magic)
+
+	return br, ft, err
 }

@@ -1,11 +1,13 @@
 package slots
 
 import (
+	"errors"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/slot"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/resources"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
+	"github.com/jackc/pgx/v5"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -16,6 +18,20 @@ func StartPublishHandler(res *resources.ResourceManager) http.HandlerFunc {
 		s, err := utils.XMLUnmarshal[slot.Upload](r)
 		if err != nil {
 			slog.Error("Failed to parse xml body", slog.Any("error", err))
+		}
+
+		if len(s.Resources) == 0 {
+			s.Resources = []string{s.RootLevel}
+		}
+
+		s.Resources = append(s.Resources, s.Icon)
+
+		conn, err := db.GetRequestConnection(r)
+		if s.ID != 0 {
+			_, err := db.GetSlot(conn, s.ID)
+			if errors.Is(err, pgx.ErrNoRows) {
+				slog.Warn("Rejecting republish, old slot does not exist", "id", s.ID, "err", err)
+			}
 		}
 
 		// This checks to see if the resources already exist in the DB
@@ -69,6 +85,7 @@ func PublishHandler() http.HandlerFunc {
 				slog.Error("failed to update level", slog.Any("error", err))
 				return
 			}
+			slog.Debug("Republished level", "id", id, "user", session.Username)
 		}
 
 		s, err := db.GetSlot(conn, id)

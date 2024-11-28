@@ -59,6 +59,23 @@ func (q *Queries) DeleteResource(ctx context.Context, hash string) error {
 	return err
 }
 
+const getResource = `-- name: GetResource :one
+SELECT hash, resource_type, size, created, uploader FROM resources WHERE hash = $1::text LIMIT 1
+`
+
+func (q *Queries) GetResource(ctx context.Context, hash string) (Resource, error) {
+	row := q.db.QueryRow(ctx, getResource, hash)
+	var i Resource
+	err := row.Scan(
+		&i.Hash,
+		&i.ResourceType,
+		&i.Size,
+		&i.Created,
+		&i.Uploader,
+	)
+	return i, err
+}
+
 const insertResource = `-- name: InsertResource :exec
 INSERT INTO resources (uploader,size,resource_type,hash,created) VALUES (
     $1::uuid,

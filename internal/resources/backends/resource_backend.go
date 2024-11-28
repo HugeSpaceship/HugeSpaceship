@@ -5,7 +5,7 @@ import (
 )
 
 type ResourceBackend interface {
-	GetResource(hash string) (io.ReadCloser, int64, error)
+	GetResource(hash string) (io.ReadCloser, error)
 	HasResource(hash string) (bool, error)
 	HasResources(hashes []string) ([]string, error)
 	DeleteResource(hash string) error
