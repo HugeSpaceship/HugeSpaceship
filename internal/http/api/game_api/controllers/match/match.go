@@ -4,8 +4,8 @@ import (
 	"net/http"
 )
 
-func MatchEndpoint() http.HandlerFunc {
+func MatchmakingEndpoint() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		w.WriteHeader(200)
 	}
 }

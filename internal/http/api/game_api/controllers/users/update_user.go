@@ -41,6 +41,7 @@ func UpdateUserHandler() http.HandlerFunc {
 
 		err = db.UpdateUser(conn, session.UserID, userUpdate)
 		if err != nil {
+			slog.Error("Failed to update user", "err", err)
 			utils.HttpLog(w, http.StatusBadRequest, "failed to update user")
 			return
 		}

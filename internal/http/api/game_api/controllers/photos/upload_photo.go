@@ -3,7 +3,6 @@ package photos
 import (
 	"encoding/xml"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/db"
-	db2 "github.com/HugeSpaceship/HugeSpaceship/internal/db"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/auth"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/model/lbp_xml/photos"
 	"github.com/HugeSpaceship/HugeSpaceship/internal/utils"
@@ -26,7 +25,7 @@ func UploadPhoto() http.HandlerFunc {
 			panic(err)
 		}
 
-		photoID, err := db2.InsertPhoto(conn, photo, session.UserID, domain)
+		photoID, err := db.InsertPhoto(conn, photo, session.UserID, domain)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to upload photo")
 			return

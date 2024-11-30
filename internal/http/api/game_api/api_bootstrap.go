@@ -42,8 +42,8 @@ func APIBootstrap(r chi.Router, cfg *config.Config, res *resMan.ResourceManager,
 
 	// LittleBigPlanet compatible GameAPI with digest calculation
 	digestRequiredAPI := authGameAPI.With(middlewares.DigestMiddleware(cfg))
-	digestRequiredAPI.Post("/match", match.MatchEndpoint())
-	digestRequiredAPI.Post("/upload/{hash}", resources.UploadResources(res))
+	digestRequiredAPI.Post("/match", match.MatchmakingEndpoint())            // Matchmaking room management
+	digestRequiredAPI.Post("/upload/{hash}", resources.UploadResources(res)) // resource uploading
 
 	// GameAPI with automatic content type
 	xmlAPI := digestRequiredAPI.With(render.SetContentType(render.ContentTypeXML))
@@ -76,9 +76,11 @@ func APIBootstrap(r chi.Router, cfg *config.Config, res *resMan.ResourceManager,
 	xmlAPI.Post("/showModerated", moderation.ShowModeratedHandler())
 	xmlAPI.Post("/filter", moderation.FilterHandler())
 
+	// Photo
 	xmlAPI.Post("/uploadPhoto", photos.UploadPhoto())
 	xmlAPI.Post("/photos/by", photos.GetPhotosBy())
 
+	// Resource management/moderation
 	xmlAPI.Post("/showNotUploaded", resources.ShowNotUploadedHandler(res))
 	xmlAPI.Post("/filterResources", resources.ShowNotUploadedHandler(res))
 
