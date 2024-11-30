@@ -20,5 +20,5 @@ FROM scratch AS hugespaceship
 ARG TARGETOS
 ARG TARGETARCH
 
-COPY --from=build /build/hugespaceship-${TARGETOS}-${TARGETARCH} /
+COPY --from=build /build/hugespaceship-${TARGETOS}-${TARGETARCH} /hugespaceship
 ENTRYPOINT [ "/hugespaceship" ]
