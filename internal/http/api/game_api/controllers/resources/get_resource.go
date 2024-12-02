@@ -29,7 +29,12 @@ func GetResourceHandler(res *resources.ResourceManager) http.HandlerFunc {
 			slog.Error("Failed to open resource", slog.Any("err", err.Error()))
 			return
 		}
-		defer resReader.Close()
+		defer func(resReader io.ReadCloser) {
+			err := resReader.Close()
+			if err != nil {
+				panic(err)
+			}
+		}(resReader)
 
 		w.Header().Set("Content-Type", "application/octet-stream")
 		_, err = io.Copy(w, resReader)
