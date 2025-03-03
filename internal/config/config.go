@@ -22,7 +22,8 @@ type Config struct {
 		AlternateDigestKey string `env:"ALTERNATE_DIGEST_KEY"`
 	} `usage:"Config for the game api" env:"GAME_API"`
 	ResourceServer struct {
-		Backend string
+		ResourcesRequireAuth bool `default:"false"`
+		Backend              string
 
 		// S3/Object store connection info
 		Endpoint        string

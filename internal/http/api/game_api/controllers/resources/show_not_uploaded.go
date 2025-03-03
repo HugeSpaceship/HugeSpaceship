@@ -24,7 +24,7 @@ func ShowNotUploadedHandler(resMan *resources.ResourceManager) http.HandlerFunc 
 		}
 
 		// This checks to see if the resources already exist in the DB
-		resourcesToUpload, err := resMan.HasResources(res.Resources)
+		resourcesToUpload, err := resMan.HasResources(r.Context(), res.Resources)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to check resources")
 			slog.Error("Failed to check resources", slog.Any("error", err))

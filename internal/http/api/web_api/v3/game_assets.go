@@ -21,7 +21,7 @@ func ImageAssetHandler(res *resMan.ResourceManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := r.PathValue("hash")
 
-		resReader, err := res.GetResource(hash)
+		resReader, err := res.GetResource(r.Context(), hash)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to access resource")
 			return

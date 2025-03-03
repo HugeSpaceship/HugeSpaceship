@@ -15,7 +15,7 @@ func UploadResources(res *resources.ResourceManager) http.HandlerFunc {
 		session := utils.GetContextValue[auth.Session](r.Context(), "session")
 		hash := r.PathValue("hash")
 
-		exists, err := res.HasResource(hash)
+		exists, err := res.HasResource(r.Context(), hash)
 		if err != nil {
 			utils.HttpLog(w, http.StatusInternalServerError, "Failed to check if resource exists")
 			return
@@ -29,11 +29,12 @@ func UploadResources(res *resources.ResourceManager) http.HandlerFunc {
 			return
 		}
 
-		err = res.UploadResource(hash, r.Body, r.ContentLength, session.UserID)
+		err = res.UploadResource(r.Context(), hash, r.Body, r.ContentLength, session.UserID)
 		if err != nil {
 			slog.Error("error saving resource", slog.Any("error", err))
 			utils.HttpLog(w, http.StatusInternalServerError, "internal error in resource upload")
 			return
 		}
+		w.WriteHeader(http.StatusCreated)
 	}
 }

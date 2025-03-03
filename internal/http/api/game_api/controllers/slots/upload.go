@@ -36,7 +36,7 @@ func StartPublishHandler(res *resources.ResourceManager) http.HandlerFunc {
 
 		// This checks to see if the resources already exist in the DB
 
-		resourcesToUpload, err := res.HasResources(s.Resources)
+		resourcesToUpload, err := res.HasResources(r.Context(), s.Resources)
 		if err != nil {
 			slog.Error("failed to check resources", "error", err)
 		}

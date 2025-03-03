@@ -19,7 +19,7 @@ func GetResourceHandler(res *resources.ResourceManager) http.HandlerFunc {
 			return
 		}
 
-		resReader, err := res.GetResource(hash)
+		resReader, err := res.GetResource(r.Context(), hash)
 		if err != nil {
 			if errors.Is(err, backends.ResourceNotFound) {
 				utils.HttpLog(w, http.StatusNotFound, "Resource not found")
