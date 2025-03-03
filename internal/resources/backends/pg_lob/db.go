@@ -101,13 +101,13 @@ func (b *PgLOBBackend) GetResource(ctx context.Context, hash string) (io.ReadClo
 }
 
 func (b *PgLOBBackend) HasResource(ctx context.Context, hash string) (bool, error) {
-	conn, err := b.pool.Acquire(context.Background())
+	conn, err := b.pool.Acquire(ctx)
 	if err != nil {
 		return false, err
 	}
 	defer conn.Release()
 
-	row := conn.QueryRow(context.Background(), "SELECT count(1) FROM files WHERE hash = $1", hash)
+	row := conn.QueryRow(ctx, "SELECT count(1) FROM files WHERE hash = $1", hash)
 	var count uint64
 	err = row.Scan(&count)
 	if err != nil {
