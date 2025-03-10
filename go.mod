@@ -13,7 +13,7 @@ require (
 	github.com/go-chi/render v1.0.3
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0
-	github.com/hugespaceship/dds v1.0.2
+	github.com/hugespaceship/dds v1.0.3
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/stretchr/testify v1.10.0
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.6.0

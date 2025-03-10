@@ -9,12 +9,14 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	_ "github.com/hugespaceship/dds"
 	"image"
-	_ "image/jpeg"
 	"image/png"
-	_ "image/png"
 	"io"
+
+	// Image Decoders
+	_ "github.com/hugespaceship/dds"
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 var (
@@ -29,7 +31,12 @@ func decompressZlibData(reader io.Reader, len uint16) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer zlibReader.Close()
+	defer func(zlibReader io.ReadCloser) {
+		err := zlibReader.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(zlibReader)
 
 	inflatedData := make([]byte, len)
 	n, err := io.ReadFull(zlibReader, inflatedData)
@@ -104,7 +111,7 @@ func DecompressImage(inReader io.Reader) (io.Reader, error) {
 	return bytes.NewReader(buf.Bytes()), nil
 }
 
-// IMGToPNG tries to convert any image to a PNG
+// IMGToPNG tries to convert any image to a PNG using Go's image decoding functions
 func IMGToPNG(r io.Reader, w io.Writer) error {
 	if r == nil {
 		return errors.New("nil reader")
