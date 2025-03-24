@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/a-h/templ v0.3.833
 	github.com/aws/aws-sdk-go-v2 v1.36.3
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.61
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.63
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.0
 	github.com/cristalhq/aconfig v0.18.6
 	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
