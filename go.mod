@@ -2,6 +2,8 @@ module github.com/HugeSpaceship/HugeSpaceship
 
 go 1.23.0
 
+toolchain go1.24.1
+
 require (
 	github.com/a-h/templ v0.3.833
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -14,7 +16,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0
 	github.com/hugespaceship/dds v1.0.4
-	github.com/jackc/pgx/v5 v5.7.2
+	github.com/jackc/pgx/v5 v5.7.4
 	github.com/stretchr/testify v1.10.0
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.6.0
 )
