@@ -71,6 +71,9 @@ func (parser TicketParser) ReadBytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if header.Length > 255 {
+		return nil, errors.New("too many bytes")
+	}
 	output := make([]byte, header.Length)
 	err = binary.Read(parser.reader, binary.BigEndian, &output)
 
@@ -81,6 +84,9 @@ func (parser TicketParser) ReadString() (string, error) {
 	header, err := parser.ReadDataHeader()
 	if err != nil {
 		return "", err
+	}
+	if header.Length > 255 {
+		return "", errors.New("string too long")
 	}
 	output := make([]byte, header.Length)
 	err = binary.Read(parser.reader, binary.BigEndian, &output)
@@ -130,8 +136,6 @@ func (parser TicketParser) ReadTimestamp() (time.Time, error) {
 
 func (parser TicketParser) Parse() (types.Ticket, error) {
 
-	var ticket = types.Ticket{}
-
 	header, err := parser.ReadTicketHeader()
 
 	if err != nil {
@@ -144,11 +148,7 @@ func (parser TicketParser) Parse() (types.Ticket, error) {
 		return parser.parseVersion2Ticket()
 	case "3.0":
 		return parser.parseVersion3Ticket()
-		if err != nil {
-			return types.Ticket{}, err
-		}
+	default:
+		return types.Ticket{}, errors.New("unknown version " + header.GetVersion())
 	}
-
-	parser.ticket = ticket
-	return ticket, nil
 }
