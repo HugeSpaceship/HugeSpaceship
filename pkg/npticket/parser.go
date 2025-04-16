@@ -14,7 +14,7 @@ import (
 )
 
 type TicketParser struct {
-	reader     io.Reader
+	reader     *bytes.Reader
 	ticketData []byte
 	TicketBody []byte
 	ticket     types.Ticket
@@ -132,6 +132,11 @@ func (parser TicketParser) ReadTimestamp() (time.Time, error) {
 	var output uint64
 	err = binary.Read(parser.reader, binary.BigEndian, &output)
 	return time.UnixMilli(int64(output)), err
+}
+
+func (parser TicketParser) skipBytes(bytesToSkip int64) error {
+	_, err := parser.reader.Seek(bytesToSkip, io.SeekCurrent)
+	return err
 }
 
 func (parser TicketParser) Parse() (types.Ticket, error) {

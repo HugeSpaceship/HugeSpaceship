@@ -54,7 +54,14 @@ func (parser TicketParser) parseVersion2Ticket() (types.Ticket, error) {
 	if err != nil {
 		return types.Ticket{}, err
 	}
-	_, _ = parser.ReadDataHeader()
+	entitlementsSection, err := parser.ReadSectionHeader()
+	if err != nil {
+		return types.Ticket{}, err
+	}
+	err = parser.skipBytes(int64(entitlementsSection.Length))
+	if err != nil {
+		return types.Ticket{}, err
+	}
 
 	_, _ = parser.ReadDataHeader()
 	footerHeader, err := parser.ReadSectionHeader()
